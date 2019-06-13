@@ -1,0 +1,92 @@
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/all.css') }}" >
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link rel="stylesheet" href="https://getbootstrap.com/docs/4.3/dist/css/bootstrap.css">
+<script src="https://getbootstrap.com/docs/4.3/dist/js/bootstrap.bundle.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+
+
+
+<div id="qualifications" class="form-group container-small">
+    <div class="row">
+        <div class="col-8">
+            <label class='col-form-label'>Lege alle zusätzlichen Qualifikationen fest (maximal 5)</label>
+        </div>
+    </div>
+    {% for subform in form.selects %}
+    <!--<div class="row selectorrow">
+        <div class="col-auto">
+            <p>{{ loop.index }}</p>
+        </div>
+        <div class="col-1">
+            {{ subform.selector }}
+        </div>
+        <div class="col-1">
+            {{ subform.first_select }}
+        </div>
+        <div class="col-1">
+            {{ subform.second_select }}
+        </div>
+    </div>-->
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-8">
+            <button id="add-select" class="btn btn-primary btn-sm" data-toggle="add-select">Add</button>
+        </div>
+    </div>
+</div>
+
+<script>
+        
+    
+        $("button#add-select").click(function() { //reconstruct HTML to match wtform
+            
+            btn = $("<a class='remove-row'><i class='fas fa-trash-alt'></i></a>")
+            row = $("<div class='row selectorrow'></div>")
+            col0= $("<div class='col-auto'><p class='index'>X</p></div>")
+            col1= $("<div class='col-1'></div>")
+            col2= $("<div class='col-1'></div>")
+            col3= $("<div class='col-1'></div>")
+
+            select1 = $("<select id='selects-X-selector'></select>")
+            select2 = $("<select id='selects-X-first_select'></select>")
+            select3 = $("<select id='selects-X-second_select'></select>")
+
+            select1.on("change", function(){
+                console.log("change", $(this))
+            })
+
+            option = $("<option value='1'>---Select---</option><option value='2'>ernte</option>")
+            select1.append(option)
+            col1.append(select1)
+            col2.append(select2)
+            col3.append(select3)
+            col3.append(btn)
+            row.append(col0)
+            row.append(col1)
+            row.append(col2)
+            row.append(col3)
+            $("#qualifications .row:last").before(row)
+            rearrange_ids()
+            
+        });
+
+        $(document).on('click','.remove-row', function(){
+            $(this).parents('.row').remove();
+            rearrange_ids()
+        })
+
+        function rearrange_ids(){
+            $('#qualifications .selectorrow').each(function (index) {
+                $(this).find('.index').text(index+1)
+                $(this).find('select').each(function (){
+                    var $selector = $(this)
+                    var new_id = $selector.prop("id").replace(/\d+|X/g, index)  // RegEx: Gets number or X  (combination too, but w/e)
+                    $selector.prop("id", new_id)
+                    $selector.prop("name", new_id)
+                })
+            });
+        }
+</script>

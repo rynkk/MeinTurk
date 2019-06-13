@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+<h1>Home</h1>
+
+{% block head %}
+{% endblock head %}
+
+{% block body %}
+<div class="container-fluid container-big">
+    <table class="table table-condensed" style="border-collapse:collapse;">
+            <thead><tr><th><p>Name</p></th><th><p>Age</p></th><th><p>Info</p></th></tr></thead>
+            <tbody>
+                <tr data-toggle="collapse" data-target="#demo1" class="accordion-toggle collapsed">
+                    <td>1</td>
+                    <td>05 May 2013</td>
+                    <td>Credit Account</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo1"> Demo1 </div> </td>
+                </tr>
+
+            <tr data-toggle="collapse" data-target="#demo2" class="accordion-toggle collapsed">
+                <td>2</td>
+                <td>05 May 2013</td>
+                <td>Credit Account</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo2"> Demo2 </div> </td>
+            </tr>
+
+            <tr data-toggle="collapse" data-target="#demo3" class="accordion-toggle collapsed">
+                <td>3</td>
+                <td>05 May 2013</td>
+                <td>Credit Account</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo3"> Demo3 </div> </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+{% endblock body %}
+

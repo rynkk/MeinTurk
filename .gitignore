@@ -1,0 +1,10 @@
+
+.vscode/
+_pycache_/
+flask_mturk/.vscode/
+flask_mturk/_pycache_/
+flask_mturk/cred.cfg
+
+# Compiled #
+###################
+*.pyc

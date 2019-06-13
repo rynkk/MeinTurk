@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+<h1>Home</h1>
+
+{% block head %}
+{% endblock head %}
+
+{% block body %}
+<div class="container-fluid container-big">
+    {% include 'surveyform.html' %}
+</div>
+
+
+
+
+
+
+{#
+<p>
+    {{ form.test1.label }}:
+    {{ form.test1(min=0, max=100, step="1", oninput="outputUpdate(value)") }}    
+ </p>
+ <script>
+    function outputUpdate(age) {
+        document.querySelector('#selected-age').value = age;
+        console.log("test")
+    }
+</script>#}
+{% endblock body %}
+
+        

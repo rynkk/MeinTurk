@@ -1,0 +1,197 @@
+{% import 'macros.j2' as macros %}
+
+
+
+
+<!-- StudyNavs -->
+<nav>
+        <div id="tabs" class="nav nav-tabs" role="tablist">
+                {{ macros.render_nav_tabs(form) }}
+            </div>
+        </nav>
+<form id="sform"method="POST" action="">
+    {{ form.hidden_tag() }}
+
+    
+
+    <div class="tab-content container-small">
+        <!--Allgemein-->
+        <div id="p1" class="tab-pane active">
+            {{ macros.render_long_text(form.project_name) }}
+            {{ macros.render_long_text(form.title) }}
+            {{ macros.render_long_text(form.description) }}
+            {{ macros.render_long_text(form.keywords) }}
+            {{ macros.render_date_bool(form.starting_date, form.starting_date_set)}}
+            {{ macros.render_int_unit(form.time_till_expiration) }}
+            {{ macros.render_next_prev(1) }}
+        </div>
+        <div id="p2" class="tab-pane">
+            {{ macros.render_int_bool(form.amount_workers, form.minibatch) }}
+            {{ macros.render_decimal(form.payment_per_worker, form.qualification_name)}}
+            {{ macros.render_int_unit(form.allotted_time_per_worker, 3) }}
+            {{ macros.render_int_unit(form.accept_pay_worker_after, 3) }}
+            {{ macros.render_next_prev(2) }}
+        </div>
+        <div id="p3" class="tab-pane">
+            {{ macros.render_radio(form.must_be_master) }}
+            {{ macros.render_qualifications_field(form.qualifications_custom_select) }}
+            <div class="form-group row">
+                <div class="col-3">{{ form.adult_content.label}}</div>
+                <div class="col">{{ form.adult_content}}</div>
+           </div>    
+           {{ macros.render_radio(form.project_visibility, inline=false) }}
+
+            {{ macros.render_next_prev(3) }}
+        </div>
+        <div id="p4" class="tab-pane">
+            {{ form.editor_field}}
+            {{ macros.render_next_prev(4) }}
+        </div>
+        <div id="p5" class="tab-pane">
+            {{ form.submit }}
+        </div>
+
+
+    </div>
+</form>
+{{ ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js')) }}
+{{ ckeditor.config(name='editor_field')}}
+
+<script>
+
+    $('form#sform').find('input').each(function(){
+        var $input = $(this)
+        var $label = $("label[for='"+$input.prop('id')+"']")
+        console.log($label)
+        if($input.prop('required') || $input.prop('id')=='starting_date'){ //if starting_date is shown it is required
+            if($label.length != 0)
+                $label.text($label.text()+"*")
+        }
+    });
+
+
+
+
+    $(".optional-date").toggle($('#starting_date_set').prop("checked")==false); //if page reloaded after submit make sure that starting date is set appropriate
+
+    $('#starting_date_set').on('change', function() {
+        $(".optional-date").toggle(!this.checked);
+    });
+
+    
+    $(".mbqual").toggle($('#minibatch').prop("checked"));   //if page reloaded after submit make sure that mbqual is set appropriate
+    if($('#minibatch').prop("checked"))                     //if page reloaded after submit make sure that batches is set appropriate
+        print_batches()
+
+    $('#minibatch').on('change', function() {
+        $(".mbqual").toggle(this.checked);
+        this.checked?print_batches():$("#batches").hide()
+    });
+     
+    $("#amount_workers").on('input', function(){
+        var minibatch_box = $("#minibatch")
+        if($(this).val()<10){
+            minibatch_box.prop("disabled", true)
+            minibatch_box.prop("checked", false)
+            $("#batches").hide()
+            $(".mbqual").hide()
+        }else{
+            minibatch_box.removeAttr("disabled")
+            if(minibatch_box.is(':checked'))
+                print_batches()
+        }
+    });
+
+    function print_batches(){
+        var amount =  $("#amount_workers").val()
+        if (amount!=0){
+            var full = Math.floor(amount/9)
+            var full_string = (full==0 ? "" : full+"x9er")
+
+            var part = amount%9
+            var part_string = (part==0 ? "" : "1x"+part+"er")
+
+            var connector = ((full_string!="" && part_string!="") ? " und ":"")
+            
+            var text = ":  Die Studie wird auf " + full_string + connector + part_string +" Batches aufgeteilt."
+
+            $("#batches").text(text)
+            $("#batches").show()
+        }        
+    }
+
+    $(".next").click(function () {
+        parent_id = $(this).parent().parent().parent().attr("id")
+        int_id = parseInt(parent_id.substr(1))
+        next_id = "#p" + (int_id + 1)
+        $(".nav .nav-item[href='" + next_id + "']").trigger("click")
+    });
+
+    $(".prev").click(function () {
+        parent_id = $(this).parent().parent().parent().attr("id")
+        int_id = parseInt(parent_id.substr(1))
+        prev_id = "#p" + (int_id - 1)
+        $(".nav .nav-item[href='" + prev_id + "']").trigger("click")
+    });
+
+
+    (function($) {
+        $.fn.inputFilter = function(inputFilter) {
+        return this.on("input keydown keyup mousedown mouseup select contextmenu drop", function() {
+            if (inputFilter(this.value)) {
+            this.oldValue = this.value;
+            this.oldSelectionStart = this.selectionStart;
+            this.oldSelectionEnd = this.selectionEnd;
+            } else if (this.hasOwnProperty("oldValue")) {
+            this.value = this.oldValue;
+            this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+            }
+        });
+        };
+    }(jQuery));
+
+    // Payment for assignment < 10
+    $(".currency").inputFilter(function(value){ return /^-?\d*[.,]?\d{0,2}$/.test(value) && (value === "" || parseFloat(value) <= 10)});
+    $(".integer").inputFilter(function(value){ return /^\d*$/.test(value)});    
+    
+    $('#datetimepicker').datetimepicker({
+        icons: {
+            time: "far fa-clock",
+            date: "far fa-calendar-alt",
+            up: "fas fa-chevron-up",
+            down: "fa fa-chevron-down",       
+            previous: "fas fa-arrow-left",
+            next: "fas fa-arrow-right",
+            today: "fas fa-vial",
+            clear: "fas fa-eraser",
+            close: "far fa-times-circle"
+        },
+        locale: 'de',
+        minDate:  moment()
+    })
+    
+    $('i[data-toggle="tooltip"]').tooltip()
+        
+    $("#sform").validate({
+        ignore: "",
+        rules:{
+            starting_date: {
+                required: "#starting_date_set:unchecked"
+            }
+        },
+        invalidHandler: function(e, validator){
+            if(validator.errorList.length)
+            $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
+        },
+        errorPlacement: function(error, element) {
+            if (element.prop("name") == "starting_date" )
+                error.insertAfter("#datetimepicker")
+            else
+                error.insertAfter(element)
+        }   
+    });
+
+          
+        
+
+</script>

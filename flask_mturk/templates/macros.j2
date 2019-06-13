@@ -1,0 +1,177 @@
+
+
+{% macro render_nav_tabs(form) %}       {# renders navtabs for the surveytabs #}
+    {% for page in form.pages %}
+            <a class="nav-item nav-link{% if loop.index ==1 %} active{% endif %}" data-toggle="tab" href="#p{{ loop.index }}">{{ page }}</a>
+    {% endfor %}
+{% endmacro %}
+
+
+{% macro render_long_text(field) %}
+    <div class="form-group form-row">
+        <div class="col-2">
+            {% set css_class = 'col-form-label' + kwargs.pop('class', '') %}
+            {{ field.label(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-6">
+            {% set css_class = 'text form-control' + kwargs.pop('class', '') %}
+            {% if field.short_name=="keywords" %}
+            <script>console.log("asd")</script>
+            {{ field(class=css_class, data_role="tagsinput", aria_describedby = field.short_name+"_help", **kwargs) }}
+            {% else %}
+            {{ field(class=css_class, aria_describedby = field.short_name+"_help", **kwargs) }}
+            {% endif %}
+            {#<p id={{field.short_name+"_help"}} class="form-text text-muted">{{field.description}}</p>#}
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro render_int_unit(field, labellength=2) %}
+    <div class="form-group form-row">
+        <div class="col-{{ labellength }}">
+            {% set css_class = 'col-form-label' + kwargs.pop('class', '') %}
+            {{ field.label(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-1">
+            {% set css_class = 'integer form-control' + kwargs.pop('class', '') %}
+            {{ field.int_field(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-2">
+            <div class="form-check">
+            {% set css_class = 'form-control' + kwargs.pop('class', '') %}
+            {{ field.unit_field(class=css_class) }}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro render_decimal(field,text) %}
+    <div class="form-group form-row">
+        <div class="col-3">
+            {% set css_class = 'col-form-label' + kwargs.pop('class', '') %}
+            {{ field.label(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-1">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">$</span>
+                </div>
+            {% set css_class = 'form-control currency pl-1 pr-0'  + kwargs.pop('class', '')%}
+            {{ field(class=css_class, **kwargs) }}
+            </div> 
+        </div>
+        <div class="col-2 pl-4 mbqual" style="display:none">
+            {% set css_class = 'col-form-label' + kwargs.pop('class', '') %}
+            {{ text.label(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-4 mbqual" style="display:none">
+            {% set css_class = 'text form-control'  + kwargs.pop('class', '') %}
+            {{ text(class=css_class, placeholder="Standard: Projektname+Datum", aria_describedby = text.short_name+"_help", **kwargs) }}
+        </div>
+    </div>
+{% endmacro %}
+
+  
+{% macro render_date_bool(date_field, bool_field) %}
+    <div class="form-group form-row">
+        <div class="col-3">
+            {% set css_class = 'col-form-label'%}
+            {{ bool_field.label(class=css_class) }}
+        </div>
+        <div class="col-1" style="padding-top: calc(0.375rem + 1px)">
+            {% set css_class = 'form-check-input' %}
+            {{ bool_field(class=css_class) }}
+        </div>
+        <div class="col-auto optional-date">
+            {% set css_class = 'col-form-label'%}
+            {{ date_field.label(class=css_class) }}    
+        </div>
+        <div class="col-3 optional-date">            
+            <div id='datetimepicker' class="input-group date" data-target-input="nearest">
+            {% set css_class = 'form-control datetimepicker-input'%}
+            {{ date_field(class=css_class, data_target='#datetimepicker')}}
+                <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                </div>
+            </div>            
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro render_int_bool(intfield, bool_field) %}
+    <div class="form-group form-row">
+        <div class="col-3">
+            {% set css_class = 'col-form-label' + kwargs.pop('class', '') %}
+            {{ intfield.label(class=css_class, **kwargs) }}    
+        </div>
+        <div class="col-1">
+            {% set css_class = 'integer form-control'%}
+            {{ intfield(class=css_class)}}
+        </div>
+        <div class="col-6" style="padding-top: calc(0.375rem + 1px)">
+            <div class="form-check">
+            {% set css_class = 'form-check-label' %}
+            {{ bool_field.label(class=css_class) }}
+            <i class="fas fa-info-circle fa-xs" data-toggle="tooltip" style="vertical-align: text-top" title="MiniBatching teilt einen HIT in mehrere HITs a 9 Bearbeiter auf und schickt diese nacheinander los, um Kosten zu sparen. Die Erstellung der HITs erfolgt automatisch"></i>
+            {% set css_class = 'form-check-input ml-0 relative' %}
+            {{ bool_field(class=css_class) }}
+                <span id="batches"></span>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_radio(radiofield, inline=true) %}
+
+    <fieldset class="form-group">
+        <div class="form-row">
+            
+            {% set css_class = 'col-form-label col-sm-3 pt-0' + kwargs.pop('class', '') %}
+            {{ radiofield.label(class=css_class, **kwargs) }}
+            
+            <div class="col-sm-9">
+            {% for radio in radiofield %}
+                <div class="form-check {% if inline==true %}form-check-inline{% endif %}">
+                    {{ radio(class="form-check-input") }}
+                    {{ radio.label(class="form-check-label") }}
+                </div>
+            {% endfor %}
+            </div>
+            
+        </div>
+    </fieldset>
+    
+{% endmacro %}
+
+{% macro render_qualifications_field(qualifications_field) %}
+    <div class='form-group'>
+        <div class="form-row">
+            <div class='col'>
+            {{ qualifications_field.label }}
+            </div>
+        </div>
+        <div class="row">            
+            <div class='col'>
+                <p>Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter </p>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_next_prev(page) %}
+    <div class="form-group row pt-5">
+        <div class="col-sm">
+            {% if page != 1 %}
+                <button type="button" class="btn btn-primary btn-sm prev">Zurück</button>
+            {% endif %}
+        </div>
+        <div class="col-sm">            
+            {% if page != 5 %}
+                <button type="button" class="btn btn-primary btn-sm float-right next">Weiter</button>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
