@@ -16,7 +16,6 @@
         <div class="col-6">
             {% set css_class = 'text form-control' + kwargs.pop('class', '') %}
             {% if field.short_name=="keywords" %}
-            <script>console.log("asd")</script>
             {{ field(class=css_class, data_role="tagsinput", aria_describedby = field.short_name+"_help", **kwargs) }}
             {% else %}
             {{ field(class=css_class, aria_describedby = field.short_name+"_help", **kwargs) }}

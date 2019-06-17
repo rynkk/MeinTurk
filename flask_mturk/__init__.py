@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, json
 from flask_sqlalchemy import SQLAlchemy
 from flask_ckeditor import CKEditor
 import boto3
+import os
 
 app = Flask(__name__)
 
@@ -18,6 +19,12 @@ app.config.from_pyfile('cred.cfg')
 
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
+
+ISO3166 = ""
+filename = os.path.join(app.instance_path, 'iso3166cc.json')
+with open(filename) as f:
+    ISO3166 = json.load(f)
+
 
 
 # Connect to MTurk-Server
