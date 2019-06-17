@@ -24,22 +24,13 @@ def quali():
 
 
 class QualificationsSubForm(FlaskForm):
+    selector = SelectField()
     first_select = SelectField()
     second_select = SelectField()
 
 
 class QualificationsForm(FlaskForm):
     selects = FieldList(FormField(QualificationsSubForm))
-
-
-class QualificationsSubFormTest(FlaskForm):
-    selector = SelectField(choices=[('1', 'one'), ('2', 'two')])
-    first_select = SelectField(choices=[('1', 'apples'), ('2', 'oranges')])
-    second_select = SelectField(choices=[('1', 'true'), ('2', 'false')])
-
-
-class QualificationsFormTest(FlaskForm):
-    selects = FieldList(FormField(QualificationsSubFormTest), min_entries=0)
 
 
 class SurveyForm(FlaskForm):
@@ -64,7 +55,7 @@ class SurveyForm(FlaskForm):
     # Worker speziell #
     must_be_master = RadioField('Bearbeiter müssen Master sein', description='Master sind Bearbeiter mit herausragender Bearbeitungsqualität', choices=[('yes', 'Ja'), ('no', 'Nein')],
                                 default='no', validators=[InputRequired()])
-    qualifications_select = FormField(QualificationsFormTest, 'Lege alle zusätzlichen Qualifikationen fest', description='Legt Qualifikationen fest, die ein Bearbeiter vorweisen muss, um diese Survey bearbeiten zu dürfen')    
+    qualifications_select = FormField(QualificationsForm, 'Lege alle zusätzlichen Qualifikationen fest', description='Legt Qualifikationen fest, die ein Bearbeiter vorweisen muss, um diese Survey bearbeiten zu dürfen')    
     adult_content = BooleanField('Projekt enthält nicht jugendfreie Inhalte', default=False,
                                  validators=[Optional()])
     project_visibility = RadioField('Sichtbarkeit', description='Sichtbar: Jeder kann die Survey sehen; Privat: Nur; Versteckt: Nur', default='public', validators=[InputRequired()],
