@@ -1,7 +1,8 @@
-from flask import render_template, url_for, flash, redirect, jsonify, json
+from flask import render_template, url_for, flash, redirect, jsonify, json, request
 from flask_mturk import app, db, client, ISO3166
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField
 from flask_mturk.models import User
+# from flask_mturk.tables import ItemTable, Item
 
 
 balance = None
@@ -74,9 +75,17 @@ system_qualifications = [
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
-    response = client.list_hits()
-    print(response)
-    return render_template('main/dashboard.html', surveys=response, balance=balance)
+    response = client.list_hits()["HITs"]
+    # sort = request.args.get('sort', 'hitstatus')
+    # reverse = (request.args.get('direction', 'asc') == 'desc')
+    # table = ItemTable(Item.get_sorted_by(response, sort, reverse),
+    #                  sort_by=sort,
+    #                  sort_reverse=reverse)
+    # print(response["HITs"])
+    # items = [dict(Title="Ente", HITStatus="active"), dict(Title="Auto", HITStatus="outtabusinez")]
+    # table = ItemTable(response)
+    # print(response)
+    return render_template('main/dashboard.html', surveys=response, balance=balance)  # , table=table)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -97,14 +106,14 @@ def survey():
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=system_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
 
-@app.route("/quali", methods=['GET', 'POST'])
-def quali():
-    form = QualificationsForm()
-
-    percentage_interval = 5
-    integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
-
-    return render_template('main/quali.html', title='Neue Survey', qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, form=form)
+# @app.route("/quali", methods=['GET', 'POST'])
+# def quali():
+#    form = QualificationsForm()
+#
+#    percentage_interval = 5
+#    integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+#
+#    return render_template('main/quali.html', title='Neue Survey', qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, form=form)
 
 
 @app.route("/qualification/<qtype>")  # replace with parameter in render_template?

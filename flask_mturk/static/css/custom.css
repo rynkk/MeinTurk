@@ -97,7 +97,7 @@ a[data-toggle="tab"]{
     padding-bottom:15px;
 }
 
-.accordion-toggle td:last-child::after  {
+.overview .mainrow td:last-child::after  {
     font-family: "Font Awesome 5 Free";
     content: "\f078";
     font-weight: 900;
@@ -105,10 +105,18 @@ a[data-toggle="tab"]{
     transition: all 0.5s;
  }
  
- .accordion-toggle:not(.collapsed) td:last-child::after {
+ .overview:not(.collapsed) .mainrow td:last-child::after {
      -webkit-transform: rotate(180deg);
      -moz-transform: rotate(180deg);
      transform: rotate(180deg);
+ }
+
+ tbody td{
+     border:0 !important;
+ }
+
+ .block{
+     display:block;
  }
 
  .remove-row{

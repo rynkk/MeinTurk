@@ -6,41 +6,53 @@
 {% endblock head %}
 
 {% block body %}
+{#<div class="container-fluid container-big">
+    {{table}}
+</div>#}
 <div class="container-fluid container-big">
-    <table class="table table-condensed" style="border-collapse:collapse;">
-            <thead><tr><th><p>Name</p></th><th><p>Age</p></th><th><p>Info</p></th></tr></thead>
-            <tbody>
-                <tr data-toggle="collapse" data-target="#demo1" class="accordion-toggle collapsed">
-                    <td>1</td>
-                    <td>05 May 2013</td>
-                    <td>Credit Account</td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo1"> Demo1 </div> </td>
-                </tr>
-
-            <tr data-toggle="collapse" data-target="#demo2" class="accordion-toggle collapsed">
-                <td>2</td>
-                <td>05 May 2013</td>
-                <td>Credit Account</td>
-            </tr>
+    <table id="project_table" class="table table-condensed" style="border-collapse:collapse;">
+        <thead>
             <tr>
-                <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo2"> Demo2 </div> </td>
+                <th><p>Survey</p></th>
+                <th><p>Status</p></th>
+                <th><p>Fortschritt</p></th>
+                <th><p>Start</p></th>
+                <th><p>Ende</p></th>
+                <th><p>Aktionen</p></th>
             </tr>
-
-            <tr data-toggle="collapse" data-target="#demo3" class="accordion-toggle collapsed">
-                <td>3</td>
-                <td>05 May 2013</td>
-                <td>Credit Account</td>
+        </thead>
+        {% for survey in surveys %}
+        <tbody data-toggle="collapse" data-target="#r{{survey.HITId}}" class="overview accordion-toggle collapsed">
+            <tr class="mainrow">
+                <td><p>Titel: {{ survey.Title }}</p> <p>Beschreibung: {{ survey.Description }}</p><p>Tags: {{ survey.Keywords }}</p></td>
+                <td><p>{{ survey.HITStatus }}</p></td>
+                <td>
+                    <p>{{ survey.NumberOfAssignmentsCompleted }}({{survey.NumberOfAssignmentsPending}})/{{ survey.MaxAssignments }}</p>
+                    <p>{{ survey.NumberOfAssignmentsCompleted/survey.MaxAssignments*100 }}%</p>
+                </td>
+                <td>{{ survey.CreationTime }}</td>
+                <td>{{ survey.Expiration|default('') }}</td>
+                <td>
+                        Actiones
+                        <button class="btn btn-primary btn-sm block"></button>
+                        <button class="btn btn-primary btn-sm block"></button>
+                        <button class="btn btn-primary btn-sm block"></button>
+                        <button class="btn btn-primary btn-sm block"></button>
+                </td>
             </tr>
-            <tr>
-                <td colspan="3" class="hiddenRow"><div class="accordian-body collapse" id="demo3"> Demo3 </div> </td>
+            <tr class="additional-information">
+                <td colspan="6">50 enten</td>
             </tr>
         </tbody>
+            <tr>
+                <td colspan="3" class="hiddenRow">
+                    <div class="accordian-body collapse" id="r{{survey.HITId}}"> {{ survey.Description }} </div>
+                </td>
+            </tr>
+        {% endfor %}
     </table>
+    
 </div>
-
-
 
 {% endblock body %}
 

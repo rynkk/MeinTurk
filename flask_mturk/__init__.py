@@ -26,7 +26,6 @@ with open(filename) as f:
     ISO3166 = json.load(f)
 
 
-
 # Connect to MTurk-Server
 
 endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
