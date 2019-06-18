@@ -7,30 +7,41 @@ from wtforms.validators import Optional, InputRequired, DataRequired, Length, Eq
 from flask_mturk.models import User
 
 
+class NonValidatingSelectField(SelectField):
+    def pre_validate(self, form):
+        pass
+
+
 class IntUnitForm(FlaskForm):
     int_field = IntegerField(default=3, validators=[InputRequired()])
     unit_field = SelectField(default='days', validators=[InputRequired()],
                              choices=[('minutes', 'Minuten'), ('hours', 'Stunden'), ('days', 'Tage')])
 
-
-def quali():
-    message = 'Must be between 14 and 1 characters long.'
-
-    def _quali(form, field):
-        print("ValidationTest")
-        raise ValidationError(message)
-
-    return _quali
+    def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
+        kwargs['csrf_enabled'] = False
+        super(IntUnitForm, self).__init__(*args, **kwargs)
 
 
 class QualificationsSubForm(FlaskForm):
-    selector = SelectField()
-    first_select = SelectField()
-    second_select = SelectField()
+    selector = SelectField(choices=[("p", "placeholder")])
+    first_select = NonValidatingSelectField()
+    second_select = NonValidatingSelectField()    
+
+    def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
+        kwargs['csrf_enabled'] = False
+        super(QualificationsSubForm, self).__init__(*args, **kwargs)                         
+
+    def validate_first_select(form, field):
+        print("TODO")
+        raise ValidationError("We're sorry, you must be 13 or older to register")
 
 
 class QualificationsForm(FlaskForm):
-    selects = FieldList(FormField(QualificationsSubForm))
+    selects = FieldList(FormField(QualificationsSubForm), min_entries=1)
+
+    def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
+        kwargs['csrf_enabled'] = False
+        super(QualificationsForm, self).__init__(*args, **kwargs)
 
 
 class SurveyForm(FlaskForm):
@@ -45,7 +56,7 @@ class SurveyForm(FlaskForm):
 
     # Worker allgemein #
     amount_workers = IntegerField('Anzahl Bearbeiter', default=20, validators=[InputRequired()])
-    minibatch = BooleanField('MiniBatching', description='Durch MiniBatching wird die Survey in mehrere Kleinsurveys a 9 Bearbeiter gegliedert.', default=False)
+    minibatch = BooleanField('MiniBatching', description='Durch MiniBatching wird die Survey in mehrere Kleinsurveys a 9 Bearbeiter gegliedert.')
     qualification_name = StringField('MiniBatching-Qualifikationsname', validators=[Optional()],
                                      description='Gibt an, unter welchem Namen die Qualifikation gespeichert wird, die verhindert, dass Worker an mehreren Mini-HITs des gleiches Batches teilnehmen können.')
     payment_per_worker = DecimalField('Bezahlung pro Bearbeiter', description='Summe in Dollar($) die dem Bearbeiter nach erfolgreichem Abschluss ausgezahlt wird', default=0.50, validators=[InputRequired()])
@@ -69,8 +80,3 @@ class SurveyForm(FlaskForm):
     submit = SubmitField('Survey erstellen')
 
     pages = ['Allgemein', 'Worker allg.', 'Worker speziell', 'SurveyLayout', 'Finish']
-
-    # def validate_username(self, username):
-    #    user = User.query.filter_by(username=username.data).first()
-    #    if user:
-    #        raise ValidationError('Username taken.')

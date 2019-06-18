@@ -4,7 +4,9 @@ _pycache_/
 flask_mturk/.vscode/
 flask_mturk/_pycache_/
 flask_mturk/cred.cfg
+flask_mturk/wip/
 
 # Compiled #
-###################
+############
 *.pyc
+.gitignore

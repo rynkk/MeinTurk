@@ -7,7 +7,7 @@
     </div>
 </nav>
 <form id="sform" method="POST" action="">
-    {{ form.hidden_tag() }}
+        {{ form.hidden_tag() }}
     <div class="tab-content container-small">
         <!--Allgemein-->
         <div id="p1" class="tab-pane active">
@@ -35,6 +35,11 @@
                         <label class='col-form-label'>Lege alle Qualifikationen fest (maximal 5)</label>
                     </div>
                 </div>
+                {#% for groups in form.qualifications_select.selects %}
+                    {% for group in groups %}
+                        {{ group }}
+                    {% endfor %}
+                {% endfor %#}
                 <div class="row">
                     <div class="col-auto">
                         <button type="button" id="add-select" class="btn btn-primary btn-sm">Qualifikation hinzufügen</button>
@@ -79,7 +84,7 @@
         $("#sform").validate({
             ignore: "",
             rules:{
-                starting_date: {
+                starting_date: { // Maybe add rule for ---Select--- to be an invalid option and not allowing the same qual twice and ckeditor must not be empty
                     required: "#starting_date_set:unchecked"
                 }
             },
@@ -92,11 +97,12 @@
                     error.insertAfter("#datetimepicker")
                 else
                     error.insertAfter(element)
-            },
+            }/*,
             submitHandler: function(form, event){
-                console.log("form"+form)
-                console.log(event)
-            }
+                //console.log("form"+form)
+                //console.log(event)
+                form.submit()
+            }*/
         });
 
     $('form#sform').find('input').each(function(){
@@ -218,6 +224,7 @@
 </script>
 
 <script>
+    var qualifications = {{qualifications|tojson}}
     var all_options=[];
     var percentage_interval = {{ qualification_percentage_interval }}
     var integer_list = {{ qualification_integer_list }}
@@ -228,8 +235,27 @@
     
     //for( key in {{cc_list}})
     //    console.log(key)
+    qualifications.forEach(function (obj) {
+            option_type = obj.Type ? 'system' : 'custom'
+            option = {
+                'type': option_type,
+                'id': obj.QualificationTypeId,
+                'name': obj.Name,
+                'comparators': obj.Comparators,
+                'value': obj.Value,
+                'default': obj.Default
+            }
+            all_options.push(option)
 
-    fetch("/qualification/all").then(function(response){
+            option = $("<option value=" + obj.QualificationTypeId + ">" + obj.Name + "</option>")
+            if (obj.Type == "system")
+                sys_group.append(option)
+            else
+         custom_group.append(option)
+    })
+    initDOMs()
+
+    /*fetch("/qualification/all").then(function(response){
         response.json().then(function(data){
 
             data.forEach(function(obj) {
@@ -255,7 +281,7 @@
             //CATCH NO RESPONSE  AND FLASH IT
             initDOMs()
         })
-    })
+    })*/
     
     function initDOMs(){
         var added=0

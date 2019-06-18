@@ -1,10 +1,9 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request
 from flask_mturk import app, db, client, ISO3166
-from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField
+from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
 from flask_mturk.models import User
-# from flask_mturk.tables import ItemTable, Item
 
-
+all_qualifications = None
 balance = None
 new_balance = client.get_account_balance()['AvailableBalance']
 if new_balance != balance:
@@ -86,6 +85,8 @@ def dashboard():
     # table = ItemTable(response)
     # print(response)
     return render_template('main/dashboard.html', surveys=response, balance=balance)  # , table=table)
+    
+
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -94,8 +95,15 @@ def survey():
 
     percentage_interval = 5
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+    
+    all_qualifications = system_qualifications + get_custom_qualifications()
+    selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]  # we need to dynamically change the allowed options for the qual_select
+    selector_choices.append(('false', '---SELECT---'))  # select should not be a valid option?
+
+    form.qualifications_select.selects[0].selector.choices = selector_choices  # we change the placeholder to the actual valid choices
 
     if form.validate_on_submit():
+        print("truf")
         # pd = form.password.data  # could hash
         # user = User(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)
@@ -103,31 +111,9 @@ def survey():
 
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=system_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
-
-
-# @app.route("/quali", methods=['GET', 'POST'])
-# def quali():
-#    form = QualificationsForm()
-#
-#    percentage_interval = 5
-#    integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
-#
-#    return render_template('main/quali.html', title='Neue Survey', qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, form=form)
-
-
-@app.route("/qualification/<qtype>")  # replace with parameter in render_template?
-def qualification(qtype):
-    if qtype == 'system':
-        return jsonify(system_qualifications)
-    elif qtype == 'custom':
-        custom_qualifications = get_custom_qualifications()
-        return jsonify(custom_qualifications)
-    elif qtype == 'all':
-        all_qualifications = system_qualifications + get_custom_qualifications()
-        return jsonify(all_qualifications)
-    return "no such type"
-
+    else:
+        print("erra")
+    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
 def split_hit(Hit):
     return
