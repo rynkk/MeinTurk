@@ -85,8 +85,17 @@ def dashboard():
     # table = ItemTable(response)
     # print(response)
     return render_template('main/dashboard.html', surveys=response, balance=balance)  # , table=table)
-    
 
+
+def flash_errors(form):
+    
+    for field, errors in form.errors.items():
+        print(errors)
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                errors
+            ))
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -95,15 +104,18 @@ def survey():
 
     percentage_interval = 5
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
-    
+
     all_qualifications = system_qualifications + get_custom_qualifications()
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]  # we need to dynamically change the allowed options for the qual_select
     selector_choices.append(('false', '---SELECT---'))  # select should not be a valid option?
 
-    form.qualifications_select.selects[0].selector.choices = selector_choices  # we change the placeholder to the actual valid choices
-
+    # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
+    if request.method == "POST":
+        for select in form.qualifications_select.selects:
+            select.selector.choices = selector_choices
+            
     if form.validate_on_submit():
-        print("truf")
+        # print(form.adult_content.data)
         # pd = form.password.data  # could hash
         # user = User(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)
@@ -112,10 +124,90 @@ def survey():
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
         return redirect(url_for('dashboard'))
     else:
-        print("erra")
+        flash_errors(form)
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
-def split_hit(Hit):
+
+def create_hit():
+    response = client.create_hit(
+        MaxAssignments=123,
+        AutoApprovalDelayInSeconds=123,
+        LifetimeInSeconds=123,
+        AssignmentDurationInSeconds=123,
+        Reward='string',
+        Title='string',
+        Keywords='string',
+        Description='string',
+        Question='string',
+        RequesterAnnotation='string',
+        QualificationRequirements=[
+            {
+                'QualificationTypeId': 'string',
+                'Comparator': 'LessThan' | 'LessThanOrEqualTo' | 'GreaterThan' | 'GreaterThanOrEqualTo' | 'EqualTo' | 'NotEqualTo' | 'Exists' | 'DoesNotExist' | 'In' | 'NotIn',
+                'IntegerValues': [
+                    123,
+                ],
+                'LocaleValues': [
+                    {
+                        'Country': 'string',
+                        'Subdivision': 'string'
+                    },
+                ],
+                'RequiredToPreview': True | False,
+                'ActionsGuarded': 'Accept' | 'PreviewAndAccept' | 'DiscoverPreviewAndAccept'
+            },
+        ],
+        UniqueRequestToken='string',
+        AssignmentReviewPolicy={
+            'PolicyName': 'string',
+            'Parameters': [
+                {
+                    'Key': 'string',
+                    'Values': [
+                        'string',
+                    ],
+                    'MapEntries': [
+                        {
+                            'Key': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                    ]
+                },
+            ]
+        },
+        HITReviewPolicy={
+            'PolicyName': 'string',
+            'Parameters': [
+                {
+                    'Key': 'string',
+                    'Values': [
+                        'string',
+                    ],
+                    'MapEntries': [
+                        {
+                            'Key': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                    ]
+                },
+            ]
+        },
+        HITLayoutId='string',
+        HITLayoutParameters=[
+            {
+                'Name': 'string',
+                'Value': 'string'
+            },
+        ]
+    )
+    return response
+
+
+def split_hit(HIT):
     return
 
 
