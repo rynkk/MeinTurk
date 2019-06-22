@@ -23,7 +23,7 @@ class IntUnitForm(FlaskForm):
 
 
 class QualificationsSubForm(FlaskForm):
-    selector = SelectField(choices=[("p", "placeholder")])
+    selector = SelectField()
     first_select = NonValidatingSelectField()
     second_select = NonValidatingSelectField()
 
@@ -45,7 +45,7 @@ class QualificationsSubForm(FlaskForm):
 
 
 class QualificationsForm(FlaskForm):
-    selects = FieldList(FormField(QualificationsSubForm), min_entries=1)
+    selects = FieldList(FormField(QualificationsSubForm))
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
