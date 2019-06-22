@@ -25,15 +25,23 @@ class IntUnitForm(FlaskForm):
 class QualificationsSubForm(FlaskForm):
     selector = SelectField(choices=[("p", "placeholder")])
     first_select = NonValidatingSelectField()
-    second_select = NonValidatingSelectField()    
+    second_select = NonValidatingSelectField()
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
-        super(QualificationsSubForm, self).__init__(*args, **kwargs)                         
+        super(QualificationsSubForm, self).__init__(*args, **kwargs)
 
-    def validate_first_select(form, field):
-        print("TODO")
-        raise ValidationError("We're sorry, you must be 13 or older to register")
+    def validate_first_select(form, field):  # only allow Exists, NotExists, GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
+        print(field.data)
+        print("TODO - Custom Qualifications Validator First Selects")
+        if(field.data not in ["Exists", "NotExists", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
+            raise ValidationError("You shouldn't manually change the options. Refer to the documentation if you want to add new options.")
+
+    def validate_second_select(form, field):  # Todo: only allow Letters, numbers, spaces (check 3166-format)
+        if(field.data):
+            print(field.data)
+            print("TODO - Custom Qualifications Validator Second Selects")
+        # raise ValidationError("You shouldn't manually change the options. Refer to the documentation if you want to add new options.")
 
 
 class QualificationsForm(FlaskForm):
