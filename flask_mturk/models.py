@@ -11,8 +11,8 @@ class User(db.Model):
         return f"User('{self.id}', '{self.username}', '{self.email}', '{self.password}')"
 
 
-# class HIT(db.Model):
-#    id = "test"
+class HIT(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
 
 
 # class MicroHIT(db.Model):

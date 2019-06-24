@@ -25,6 +25,11 @@ filename = os.path.join(app.instance_path, 'iso3166cc.json')
 with open(filename) as f:
     ISO3166 = json.load(f)
 
+SYSTEM_QUALIFICATION = ""
+filename = os.path.join(app.instance_path, 'system_qualification.json')
+with open(filename, encoding='utf-8') as f:
+    SYSTEM_QUALIFICATION = json.load(f)
+
 
 # Connect to MTurk-Server
 

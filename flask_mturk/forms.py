@@ -3,12 +3,12 @@ from wtforms import FormField, StringField, BooleanField, DecimalField, RadioFie
 from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, FieldList  # SelectMultipleField
 # from wtforms.fields.html5 import DecimalRangeField
 from flask_ckeditor import CKEditorField
-from wtforms.validators import Optional, InputRequired, DataRequired, Length, EqualTo, NumberRange, ValidationError
+from wtforms.validators import Optional, InputRequired, DataRequired, Length, EqualTo, NumberRange, ValidationError, Regexp
 from flask_mturk.models import User
 
 
 class NonValidatingSelectField(SelectField):
-    def pre_validate(self, form):
+    def pre_validate(self, form):  # Disable choices-check
         pass
 
 
@@ -25,23 +25,15 @@ class IntUnitForm(FlaskForm):
 class QualificationsSubForm(FlaskForm):
     selector = SelectField()
     first_select = NonValidatingSelectField()
-    second_select = NonValidatingSelectField()
+    second_select = NonValidatingSelectField(validators=[Regexp('^[\w]+$', message="Qualifications 3rd Select Value invalid")])
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
         super(QualificationsSubForm, self).__init__(*args, **kwargs)
 
     def validate_first_select(form, field):  # only allow Exists, NotExists, GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
-        print(field.data)
-        print("TODO - Custom Qualifications Validator First Selects")
         if(field.data not in ["Exists", "NotExists", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
-            raise ValidationError("You shouldn't manually change the options. Refer to the documentation if you want to add new options.")
-
-    def validate_second_select(form, field):  # Todo: only allow Letters, numbers, spaces (check 3166-format)
-        if(field.data):
-            print(field.data)
-            print("TODO - Custom Qualifications Validator Second Selects")
-        # raise ValidationError("You shouldn't manually change the options. Refer to the documentation if you want to add new options.")
+            raise ValidationError("Unable to validate the Qualification-Comparator called:" + '"' + field.data + '"')
 
 
 class QualificationsForm(FlaskForm):

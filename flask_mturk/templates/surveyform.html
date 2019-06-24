@@ -35,11 +35,6 @@
                         <label class='col-form-label'>Lege alle Qualifikationen fest (maximal 5)</label>
                     </div>
                 </div>
-                {#% for groups in form.qualifications_select.selects %}
-                    {% for group in groups %}
-                        {{ group }}
-                    {% endfor %}
-                {% endfor %#}
                 <div class="row">
                     <div class="col-auto">
                         <button type="button" id="add-select" class="btn btn-primary btn-sm">Qualifikation hinzufügen</button>
@@ -224,17 +219,14 @@
 </script>
 
 <script>
-    var qualifications = {{qualifications|tojson}}
     var all_options=[];
+    var qualifications = {{qualifications | tojson}}
     var percentage_interval = {{ qualification_percentage_interval }}
     var integer_list = {{ qualification_integer_list }}
-    var countrycodes = {{ cc_list |tojson}}
+    var countrycodes = {{ cc_list | tojson}}
     var sys_group = $("<optgroup label='System'></optgroup>")
     var custom_group =$("<optgroup label='Eigene'></optgroup>")
-
     
-    //for( key in {{cc_list}})
-    //    console.log(key)
     qualifications.forEach(function (obj) {
             option_type = obj.Type ? 'system' : 'custom'
             option = {
@@ -253,39 +245,11 @@
             else
          custom_group.append(option)
     })
-    initDOMs()
-
-    /*fetch("/qualification/all").then(function(response){
-        response.json().then(function(data){
-
-            data.forEach(function(obj) {
-                option_type= obj.Type ? 'system':'custom'
-                option = {
-                    'type':option_type,
-                    'id' : obj.QualificationTypeId,
-                    'name' : obj.Name,
-                    'comparators' : obj.Comparators,
-                    'value' : obj.Value,
-                    'default': obj.Default
-                }
-                all_options.push(option)
-
-                option = $("<option value="+obj.QualificationTypeId+">"+obj.Name+"</option>")
-                if(obj.Type=="system")
-                    sys_group.append(option)
-                else
-                    custom_group.append(option)
-
-            })
-            //console.log(all_options)
-            //CATCH NO RESPONSE  AND FLASH IT
-            initDOMs()
-        })
-    })*/
+    initDOMs()    
     
     function initDOMs(){
         var added=0
-        $("button#add-system").click(function(){ //Implement
+        $("button#add-system").click(function(){
             if(added==0){
                 all_options.forEach(function(obj){
                     if (obj.type=="custom")
@@ -305,7 +269,7 @@
             
         });
             
-        
+        // TODO: Hide visibility radios if no qualification was chosen
     
         $("button#add-select").click(function() { //reconstruct HTML to match wtform            
             $row = create_qual_row()
@@ -429,11 +393,6 @@
                 $comparator_select.val(options.default.comparator)
                 $value_select.val(options.default.val)
             }
-                //console.log(options.value)
-            
-            
-            
-
         }
     }
 </script>

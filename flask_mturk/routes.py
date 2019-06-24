@@ -1,7 +1,9 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request
-from flask_mturk import app, db, client, ISO3166
+from flask_mturk import app, db, client, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
 from flask_mturk.models import User
+import datetime
+
 
 all_qualifications = None
 balance = None
@@ -9,13 +11,6 @@ new_balance = client.get_account_balance()['AvailableBalance']
 if new_balance != balance:
     print(" Balance changed")
 balance = new_balance
-
-# qualifications = client.list_qualification_types(
-# Query="System Qualification",
-# MustBeRequestable=False,
-# MustBeOwnedByCaller=False,
-# MaxResults=10
-# )['QualificationTypes']
 
 
 def get_custom_qualifications():
@@ -25,34 +20,6 @@ def get_custom_qualifications():
     )['QualificationTypes']
 
 
-system_qualifications = [
-    {
-        'Type': 'system',
-        'Name': 'Worker_NumberHITsApproved',
-        'QualificationTypeId': '00000000000000000040',
-        'Comparators': [{'value': 'GreaterThan', 'name': 'größer als'}, {'value': 'GreaterThanOrEqualTo', 'name': 'größer als oder gleich'}, {'value': 'LessThan', 'name': 'kleiner als'},
-                        {'value': 'LessThanOrEqualTo', 'name': 'kleiner als oder gleich'}, {'value': 'EqualTo', 'name': 'gleich'}, {'value': 'NotEqualTo', 'name': 'nicht gleich'}],
-        'Value': 'IntegerValue',  # >=0
-        'Default': {"comparator": 'GreaterThan', "val": 100}
-    },
-    {
-        'Type': 'system',
-        'Name': 'Worker_Locale',
-        'QualificationTypeId': '00000000000000000071',
-        'Comparators': [{'value': 'EqualTo', 'name': 'gleich'}, {'value': 'NotEqualTo', 'name': 'nicht gleich'}, {'value': 'In', 'name': 'aus'}, {'value': 'NotIn', 'name': 'nicht aus'}],
-        'Value': 'LocaleValue',  # https://docs.aws.amazon.com/de_de/AWSMechTurk/latest/AWSMturkAPI/ApiReference_LocaleDataStructureArticle.html
-        'Default': {"comparator": 'EqualTo', 'val': 'US'}
-    },
-    {
-        'Type': 'system',
-        'Name': 'Worker_PercentAssignmentsApproved',
-        'QualificationTypeId': '000000000000000000L0',
-        'Comparators': [{'value': 'GreaterThan', 'name': 'größer als'}, {'value': 'GreaterThanOrEqualTo', 'name': 'größer als oder gleich'}, {'value': 'LessThan', 'name': 'kleiner als'},
-                        {'value': 'LessThanOrEqualTo', 'name': 'kleiner als oder gleich'}, {'value': 'EqualTo', 'name': 'gleich'}, {'value': 'NotEqualTo', 'name': 'nicht gleich'}],
-        'Value': 'PercentValue',  # 0<=x<=100
-        'Default': {"comparator": 'GreaterThanOrEqualTo', 'val': 95}
-    }
-]
 """  {
         'Name': 'Masters',
         'QualificationTypeId': '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6',  # Sandbox
@@ -66,15 +33,13 @@ system_qualifications = [
         'Val': 'IntegerValue'  # 1=true(required), 0=false(not required)
     },
 ]"""
-# print("\n")
-
-# print(system_qualifications)
 
 
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
     response = client.list_hits()["HITs"]
+    # TODO
     # sort = request.args.get('sort', 'hitstatus')
     # reverse = (request.args.get('direction', 'asc') == 'desc')
     # table = ItemTable(Item.get_sorted_by(response, sort, reverse),
@@ -87,8 +52,7 @@ def dashboard():
     return render_template('main/dashboard.html', surveys=response, balance=balance)  # , table=table)
 
 
-def flash_errors(form):
-    
+def flash_errors(form):    
     for field, errors in form.errors.items():
         print(errors)
         for error in errors:
@@ -105,19 +69,27 @@ def survey():
     percentage_interval = 5
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
 
-    all_qualifications = system_qualifications + get_custom_qualifications()
-    selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]  # we need to dynamically change the allowed options for the qual_select
-    selector_choices.append(('false', '---SELECT---'))  # select should not be a valid option?
+    # we need to dynamically change the allowed options for the qual_select
+    all_qualifications = SYSTEM_QUALIFICATION + get_custom_qualifications()
+    selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
     if request.method == "POST":
         for select in form.qualifications_select.selects:
             select.selector.choices = selector_choices
-            
+
     if form.validate_on_submit():
-        # print(form.adult_content.data)
-        # pd = form.password.data  # could hash
-        # user = User(username=form.username.data, email=form.email.data, password=pd)
+        # TODO
+        if(form.minibatch.data and form.qualification_name.data == ""):
+            now = datetime.datetime.now()
+            print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
+            pass
+        if (form.minibatch.data):
+            create_hit_minibatch()
+        else:
+            create_hit_standard()
+
+        # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)
         # db.session.commit()
 
@@ -128,7 +100,18 @@ def survey():
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
 
+def create_hit_minibatch():
+    # TODO
+    pass
+
+
+def create_hit_standard():
+    # TODO
+    pass
+
+
 def create_hit():
+    # TODO
     response = client.create_hit(
         MaxAssignments=123,
         AutoApprovalDelayInSeconds=123,
