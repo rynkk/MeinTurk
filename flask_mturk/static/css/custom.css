@@ -8,6 +8,23 @@
     cursor: default;
 }
 
+tr[role="row"], tr[role="row"]+tr{
+    cursor: pointer;
+}
+
+div.slider {
+    display: none;
+}
+ 
+table.dataTable tbody td.no-padding {
+    padding: 0;
+}
+/* Because DataTables+Bootstrap4 table-triped+childtables is bonkers*/
+.striped tbody .odd{
+    background-color:rgba(0, 0, 0, 0.05);
+}
+
+
 .hiddenRow {
     padding: 0 !important;
 }
