@@ -95,14 +95,15 @@
 
         var animation_running = 0;
         $('#project_table tbody tr[role="row"]').on('click', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row(tr);
-            var slider_child = row.child().last()
-            
+
             if(!animation_running) // wait for both animations to finish
                 animation_running = 1
             else
                 return
+
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            var slider_child = row.child().last()
 
             if ( tr.hasClass("shown") ) {                
                 // This row is already open - close it

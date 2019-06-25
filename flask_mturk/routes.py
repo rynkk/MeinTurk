@@ -10,7 +10,7 @@ balance = None
 new_balance = client.get_account_balance()['AvailableBalance']
 if new_balance != balance:
     print(" Balance changed")
-balance = new_balance
+    balance = new_balance
 
 
 def get_custom_qualifications():
