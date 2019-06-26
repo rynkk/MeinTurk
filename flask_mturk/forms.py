@@ -31,8 +31,8 @@ class QualificationsSubForm(FlaskForm):
         kwargs['csrf_enabled'] = False
         super(QualificationsSubForm, self).__init__(*args, **kwargs)
 
-    def validate_first_select(form, field):  # only allow Exists, NotExists, GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
-        if(field.data not in ["Exists", "NotExists", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
+    def validate_first_select(form, field):  # only allow Exists, DoesNotExist , GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
+        if(field.data not in ["Exists", "DoesNotExist ", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
             raise ValidationError("Unable to validate the Qualification-Comparator called:" + '"' + field.data + '"')
 
 
@@ -66,11 +66,11 @@ class SurveyForm(FlaskForm):
     # Worker speziell #
     must_be_master = RadioField('Bearbeiter müssen Master sein', description='Master sind Bearbeiter mit herausragender Bearbeitungsqualität', choices=[('yes', 'Ja'), ('no', 'Nein')],
                                 default='no', validators=[InputRequired()])
-    qualifications_select = FormField(QualificationsForm, 'Lege alle zusätzlichen Qualifikationen fest', description='Legt Qualifikationen fest, die ein Bearbeiter vorweisen muss, um diese Survey bearbeiten zu dürfen')    
+    qualifications_select = FormField(QualificationsForm, 'Lege alle zusätzlichen Qualifikationen fest', description='Legt Qualifikationen fest, die ein Bearbeiter vorweisen muss, um diese Survey bearbeiten zu dürfen')
     adult_content = BooleanField('Projekt enthält nicht jugendfreie Inhalte', default=False,
                                  validators=[Optional()])
-    project_visibility = RadioField('Sichtbarkeit', description='Sichtbar: Jeder kann die Survey sehen; Privat: Nur; Versteckt: Nur', default='public', validators=[InputRequired()],
-                                    choices=[('public', 'Öffentlich'), ('private', 'Privat'), ('hidden', 'Versteckt')])
+    project_visibility = RadioField('Sichtbarkeit', description='Sichtbar: Man kann die Survey ohne Qualifikation nicht annehmen; Privat: Weder annehmen noch Vorschau ansehen; Versteckt: Weder annehmen, noch Vorschau, noch überhaupt Sehen', default='Accept', validators=[InputRequired()],
+                                    choices=[('Accept', 'Öffentlich'), ('PreviewAndAccept ', 'Privat'), ('DiscoverPreviewAndAccept ', 'Versteckt')])
 
     # SurveyLayout #
 

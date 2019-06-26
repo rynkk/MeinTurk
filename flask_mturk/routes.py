@@ -44,21 +44,46 @@ def list_all_hits():
     return response
 
 
+# Helper function to convert timeunit to int #
+def seconds_from_string(string):
+    if string == 'minutes':
+        return 60
+    if string == 'hours':
+        return 60 * 60
+    if string == 'days':
+        return 24 * 60 * 60
+    return -1
 
-# print(list_all_hits())
-"""  {
-        'Name': 'Masters',
-        'QualificationTypeId': '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6',  # Sandbox
-        # 'QualificationTypeId': '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH',  # Production
-        'Comparators': ['Exists']
-    },
-    {
-        'Name': 'Worker_Adult',
-        'QualificationTypeId': '00000000000000000060',
-        'Comparators': ['EqualTo'],
-        'Val': 'IntegerValue'  # 1=true(required), 0=false(not required)
-    },
-]"""
+
+# Helper function to check if string is integer #
+def is_number(string):
+    try:
+        int(string)
+        return True
+    except ValueError:
+        return False
+
+
+# Helper function to create a qualification object from 3 values #
+# https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html #
+def create_qualification_object(id, comparator, value, restriction):
+    qual_obj = {}
+    qual_obj['QualificationTypeId'] = id
+    qual_obj['Comparator'] = comparator
+    qual_obj['ActionsGuarded'] = restriction
+
+    if value == "None":                   # we are done if second_select did not provide data
+        return qual_obj
+
+    if is_number(value):                       # int-> IntegerValues
+        int_array = [int(value)]
+        qual_obj['IntegerValues'] = int_array
+    else:                                       # string-> LocaleValues
+        locale_data = {}
+        locale_data['Country'] = value
+        locale_array = [locale_data]
+        qual_obj['LocaleValues'] = locale_array
+    return qual_obj
 
 
 @app.route("/")
@@ -98,23 +123,72 @@ def survey():
     # we need to dynamically change the allowed options for the qual_select
     all_qualifications = SYSTEM_QUALIFICATION + list_custom_qualifications()
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
-
+    # print(list_custom_qualifications())
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
     if request.method == "POST":
         for select in form.qualifications_select.selects:
             select.selector.choices = selector_choices
 
     if form.validate_on_submit():
+
+        # standard fields #
+
+        project_name = form.project_name.data
+        title = form.title.data
+        description = form.description.data
+        keywords = form.keywords.data
+        payment_per_worker = form.payment_per_worker.data
+        amount_workers = form.amount_workers.data
+        question_html = form.editor_field.data
+
+        # seconds fields #
+        time_till_expiration = form.time_till_expiration.int_field.data * seconds_from_string(form.time_till_expiration.unit_field.data)
+        allotted_time_per_worker = form.allotted_time_per_worker.int_field.data * seconds_from_string(form.allotted_time_per_worker.unit_field.data)
+        accept_pay_worker_after = form.accept_pay_worker_after.int_field.data * seconds_from_string(form.accept_pay_worker_after.unit_field.data)
+
+        # qualification fields #
+        # https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html#CustomQualificationsandSystemQualifications #
+        project_visibility = form.project_visibility.data
+
+        qualifications = []
+        for select in form.qualifications_select.selects:
+            obj = create_qualification_object(select.selector.data, select.first_select.data, select.second_select.data, project_visibility)
+            qualifications.append(obj)
+
+        # master and adult qualification fields #
+        must_be_master = form.must_be_master.data
+        if must_be_master:
+            id = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  # Sandbox
+            # id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH'  # Production
+            obj = create_qualification_object(id, 'Exists', "None", "DiscoverPreviewAndAccept")
+            qualifications.append(obj)
+
+        adult_content = form.adult_content.data
+        if adult_content:
+            id = '00000000000000000060'
+            obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
+            qualifications.append(obj)
+        
+        print(qualifications)
+        # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept" #
+
+        # conditional fields #
+        is_starting_instantly = form.starting_date_set.data
+        start_date = form.starting_date.data  # convert to right timezone
+        is_minibatched = form.minibatch.data
+        minibatch_qualification_name = form.qualification_name.data
+
+
+
         # TODO
-        if(form.minibatch.data and form.qualification_name.data == ""):
-            now = datetime.datetime.now()
-            print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
+        #if(form.minibatch.data and form.qualification_name.data == ""):
+        #    now = datetime.datetime.now()
+        #    print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
 
-        if (form.minibatch.data):
-            create_hit_minibatch()
-        else:
-            create_hit_standard()
-
+        #if (form.minibatch.data):
+        #    create_hit_minibatch()
+        #else:
+        #    create_hit_standard()
 
         # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)

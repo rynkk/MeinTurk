@@ -39,7 +39,6 @@ endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 # endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
 # connect to mturk client using AWS credentials
 
-# If results of >100 entries are necessary it might be necessary to use boto3-paginators
 client = boto3.client('mturk', endpoint_url=endpoint_url, region_name='us-east-1',
                       aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
                       aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
