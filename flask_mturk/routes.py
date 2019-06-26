@@ -13,13 +13,39 @@ if new_balance != balance:
     balance = new_balance
 
 
-def get_custom_qualifications():
-    return client.list_qualification_types(
+def list_custom_qualifications():
+    response = []
+    response_page = client.list_qualification_types(
         MustBeRequestable=False,
         MustBeOwnedByCaller=True,
-    )['QualificationTypes']
+    )
+    paginator = response_page.get('NextToken')
+    response += response_page['QualificationTypes']
+    while paginator is not None:
+        response_page = client.list_qualification_types(
+            NextToken=paginator,
+            MustBeRequestable=False,
+            MustBeOwnedByCaller=True,
+        )
+        paginator = response_page.get('NextToken')
+        response += response_page['QualificationTypes']
+    return response
 
 
+def list_all_hits():
+    response = []
+    response_page = client.list_hits()
+    paginator = response_page.get('NextToken')
+    response += response_page['HITs']
+    while paginator is not None:
+        response_page = client.list_hits(NextToken=paginator)
+        paginator = response_page.get('NextToken')
+        response += response_page['HITs']
+    return response
+
+
+
+# print(list_all_hits())
 """  {
         'Name': 'Masters',
         'QualificationTypeId': '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6',  # Sandbox
@@ -38,7 +64,7 @@ def get_custom_qualifications():
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
-    response = client.list_hits()["HITs"]
+    hits = list_all_hits()
     # TODO
     # sort = request.args.get('sort', 'hitstatus')
     # reverse = (request.args.get('direction', 'asc') == 'desc')
@@ -49,7 +75,7 @@ def dashboard():
     # items = [dict(Title="Ente", HITStatus="active"), dict(Title="Auto", HITStatus="outtabusinez")]
     # table = ItemTable(response)
     # print(response)
-    return render_template('main/dashboard.html', surveys=response, balance=balance)  # , table=table)
+    return render_template('main/dashboard.html', surveys=hits, balance=balance)  # , table=table)
 
 
 def flash_errors(form):    
@@ -70,7 +96,7 @@ def survey():
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
 
     # we need to dynamically change the allowed options for the qual_select
-    all_qualifications = SYSTEM_QUALIFICATION + get_custom_qualifications()
+    all_qualifications = SYSTEM_QUALIFICATION + list_custom_qualifications()
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
@@ -83,11 +109,12 @@ def survey():
         if(form.minibatch.data and form.qualification_name.data == ""):
             now = datetime.datetime.now()
             print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
-            pass
+
         if (form.minibatch.data):
             create_hit_minibatch()
         else:
             create_hit_standard()
+
 
         # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)
