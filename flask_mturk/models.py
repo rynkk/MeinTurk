@@ -32,5 +32,9 @@ class User(db.Model):
 
 """
 
-# class MicroHIT(db.Model):
-#    id = "test"
+
+class MicroHIT(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer)
+    parentId = db.Column(db.String)
+    amountWorkers = db.Column(db.Integer)

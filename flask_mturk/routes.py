@@ -3,6 +3,7 @@ from flask_mturk import app, db, client, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
 from flask_mturk.models import User
 import datetime
+import time
 
 
 all_qualifications = None
@@ -89,6 +90,8 @@ def create_qualification_object(id, comparator, value, restriction):
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
+    
+    print('getting')
     hits = list_all_hits()
     # TODO
     # sort = request.args.get('sort', 'hitstatus')
@@ -137,9 +140,34 @@ def survey():
         title = form.title.data
         description = form.description.data
         keywords = form.keywords.data
-        payment_per_worker = form.payment_per_worker.data
+        payment_per_worker = str(form.payment_per_worker.data)
         amount_workers = form.amount_workers.data
-        question_html = form.editor_field.data
+        
+        # question_html =  #form.editor_field.data
+        
+        html_question_value = """<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
+                                    <HTMLContent><![CDATA[
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+                                    <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+                                    </head>
+                                    <body>
+                                    <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'>
+                                    <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+                                    <h1>Answer this question</h1>
+                                    <p>asd</p>
+                                    <p><textarea name='comment' cols='80' rows='3'></textarea></p>
+                                    <p><input type='submit' id='submitButton' value='Submit' /></p></form>
+                                    <script language='Javascript'>turkSetAssignmentID();</script>
+                                    </body>
+                                    </html>
+                                    ]]>
+                                    </HTMLContent>
+                                    <FrameHeight>450</FrameHeight>
+                                </HTMLQuestion>"""
+        # html_question = HTMLQuestion(html_question_value, 0)
 
         # seconds fields #
         time_till_expiration = form.time_till_expiration.int_field.data * seconds_from_string(form.time_till_expiration.unit_field.data)
@@ -178,8 +206,6 @@ def survey():
         is_minibatched = form.minibatch.data
         minibatch_qualification_name = form.qualification_name.data
 
-
-
         # TODO
         #if(form.minibatch.data and form.qualification_name.data == ""):
         #    now = datetime.datetime.now()
@@ -189,6 +215,11 @@ def survey():
         #    create_hit_minibatch()
         #else:
         #    create_hit_standard()
+
+        response = create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, project_name, qualifications)
+        print(response)
+        print('posted')
+        # time.sleep(3)  # wait for mturk endpoint to process the hit
 
         # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
         # db.session.add(user)
@@ -211,82 +242,20 @@ def create_hit_standard():
     pass
 
 
-def create_hit():
+def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, reqanno, qualreq):
     # TODO
     response = client.create_hit(
-        MaxAssignments=123,
-        AutoApprovalDelayInSeconds=123,
-        LifetimeInSeconds=123,
-        AssignmentDurationInSeconds=123,
-        Reward='string',
-        Title='string',
-        Keywords='string',
-        Description='string',
-        Question='string',
-        RequesterAnnotation='string',
-        QualificationRequirements=[
-            {
-                'QualificationTypeId': 'string',
-                'Comparator': 'LessThan' | 'LessThanOrEqualTo' | 'GreaterThan' | 'GreaterThanOrEqualTo' | 'EqualTo' | 'NotEqualTo' | 'Exists' | 'DoesNotExist' | 'In' | 'NotIn',
-                'IntegerValues': [
-                    123,
-                ],
-                'LocaleValues': [
-                    {
-                        'Country': 'string',
-                        'Subdivision': 'string'
-                    },
-                ],
-                'RequiredToPreview': True | False,
-                'ActionsGuarded': 'Accept' | 'PreviewAndAccept' | 'DiscoverPreviewAndAccept'
-            },
-        ],
-        UniqueRequestToken='string',
-        AssignmentReviewPolicy={
-            'PolicyName': 'string',
-            'Parameters': [
-                {
-                    'Key': 'string',
-                    'Values': [
-                        'string',
-                    ],
-                    'MapEntries': [
-                        {
-                            'Key': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                    ]
-                },
-            ]
-        },
-        HITReviewPolicy={
-            'PolicyName': 'string',
-            'Parameters': [
-                {
-                    'Key': 'string',
-                    'Values': [
-                        'string',
-                    ],
-                    'MapEntries': [
-                        {
-                            'Key': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                    ]
-                },
-            ]
-        },
-        HITLayoutId='string',
-        HITLayoutParameters=[
-            {
-                'Name': 'string',
-                'Value': 'string'
-            },
-        ]
+        MaxAssignments=max,
+        AutoApprovalDelayInSeconds=autoacc,
+        LifetimeInSeconds=lifetime,
+        AssignmentDurationInSeconds=duration,
+        Reward=reward,
+        Title=title,
+        Keywords=keywords,
+        Description=desc,
+        Question=question,
+        RequesterAnnotation=reqanno,
+        QualificationRequirements=qualreq
     )
     return response
 
