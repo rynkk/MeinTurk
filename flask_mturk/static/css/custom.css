@@ -8,8 +8,11 @@
     cursor: default;
 }
 
-tr[role="row"], tr[role="row"]+tr{
+tbody tr[role="row"], tbody tr[role="row"]+tr{
     cursor: pointer;
+}
+tbody tr[role="row"]+tr{
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
 div.slider {
@@ -21,7 +24,10 @@ table.dataTable tbody td.no-padding {
 }
 /* Because DataTables+Bootstrap4 table-triped+childtables is bonkers*/
 .striped tbody .odd{
-    background-color:rgba(0, 0, 0, 0.05);
+    background-color:rgba(0, 0, 0, 0.3);
+}
+.striped tbody .even{
+    background-color:rgba(0, 0, 0, 0.3);
 }
 
 

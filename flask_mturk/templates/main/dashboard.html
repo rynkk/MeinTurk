@@ -74,8 +74,7 @@
 
         table.rows().every( function(){ //Now hide the last one (the slider)
             this.child().last().hide()
-        })
-       
+        })       
         
 
         $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {            
@@ -129,6 +128,41 @@
                 });
             }
         });
+        
+        function format_info ( data ) {
+            console.log(data)
+            // `d` is the original data object for the row
+            return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">'+
+                    '<tr>'+
+                        '<td>Description:</td>'+
+                        '<td>'+data['Description']+'</td>'+
+                        '<td style="width:1rem"></td>'+
+                        '<td>HITId:</td>'+
+                        '<td>'+data['HITId']+'</td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>Keywords:</td>'+
+                        '<td>'+data['Keywords']+'</td>'+
+                        '<td style="width:1rem"></td>'+
+                        '<td>HITStatus:</td>'+
+                        '<td>'+data['HITStatus']+'</td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>Reward:</td>'+
+                        '<td>$'+data['Reward']+'</td>'+
+                        '<td style="width:1rem"></td>'+
+                        '<td>HITReviewStatus:</td>'+
+                        '<td>'+data['HITReviewStatus']+'</td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>QualificationRequirements:</td>'+
+                        '<td>'+data['QualificationRequirements']+'</td>'+
+                        '<td style="width:1rem"></td>'+
+                        '<td>AssignmentsPending:</td>'+
+                        '<td>'+data['NumberOfAssignmentsPending']+'</td>'+
+                    '</tr>'+
+                '</table>');
+        }
 
         function format_slide ( data ) {
             // `d` is the original data object for the row
@@ -148,16 +182,6 @@
                     '</tr>'+
                 '</table>'+
             '</div>');
-        }
-
-    function format_info ( data ) {
-            // `d` is the original data object for the row
-            return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
-                    '<tr>'+
-                        '<td>THIS IS:</td>'+
-                        '<td>'+'a info'+'</td>'+
-                    '</tr>'+
-                '</table>');
         }
 
     } );
