@@ -1,40 +1,49 @@
 from flask_mturk import db
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+class MiniGroup(db.Model):
+    __tablename__ = 'mini_group'
+    group_id = db.Column(db.String, primary_key=True)
+    active = db.Column(db.Boolean, nullable=False)
+    layout = db.Column(db.String, nullable=False)
+    lifetime = db.Column(db.Integer, nullable=False)
+
+    def __init__(self, group_id, active, layout, lifetime):
+        self.group_id = group_id
+        self.active = active
+        self.layout = layout
+        self.lifetime = lifetime
 
     def __repr__(self):
-        return f"User('{self.id}', '{self.username}', '{self.email}', '{self.password}')"
+        return f"MiniGroup('{self.group_id}', '{self.active}', '{self.layout}')"
 
 
-"""class HIT(db.Model):
-    hitgroup = db.Column(db.Integer)
-    title = db.Column(db.String)
-    description = db.Column(db.String)
-    question = db.Column(db.Integer)
-    hitLayoutId = db.Column(db.Integer)
-    hitLayoutParameters = db.Column(db.Integer)
-    reward = db.Column(db.String)
-    AssignmentDurationInSeconds = db.Column(db.Integer)
-    LifetimeInSeconds = db.Column(db.Integer)
-    keywords = db.Column(db.String)
-    maxAssignments = db.Column(db.Integer)
-    autoApprovalDelayInSeconds = db.Column(db.Integer)
-    QualificationRequirements = db.Column(db.Integer)
-    AssignmentReviewPolicy = db.Column(db.Integer)
-    HITReviewPolicy = db.Column(db.Integer)
-    RequesterAnnotation = db.Column(db.String)
-    UniqueRequestToken = db.Column(db.String)
+class MiniLink(db.Model):
+    __tablename__ = 'mini_link'
+    group_id = db.Column(db.String, db.ForeignKey('mini_group.group_id'), primary_key=True, nullable=False)
+    active_hit = db.Column(db.String, db.ForeignKey('mini_hit.uid'), nullable=False)
 
-"""
+    def __init__(self, group_id, active_hit):
+        self.group_id = group_id
+        self.active_hit = active_hit
+
+    def __repr__(self):
+        return f"MiniLink('{self.group_id}', '{self.active_hit})"
 
 
-class MicroHIT(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.Integer)
-    parentId = db.Column(db.String)
-    amountWorkers = db.Column(db.Integer)
+class MiniHIT(db.Model):
+    __tablename__ = 'mini_hit'
+
+    parent_id = db.Column(db.String, db.ForeignKey('mini_group.group_id'), primary_key=True)
+    position = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.String)
+    workers = db.Column(db.Integer, nullable=False)
+
+    def __init__(self, id, position, workers, hit_id=None):
+        self.parent_id = id
+        self.position = position
+        self.uid = hit_id
+        self.workers = workers
+
+    def __repr__(self):
+        return f"MiniHIT('{self.uid}', '{self.parent_id}', '{self.position}', '{self.workers}')"

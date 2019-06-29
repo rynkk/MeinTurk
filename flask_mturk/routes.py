@@ -1,38 +1,12 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request
 from flask_mturk import app, db, client, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
-from flask_mturk.models import User
+from flask_mturk.models import MiniGroup, MiniHIT, MiniLink
 import datetime
 import time
 
 
-all_qualifications = None
-
-
-def get_balance():
-    client.get_account_balance()['AvailableBalance']
-
-
-def list_all_hits():
-    result = []
-    paginator = client.get_paginator('list_hits')
-    pages = paginator.paginate(PaginationConfig={'PageSize': 100})
-    for page in pages:
-        result += page['HITs']
-    return result
-
-
-def list_custom_qualifications():
-    result = []
-    paginator = client.get_paginator('list_qualification_types')
-    pages = paginator.paginate(
-        MustBeRequestable=False,
-        MustBeOwnedByCaller=True,
-        PaginationConfig={'PageSize': 100}
-    )
-    for page in pages:
-        result += page['QualificationTypes']
-    return result
+db.create_all()
 
 
 # Helper function to convert timeunit to int #
@@ -55,7 +29,7 @@ def is_number(string):
         return False
 
 
-# Helper function to create a qualification object from 3 values #
+# Helper function to create a qualification object from 4 values #
 # https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html #
 def create_qualification_object(id, comparator, value, restriction):
     qual_obj = {}
@@ -82,25 +56,15 @@ def create_qualification_object(id, comparator, value, restriction):
 def dashboard():
     balance = get_balance()
     hits = list_all_hits()
-    # TODO
-    # sort = request.args.get('sort', 'hitstatus')
-    # reverse = (request.args.get('direction', 'asc') == 'desc')
-    # table = ItemTable(Item.get_sorted_by(response, sort, reverse),
-    #                  sort_by=sort,
-    #                  sort_reverse=reverse)
-    # print(response["HITs"])
-    # items = [dict(Title="Ente", HITStatus="active"), dict(Title="Auto", HITStatus="outtabusinez")]
-    # table = ItemTable(response)
-    # print(response)
-    return render_template('main/dashboard.html', surveys=hits, balance=balance)  # , table=table)
+    return render_template('main/dashboard.html', surveys=hits, balance=balance)
 
 
-def flash_errors(form):    
+def flash_errors(form):
     for field, errors in form.errors.items():
         print(errors)
         for error in errors:
             flash(u"Error in the %s field - %s" % (
-                getattr(form, field).label.text,
+                getattr(form, field).short_name,
                 errors
             ))
 
@@ -125,39 +89,16 @@ def survey():
     if form.validate_on_submit():
 
         # standard fields #
-
         project_name = form.project_name.data
         title = form.title.data
         description = form.description.data
         keywords = form.keywords.data
         payment_per_worker = str(form.payment_per_worker.data)
         amount_workers = form.amount_workers.data
-        
-        # question_html =  #form.editor_field.data
-        
-        html_question_value = """<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
-        <HTMLContent><![CDATA[
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-        <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
-        </head>
-        <body>
-        <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'>
-        <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
-        <h1>Answer this question</h1>
-        <p>asd</p>
-        <p><textarea name='comment' cols='80' rows='3'></textarea></p>
-        <p><input type='submit' id='submitButton' value='Submit' /></p></form>
-        <script language='Javascript'>turkSetAssignmentID();</script>
-        </body>
-        </html>
-        ]]>
-        </HTMLContent>
-        <FrameHeight>450</FrameHeight>
-        </HTMLQuestion>"""
-        # html_question = HTMLQuestion(html_question_value, 0)
+
+        html_question_value = """<?xml version="1.0"?><HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd"><HTMLContent><![CDATA[<!DOCTYPE html><html><head><title>HIT</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script></head><body><form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="" name="assignmentId" id="assignmentId" />"""\
+                              + form.editor_field.data \
+                              + """<p class="text-center"><input type="submit" id="submitButton" class="btn btn-primary" value="Submit" /></p></form><script language="Javascript">turkSetAssignmentID();</script></body></html>]]></HTMLContent><FrameHeight>0</FrameHeight></HTMLQuestion>"""
 
         # seconds fields #
         time_till_expiration = form.time_till_expiration.int_field.data * seconds_from_string(form.time_till_expiration.unit_field.data)
@@ -175,7 +116,7 @@ def survey():
 
         # master and adult qualification fields #
         must_be_master = form.must_be_master.data
-        if must_be_master:
+        if must_be_master == "yes":
             id = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  # Sandbox
             # id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH'  # Production
             obj = create_qualification_object(id, 'Exists', "None", "DiscoverPreviewAndAccept")
@@ -186,32 +127,48 @@ def survey():
             id = '00000000000000000060'
             obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
-        
-        print(qualifications)
-        # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept" #
 
         # conditional fields #
-        is_starting_instantly = form.starting_date_set.data
-        start_date = form.starting_date.data  # convert to right timezone
+        # is_starting_instantly = form.starting_date_set.data # maybe get rid of ability to postpone releases
+        # start_date = form.starting_date.data  # convert to right timezone
         is_minibatched = form.minibatch.data
-        minibatch_qualification_name = form.qualification_name.data
+        # minibatch_qualification_name = form.qualification_name.data
 
         # TODO
-        #if(form.minibatch.data and form.qualification_name.data == ""):
+        # if(form.minibatch.data and form.qualification_name.data == ""):
         #    now = datetime.datetime.now()
         #    print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
 
-        #if (form.minibatch.data):
-        #    create_hit_minibatch()
-        #else:
-        #    create_hit_standard()
+        if(is_minibatched):
+            # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
+            hit_type_id = create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
+            hit_id = create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, project_name)['HIT']['HITId']
 
-        response = create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, project_name, qualifications)
+            minigroup = MiniGroup(hit_type_id, True, html_question_value, time_till_expiration)
+            minihit = MiniHIT(hit_type_id, 1, 9, hit_id)
+            minilink = MiniLink(hit_type_id, hit_id)
+            db.session.add(minigroup)
+            db.session.add(minihit)
+            db.session.add(minilink)
+            amount_workers_last_hit = amount_workers % 9
+            amount_workers_hits = amount_workers - amount_workers_last_hit - 9  # - 9 because we already created one HIT with 9 workers
+            print("HitType=", hit_type_id)
+            print("Workers total", amount_workers)
+            print("Workers minus the last hit", amount_workers_hits + 9)
+            print("Workers last hit", amount_workers_last_hit)
+            print("adding active minihit to DB")
+            amount_full_hits = int(amount_workers_hits / 9)
+            for i in range(amount_full_hits):
+                print("adding inactive minihit", i + 1, "to DB")
+                db.session.add(MiniHIT(hit_type_id, i + 2, 9))
+
+            print("adding last minihit with", amount_workers_last_hit, "workers")
+            db.session.add(MiniHIT(hit_type_id, amount_full_hits + 2, amount_workers_last_hit))
+            db.session.commit()
+
+        else:
+            create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications, project_name)
         # time.sleep(3)  # wait for mturk endpoint to process the hit
-
-        # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
-        # db.session.add(user)
-        # db.session.commit()
 
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
         return redirect(url_for('dashboard'))
@@ -230,8 +187,7 @@ def create_hit_standard():
     pass
 
 
-def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, reqanno, qualreq):
-    # TODO
+def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq, reqanno=""):
     response = client.create_hit(
         MaxAssignments=max,
         AutoApprovalDelayInSeconds=autoacc,
@@ -248,9 +204,51 @@ def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, 
     return response
 
 
-def split_hit(HIT):
-    return
+def create_hit_with_type(hittypeid, question, lifetime, max, reqanno=""):
+    response = client.create_hit_with_hit_type(
+        HITTypeId=hittypeid,
+        MaxAssignments=max,
+        LifetimeInSeconds=lifetime,
+        Question=question,
+        RequesterAnnotation=reqanno
+    )
+    return response
 
 
-def db_add_microhits(assignments):
-    return
+def create_hit_type(autoapp, duration, reward, title, keywords, desc, qualreq):
+    response = client.create_hit_type(
+        AutoApprovalDelayInSeconds=autoapp,
+        AssignmentDurationInSeconds=duration,
+        Reward=reward,
+        Title=title,
+        Keywords=keywords,
+        Description=desc,
+        QualificationRequirements=qualreq
+    )
+    return response['HITTypeId']
+
+
+def get_balance():
+    return client.get_account_balance()['AvailableBalance']
+
+
+def list_all_hits():
+    result = []
+    paginator = client.get_paginator('list_hits')
+    pages = paginator.paginate(PaginationConfig={'PageSize': 100})
+    for page in pages:
+        result += page['HITs']
+    return result
+
+
+def list_custom_qualifications():
+    result = []
+    paginator = client.get_paginator('list_qualification_types')
+    pages = paginator.paginate(
+        MustBeRequestable=False,
+        MustBeOwnedByCaller=True,
+        PaginationConfig={'PageSize': 100}
+    )
+    for page in pages:
+        result += page['QualificationTypes']
+    return result
