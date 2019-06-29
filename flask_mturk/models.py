@@ -15,7 +15,7 @@ class MiniGroup(db.Model):
         self.lifetime = lifetime
 
     def __repr__(self):
-        return f"MiniGroup('{self.group_id}', '{self.active}', '{self.layout}')"
+        return f"MiniGroup('{self.group_id}', '{self.active}', 'someBigQuestion')"  # '{self.layout}')"
 
 
 class MiniLink(db.Model):

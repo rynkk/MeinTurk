@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-##TODO Stand 29.06.2019 (WIP)
+## TODO Stand 29.06.2019 (WIP)
 
 ### Frontend
  1. Priorität Erforderlich 
@@ -35,10 +35,10 @@ WIP bash-script
 
 ### Backend
  1. Priorität Erforderlich 
+  * Schedulerfunktion testen
   * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
   * Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
   * Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden
-  * Füge einen Scheduler für die Datenbank ein (MiniHITs)
  2. Priorität Hoch
   * von Werkzeug auf uWSGI umsteigen
  3. Priorität Mittel

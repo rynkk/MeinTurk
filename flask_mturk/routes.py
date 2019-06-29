@@ -4,9 +4,48 @@ from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormFie
 from flask_mturk.models import MiniGroup, MiniHIT, MiniLink
 import datetime
 import time
+from apscheduler.schedulers.background import BackgroundScheduler
+
+
+def update_mini_hits():
+    query = db.session.query(MiniGroup, MiniLink, MiniHIT.uid, MiniHIT.position)\
+        .join(MiniLink, MiniGroup.group_id == MiniLink.group_id)\
+        .join(MiniHIT, MiniLink.active_hit == MiniHIT.uid)\
+        .filter(MiniGroup.active).all()
+    for row in query:
+        print(row)        
+        active_hit_uid = row.uid  # MiniHIT.uid == HITTypeId
+        active_hit = get_hit(active_hit_uid)
+        
+        if(active_hit['NumberOfAssignmentsAvailable'] == 0):
+            print("Assignment done, creating new one")
+            new_position = row.position + 1
+            # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
+            hittypeid = row.MiniGroup.group_id
+            question = row.MiniGroup.layout
+            lifetime = row.MiniGroup.lifetime
+
+            # Getting the new MiniHIT-DB-entry
+            new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position and MiniHIT.group_id == hittypeid).first()
+            if(new_mini_hit is None):
+                MiniGroup.active = False
+                db.session.commit()
+            workers = new_mini_hit.workers
+
+            # Creating a new HIT with the assigned attributes and saving its ID
+            new_hit_id = create_hit_with_type(hittypeid, question, lifetime, workers)['HITId']
+
+            # Using saved ID to update DB-schema
+            new_mini_hit.uid = new_hit_id
+            row.MiniLink.active_hit = new_hit_id
+            db.session.commit()
 
 
 db.create_all()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(update_mini_hits, 'interval', seconds=30)
+scheduler.start()
 
 
 # Helper function to convert timeunit to int #
@@ -185,6 +224,11 @@ def create_hit_minibatch():
 def create_hit_standard():
     # TODO
     pass
+
+
+def get_hit(hitid):
+    response = client.get_hit(HITId=hitid)['HIT']
+    return response
 
 
 def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq, reqanno=""):
