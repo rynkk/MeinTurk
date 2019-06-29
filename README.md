@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 29.06.2019 (WIP)
+## TODO Stand 29.06.2019 20:50(WIP)
 
 ### Frontend
  1. Priorität Erforderlich 
@@ -26,7 +26,7 @@ WIP bash-script
  2. Priorität Hoch 
   * Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.
  3. Priorität Mittel
-  * Zeige akzeptierte Worker hinter Fortschritt-Spalte an
+  * ~~Zeige akzeptierte Worker hinter Fortschritt-Spalte an~~ Anm: Pending hinter Fortschritt
  4. Priorität Niedrig 
   * Layout aktualisieren und gestrichene Funktionen entfernen
   * Mache HIT-OverviewChild im Dashboard suchbar

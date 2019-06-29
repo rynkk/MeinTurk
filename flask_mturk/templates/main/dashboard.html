@@ -28,8 +28,9 @@
                 <th>Ende</th>
             </tr>
         </thead>
-    </table>
-    <script>        
+    </table>    
+</div>
+<script>        
     $(document).ready( function () {
         surveys = {{ surveys | tojson }};
 
@@ -47,8 +48,9 @@
                     "render": function(data, type, row){
                         noAssComplete = row["NumberOfAssignmentsCompleted"]
                         noAssMax = row["MaxAssignments"]
+                        noAssPending = row['NumberOfAssignmentsPending']
                         percentComplete = noAssComplete/noAssMax*100
-                        return noAssComplete+"/"+noAssMax+" ("+percentComplete+"%)"
+                        return noAssComplete+"/"+noAssMax+" ("+percentComplete+"%)P:"+noAssPending
                     },
                     "type": "amount-complete"
                 },
@@ -186,7 +188,5 @@
 
     } );
     </script>
-</div>
-
 {% endblock body %}
 
