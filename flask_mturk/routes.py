@@ -7,42 +7,32 @@ import time
 
 
 all_qualifications = None
-balance = None
-new_balance = client.get_account_balance()['AvailableBalance']
-if new_balance != balance:
-    print(" Balance changed")
-    balance = new_balance
 
 
-def list_custom_qualifications():
-    response = []
-    response_page = client.list_qualification_types(
-        MustBeRequestable=False,
-        MustBeOwnedByCaller=True,
-    )
-    paginator = response_page.get('NextToken')
-    response += response_page['QualificationTypes']
-    while paginator is not None:
-        response_page = client.list_qualification_types(
-            NextToken=paginator,
-            MustBeRequestable=False,
-            MustBeOwnedByCaller=True,
-        )
-        paginator = response_page.get('NextToken')
-        response += response_page['QualificationTypes']
-    return response
+def get_balance():
+    client.get_account_balance()['AvailableBalance']
 
 
 def list_all_hits():
-    response = []
-    response_page = client.list_hits()
-    paginator = response_page.get('NextToken')
-    response += response_page['HITs']
-    while paginator is not None:
-        response_page = client.list_hits(NextToken=paginator)
-        paginator = response_page.get('NextToken')
-        response += response_page['HITs']
-    return response
+    result = []
+    paginator = client.get_paginator('list_hits')
+    pages = paginator.paginate(PaginationConfig={'PageSize': 100})
+    for page in pages:
+        result += page['HITs']
+    return result
+
+
+def list_custom_qualifications():
+    result = []
+    paginator = client.get_paginator('list_qualification_types')
+    pages = paginator.paginate(
+        MustBeRequestable=False,
+        MustBeOwnedByCaller=True,
+        PaginationConfig={'PageSize': 100}
+    )
+    for page in pages:
+        result += page['QualificationTypes']
+    return result
 
 
 # Helper function to convert timeunit to int #
@@ -90,8 +80,7 @@ def create_qualification_object(id, comparator, value, restriction):
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
-    
-    print('getting')
+    balance = get_balance()
     hits = list_all_hits()
     # TODO
     # sort = request.args.get('sort', 'hitstatus')
@@ -122,11 +111,12 @@ def survey():
 
     percentage_interval = 5
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+    balance = get_balance()
 
     # we need to dynamically change the allowed options for the qual_select
     all_qualifications = SYSTEM_QUALIFICATION + list_custom_qualifications()
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
-    # print(list_custom_qualifications())
+
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
     if request.method == "POST":
         for select in form.qualifications_select.selects:
@@ -146,27 +136,27 @@ def survey():
         # question_html =  #form.editor_field.data
         
         html_question_value = """<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
-                                    <HTMLContent><![CDATA[
-                                    <!DOCTYPE html>
-                                    <html>
-                                    <head>
-                                    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-                                    <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
-                                    </head>
-                                    <body>
-                                    <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'>
-                                    <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
-                                    <h1>Answer this question</h1>
-                                    <p>asd</p>
-                                    <p><textarea name='comment' cols='80' rows='3'></textarea></p>
-                                    <p><input type='submit' id='submitButton' value='Submit' /></p></form>
-                                    <script language='Javascript'>turkSetAssignmentID();</script>
-                                    </body>
-                                    </html>
-                                    ]]>
-                                    </HTMLContent>
-                                    <FrameHeight>450</FrameHeight>
-                                </HTMLQuestion>"""
+        <HTMLContent><![CDATA[
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+        <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+        </head>
+        <body>
+        <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'>
+        <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+        <h1>Answer this question</h1>
+        <p>asd</p>
+        <p><textarea name='comment' cols='80' rows='3'></textarea></p>
+        <p><input type='submit' id='submitButton' value='Submit' /></p></form>
+        <script language='Javascript'>turkSetAssignmentID();</script>
+        </body>
+        </html>
+        ]]>
+        </HTMLContent>
+        <FrameHeight>450</FrameHeight>
+        </HTMLQuestion>"""
         # html_question = HTMLQuestion(html_question_value, 0)
 
         # seconds fields #
@@ -217,8 +207,6 @@ def survey():
         #    create_hit_standard()
 
         response = create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, project_name, qualifications)
-        print(response)
-        print('posted')
         # time.sleep(3)  # wait for mturk endpoint to process the hit
 
         # hit = HIT(username=form.username.data, email=form.email.data, password=pd)
