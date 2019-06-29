@@ -80,3 +80,7 @@ class SurveyForm(FlaskForm):
     submit = SubmitField('Survey erstellen')
 
     pages = ['Allgemein', 'Worker allg.', 'Worker speziell', 'SurveyLayout', 'Finish']
+
+    def validate_minibatch(form, field):
+        if field.data and form.amount_workers.data < 10:
+            raise ValidationError("Stop trying to trick the validation! You can only minibatch with more that 9 workers!")
