@@ -20,7 +20,7 @@ class MiniGroup(db.Model):
 
 class MiniLink(db.Model):
     __tablename__ = 'mini_link'
-    group_id = db.Column(db.String, db.ForeignKey('mini_group.group_id'), primary_key=True, nullable=False)
+    group_id = db.Column(db.String, db.ForeignKey('mini_group.group_id', ondelete="CASCADE"), primary_key=True, nullable=False)
     active_hit = db.Column(db.String, db.ForeignKey('mini_hit.uid'), nullable=False)
 
     def __init__(self, group_id, active_hit):
@@ -34,7 +34,7 @@ class MiniLink(db.Model):
 class MiniHIT(db.Model):
     __tablename__ = 'mini_hit'
 
-    parent_id = db.Column(db.String, db.ForeignKey('mini_group.group_id'), primary_key=True)
+    parent_id = db.Column(db.String, db.ForeignKey('mini_group.group_id', ondelete="CASCADE"), primary_key=True)
     position = db.Column(db.Integer, primary_key=True)
     uid = db.Column(db.String)
     workers = db.Column(db.Integer, nullable=False)

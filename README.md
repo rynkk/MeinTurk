@@ -35,7 +35,7 @@ WIP bash-script
 
 ### Backend
  #### 1. Priorität Erforderlich 
-  * Schedulerfunktion testen
+  * ~~Schedulerfunktion testen~~
   * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
   * Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
   * Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden
