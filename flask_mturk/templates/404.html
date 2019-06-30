@@ -1,0 +1,35 @@
+
+<html>
+    <head>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}" >
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/404.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/all.css') }}" />
+    </head>
+
+    <body>
+        <div class="center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="error-template">
+                            <h1>Oops!</h1>
+                            <h2>404 Not Found</h2>
+                            <div class="error-details">
+                                <p>Sorry, an error has occured, Requested page not found!</p>
+                            </div>
+                            <div class="error-actions">
+                                <a href="{{ url_for('dashboard')}}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-home"></i>
+                                    Take Me Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_ckeditor import CKEditor
 import boto3
 import os
+from .converters import IDConverter
 
 app = Flask(__name__)
 
@@ -10,6 +11,7 @@ app.config['SECRET_KEY'] = 'f03b64dca19c7e6e86b419e8c3abf4db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///batches.db'
 
 
+app.url_map.converters['awsid'] = IDConverter
 # app.config['CKEDITOR_SERVE_LOCAL'] = True
 # app.config['CKEDITOR_EXTRA_PLUGINS'] = ['codemirror']
 app.config['CKEDITOR_HEIGHT'] = 600
