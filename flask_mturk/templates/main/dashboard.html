@@ -13,24 +13,23 @@
 {% endblock head %}
 
 {% block body %}
+<div id="modal"></div>
 <div class="container-fluid container-big">
     <table id="project_table" class="table striped" style="width:100%">
         <thead>
             <tr>
-                <th rowspan="2"></th>
-                <th rowspan="2">Name</th>
-                <th rowspan="2">Prozent</th>
-                <th colspan="2">Datum</th>
-                <th rowspan="2"></th>
-            </tr>
-            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Fortschritt</th>
                 <th>Start</th>
                 <th>Ende</th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
     </table>    
 </div>
-<script>        
+<script>
     $(document).ready( function () {
         surveys = {{ surveys | tojson }};
 
@@ -38,7 +37,7 @@
             data: surveys,
             "columns": [ 
                 {   "data": null,
-                    //defaultContent: "N/A",
+                    defaultContent: "",
                     "searchable": false,
                     "orderable": false,
                 },
@@ -46,9 +45,9 @@
                 {
                     "data": null,
                     "render": function(data, type, row){
-                        noAssComplete = row["NumberOfAssignmentsCompleted"]
-                        noAssMax = row["MaxAssignments"]
-                        noAssPending = row['NumberOfAssignmentsPending']
+                        noAssComplete = row.NumberOfAssignmentsCompleted
+                        noAssMax = row.MaxAssignments
+                        noAssPending = row.NumberOfAssignmentsPending
                         percentComplete = noAssComplete/noAssMax*100
                         return noAssComplete+"/"+noAssMax+" ("+percentComplete+"%)P:"+noAssPending
                     },
@@ -56,16 +55,24 @@
                 },
                 { "data": "CreationTime" },
                 { "data": "Expiration" } ,
+                { 
+                    "data": null,
+                    "visible": false,
+                    "render": function(data, type, row){  //This makes the infochild searchable, too
+                        return data.Description + data.HITStatus + data.Keywords + data.HITReviewStatus
+                    }
+                },
                 {
                     "data": null,
                     defaultContent: "N/A",
-                    "orderable": false
+                    "orderable": false,
+                    "searchable": false
                 } 
             ],
             "order": [[ 1, 'asc' ]]
         });
 
-        table.rows().every( function(){ //Create 2 child rows and show BOTH( API restriction)
+        table.rows().every( function(){ //Create 2 child rows and show BOTH(API restriction)
             this.child(
                     [
                         format_info(this.data()), // maybe change so that not added into td
@@ -75,9 +82,12 @@
         })
 
         table.rows().every( function(){ //Now hide the last one (the slider)
+            //console.log(this.data())
+            //TODO: Logic that summarizes minihits
             this.child().last().hide()
         })       
         
+        console.log($( 'selector', table.rows().nodes() ))
 
         $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {            
             percentage = data.substring(data.indexOf("(")+1, data.indexOf(")")) // isolate percentage
@@ -132,7 +142,7 @@
         });
         
         function format_info ( data ) {
-            console.log(data)
+            // console.log(data)
             // `d` is the original data object for the row
             return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">'+
                     '<tr>'+
@@ -189,4 +199,3 @@
     } );
     </script>
 {% endblock body %}
-
