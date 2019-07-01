@@ -10,6 +10,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
+    #for row in db.session.query(MiniHIT).all():
+    #    print(row)
     balance = get_balance()
     hits = list_all_hits()
     return render_template('main/dashboard.html', surveys=hits, balance=balance)
@@ -114,34 +116,46 @@ def survey():
 
         else:
             create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications, project_name)
-        # time.sleep(3)  # wait for mturk endpoint to process the hit
-
-        # flash(f'Survey erstellt für {form.username.data}!', 'success')
         return redirect(url_for('dashboard'))
     else:
         flash_errors(form)
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
 
-@app.route("/dashboard/deletebatch/<awsid:typeid>")
+@app.route("/cleardb")
+def cleardb():
+    db.drop_all()
+    db.create_all()
+    return "cleared"
+
+
+@app.route("/deletebatch/<awsid:typeid>")
 def deletebatch(typeid):
     query = db.session.query(MiniGroup, MiniHIT).filter(MiniGroup.group_id == typeid and MiniHIT.parent_id == typeid).all()
-    if query is None:
+    if not query:
         return "No such Batch"
-
-    group_to_delete = query.first().MiniGroup
+    group_to_delete = query[0].MiniGroup
     hits_to_delete = []
     for row in query:
+        if(row.MiniHIT.uid is None):
+            print("HIT was not created yet --- Skipping")
+            continue
         hit = get_hit(row.MiniHIT.uid)
-        # print(hit)
-        if(hit['HITStatus'] not in ['Reviewable', 'Reviewed']):
+        if(hit['HITStatus'] == 'Disposed'):
+            print("HIT exists locally but not in MTURK-Database --- Skipping")
+            continue
+        
+        if(hit['HITStatus'] in ['Reviewable', 'Reviewed']):
+            print("Queueing %s for deletion" % (row.MiniHIT.uid))
+            hits_to_delete.append(row.MiniHIT.uid)
+        else:
             print("Tried to delete Batch with active HITs --- Aborting")
             return "Abort"
-        print(row.MiniHIT.uid)
-        hits_to_delete.append(row.MiniHIT.uid)
 
-    db.session.delete(group_to_delete)
+    print("Deleting queued HITs from MTURK-Database")
     delete_hits(hits_to_delete)
+    print("Deleting HITs from local Database")
+    db.session.delete(group_to_delete)
     db.session.commit()
     return "OK"
 
@@ -149,9 +163,8 @@ def deletebatch(typeid):
 @app.route('/dashboard/deletehit/<awsid:id>')
 def deletehit(id):
     query = db.session.query(MiniHIT).filter(MiniHIT.uid == id).first()
-    print(query)
+
     if(query is not None):
-        # id refers to a minihit
         print("Deleting MiniHit")
         return "MiniHIT deleted"
     try:
@@ -190,7 +203,7 @@ def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, 
         Question=question,
         RequesterAnnotation=reqanno,
         QualificationRequirements=qualreq
-    )
+    )['HIT']
     return response
 
 
@@ -236,7 +249,6 @@ def delete_hit(hit_id):
 
 
 def delete_hits(hit_ids):
-    print(hit_ids)
     for id in hit_ids:
         delete_hit(id)
 
@@ -265,12 +277,16 @@ def expire_hit(hit_id):
 
 def forcedelete_hit(hit_id):
     expire_hit(hit_id)
-    time.sleep(2)
+    time.sleep(5)
     delete_hit(hit_id)
 
 
+@app.route("/forcedelete_all_hits")
 def forcedelete_all_hits():
     all_hits = list_all_hits()
+    if(not all_hits):
+        return "nothing to delete"
+
     print("**********EXPIRING HITS**********")
     for obj in all_hits:
         print("EXPIRING HIT with ID:", obj['HITId'])
@@ -283,6 +299,8 @@ def forcedelete_all_hits():
             delete_hit(obj['HITId'])
         else:
             print("ERROR: HIT %s IS NOT EXPIRED" % (obj['HITId']))
+
+    return "Done"
 
 
 def flash_errors(form):
@@ -338,44 +356,47 @@ def create_qualification_object(id, comparator, value, restriction):
 
 
 def update_mini_hits():  # TODO make old MiniHIT paused
-    query = db.session.query(MiniGroup, MiniLink, MiniHIT.uid, MiniHIT.position)\
-        .join(MiniLink, MiniGroup.group_id == MiniLink.group_id)\
-        .join(MiniHIT, MiniLink.active_hit == MiniHIT.uid)\
+    query = db.session.query(MiniGroup, MiniLink, MiniHIT)\
+        .filter(MiniGroup.group_id == MiniLink.group_id)\
+        .filter(MiniLink.active_hit == MiniHIT.uid)\
         .filter(MiniGroup.active).all()
+    
     for row in query:
-        active_hit_uid = row.uid  # MiniHIT.uid == HITTypeId
+        active_hit_uid = row.MiniHIT.uid  # MiniHIT.uid == HITTypeId
         active_hit = get_hit(active_hit_uid)
+        # print("Checking %s with HITStatus %s, from Group %s " % (active_hit_uid, active_hit['HITStatus'], row.MiniGroup.group_id))
 
         if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
-            print("Assignment done, creating new one")
-            new_position = row.position + 1
+            # print("Assignment done, creating new one")
+            new_position = row.MiniHIT.position + 1
             # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
             hittypeid = row.MiniGroup.group_id
             question = row.MiniGroup.layout
             lifetime = row.MiniGroup.lifetime
 
             # Getting the new MiniHIT-DB-entry
-            new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position and MiniHIT.group_id == hittypeid).first()
+            new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position)\
+                                        .filter(MiniHIT.parent_id == hittypeid)\
+                                        .first()
             if(new_mini_hit is None):
-                print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
+                # print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
-                db.session.commit()
-                return
+                continue
             workers = new_mini_hit.workers
 
             # Creating a new HIT with the assigned attributes and saving its ID
             new_hit_id = create_hit_with_type(hittypeid, question, lifetime, workers, "batched")['HITId']
-
+            # print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.uid = new_hit_id
             row.MiniLink.active_hit = new_hit_id
-            db.session.commit()
+        db.session.commit()
 
 
-# forcedelete_all_hits()
-# db.drop_all()
 db.create_all()
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(update_mini_hits, 'interval', seconds=5)
-scheduler.start()
+import os
+if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created once, else it will run twice which will screw up the database
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(update_mini_hits, 'interval', seconds=5)
+    scheduler.start()
