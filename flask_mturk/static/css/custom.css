@@ -8,7 +8,7 @@
     cursor: default;
 }
 
-tbody tr[role="row"], tbody tr[role="row"]+tr{
+tbody tr.batched[role="row"], tbody tr.batched[role="row"]+tr{
     cursor: pointer;
 }
 tbody tr[role="row"]+tr{

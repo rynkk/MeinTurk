@@ -10,11 +10,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
-    #for row in db.session.query(MiniHIT).all():
-    #    print(row)
     balance = get_balance()
     hits = list_all_hits()
-    return render_template('main/dashboard.html', surveys=hits, balance=balance)
+    groups = MiniGroup.query.all()
+
+    order = []
+    for group in groups:
+        batch = {'batch_id': group.group_id, 'hits': []}
+        for hit in group.minihits:
+            batch['hits'].append({'id': hit.uid, 'workers': hit.workers, 'position': hit.position})
+        order.append(batch)
+    # TODO: Outsource logic to client?
+
+    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -90,7 +98,7 @@ def survey():
         if(is_minibatched):
             # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
             hit_type_id = create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            hit_id = create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, "batched")['HITId']
+            hit_id = create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batched')['HITId']
 
             minigroup = MiniGroup(hit_type_id, True, html_question_value, time_till_expiration)
             minihit = MiniHIT(hit_type_id, 1, 9, hit_id)
@@ -115,7 +123,10 @@ def survey():
             db.session.commit()
 
         else:
-            create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications, project_name)
+            create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
+        # time.sleep(3)  # wait for mturk endpoint to process the hit
+
+        # flash(f'Survey erstellt für {form.username.data}!', 'success')
         return redirect(url_for('dashboard'))
     else:
         flash_errors(form)
@@ -144,7 +155,7 @@ def deletebatch(typeid):
         if(hit['HITStatus'] == 'Disposed'):
             print("HIT exists locally but not in MTURK-Database --- Skipping")
             continue
-        
+
         if(hit['HITStatus'] in ['Reviewable', 'Reviewed']):
             print("Queueing %s for deletion" % (row.MiniHIT.uid))
             hits_to_delete.append(row.MiniHIT.uid)
@@ -190,7 +201,7 @@ def get_hit(hitid):
     return response
 
 
-def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq, reqanno=""):
+def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):
     response = client.create_hit(
         MaxAssignments=max,
         AutoApprovalDelayInSeconds=autoacc,
@@ -201,7 +212,6 @@ def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, 
         Keywords=keywords,
         Description=desc,
         Question=question,
-        RequesterAnnotation=reqanno,
         QualificationRequirements=qualreq
     )['HIT']
     return response
@@ -282,8 +292,9 @@ def forcedelete_hit(hit_id):
 
 
 @app.route("/forcedelete_all_hits")
-def forcedelete_all_hits():
+def forcedelete_all_hits(retry=False):
     all_hits = list_all_hits()
+    missed_one = False
     if(not all_hits):
         return "nothing to delete"
 
@@ -297,9 +308,16 @@ def forcedelete_all_hits():
         if(obj['HITStatus'] == 'Reviewable'):
             print("Deleteing HIT with ID:", obj['HITId'])
             delete_hit(obj['HITId'])
-        else:
-            print("ERROR: HIT %s IS NOT EXPIRED" % (obj['HITId']))
+            continue
 
+        if(retry):
+            print("ERROR: HIT %s IS NOT EXPIRED --- ABORTING AFTER THIS TRY)" % (obj['HITId']))
+            continue
+
+        print("ERROR: HIT %s IS NOT EXPIRED --- RETRYING AFTER PROCESS IS FINISHED" % (obj['HITId']))
+        missed_one = True
+    if(missed_one):
+        return forcedelete_all_hits(True)
     return "Done"
 
 
@@ -360,14 +378,14 @@ def update_mini_hits():  # TODO make old MiniHIT paused
         .filter(MiniGroup.group_id == MiniLink.group_id)\
         .filter(MiniLink.active_hit == MiniHIT.uid)\
         .filter(MiniGroup.active).all()
-    
+
     for row in query:
         active_hit_uid = row.MiniHIT.uid  # MiniHIT.uid == HITTypeId
         active_hit = get_hit(active_hit_uid)
-        # print("Checking %s with HITStatus %s, from Group %s " % (active_hit_uid, active_hit['HITStatus'], row.MiniGroup.group_id))
+        print("Checking %s with HITStatus %s, from Group %s " % (active_hit_uid, active_hit['HITStatus'], row.MiniGroup.group_id))
 
         if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
-            # print("Assignment done, creating new one")
+            print("Assignment done, creating new one")
             new_position = row.MiniHIT.position + 1
             # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
             hittypeid = row.MiniGroup.group_id
@@ -379,18 +397,18 @@ def update_mini_hits():  # TODO make old MiniHIT paused
                                         .filter(MiniHIT.parent_id == hittypeid)\
                                         .first()
             if(new_mini_hit is None):
-                # print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
+                print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
                 continue
             workers = new_mini_hit.workers
 
             # Creating a new HIT with the assigned attributes and saving its ID
-            new_hit_id = create_hit_with_type(hittypeid, question, lifetime, workers, "batched")['HITId']
-            # print("Creating hit with id", new_hit_id)
+            new_hit_id = create_hit_with_type(hittypeid, question, lifetime, workers, 'batched')['HITId']
+            print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.uid = new_hit_id
             row.MiniLink.active_hit = new_hit_id
-        db.session.commit()
+    db.session.commit()
 
 
 db.create_all()

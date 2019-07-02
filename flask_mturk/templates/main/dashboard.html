@@ -32,9 +32,133 @@
 <script>
     $(document).ready( function () {
         surveys = {{ surveys | tojson }};
+        ordering = {{ ordering | tojson }};
+    });
+    
+    $(document).ready( function () {
+
+
+        render_surveys=[]
+        
+        for(hit_index in surveys){ // Add HITs that are not to be batched to 
+            hit = surveys[hit_index]
+            if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batched'))
+                continue
+            hit.batched = false           
+            render_surveys.push(hit)
+        }
+        
+        ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
+            minihits = get_elements_with_value(surveys, "HITTypeId", item.batch_id)
+            console.log(item.hits)
+            hits_order = item.hits
+            for(hit_index in minihits){
+                hit = minihits[hit_index] 
+                if(hit.hasOwnProperty("HITId")){ //if hit is not queued it has an ID
+                    hit_order = get_element_with_value(hits_order, "id", hit.HITId)
+                    hit.position = hit_order.position
+                    hit.workers = hit_order.workers
+                }
+            }
+            for(i in hits_order){
+                if(hits_order[i].id == null)
+                    minihits.push({'position':hits_order[i].position, 'workers':hits_order[i].workers})
+            }
+            hit_group = summarize_minihits(minihits)
+            if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
+                render_surveys.push(hit_group)
+        })
+        console.log(render_surveys)
+    });
+
+    function compare( a, b ) {
+        if ( a.position < b.position ){
+          return -1;
+        }
+        if ( a.position > b.position ){
+          return 1;
+        }
+        return 0;
+      }
+
+    function summarize_minihits(array){ //take array of minihits and returns hitgroup with an informationoverview
+        hitgroup = {}
+        hitgroup.NumberOfAssignmentsPending = 0
+        hitgroup.NumberOfAssignmentsCompleted = 0
+        hitgroup.MaxAssignments = 0
+        hitgroup.batched = true
+        array.sort(compare)
+        for (i = 0; i < array.length; i++){
+            if(i == 0){ // the first minihit should never be queued -> can savely access attributes
+                hitgroup.CreationTime = array[i].CreationTime
+                hitgroup.Title = array[i].Title
+                hitgroup.Description = array[i].Description
+                hitgroup.Keywords = array[i].Keywords
+                hitgroup.HITTypeId = array[i].HITTypeId
+                hitgroup.AssignmentDurationInSeconds = array[i].AssignmentDurationInSeconds
+                hitgroup.AutoApprovalDelayInSeconds = array[i].AutoApprovalDelayInSeconds
+                hitgroup.Reward = array[i].Reward
+                hitgroup.QualificationRequirements = array[i].QualificationRequirements
+            }
+            if(i == array.length-1){ // if the last hit of a batch is still queued we can only guess the expiration date of the "entire" batch
+                if(array[i].hasOwnProperty('CreationTime'))
+                    hitgroup.Expiration = array[i].Expiration
+                else
+                    hitgroup.Expiration = "tbd"
+            }
+            if(!array[i].hasOwnProperty('CreationTime')){ // unpublished hits only have 2 attributes, workers, position
+                hitgroup.MaxAssignments +=array[i].workers
+                continue
+            }
+
+            hitgroup.NumberOfAssignmentsPending += array[i].NumberOfAssignmentsPending
+            hitgroup.NumberOfAssignmentsCompleted += array[i].NumberOfAssignmentsCompleted
+            hitgroup.MaxAssignments += array[i].workers
+            
+            delete array[i].Title
+            delete array[i].Description
+            delete array[i].Keywords
+            delete array[i].AssignmentDurationInSeconds
+            delete array[i].AutoApprovalDelayInSeconds
+            delete array[i].HITGroupId
+            delete array[i].Reward
+            delete array[i].QualificationRequirements
+            delete array[i].Question
+            delete array[i].RequesterAnnotation
+        }
+        hitgroup.minihits = array
+        return hitgroup
+    }
+
+    function get_element_with_value(json, key, value){
+        for(item_index in json){
+            item = json[item_index]
+            if(item.hasOwnProperty(key) && item[key] == value){
+                return item
+            }
+        }
+    }
+
+    function get_elements_with_value(json, key, value){
+        list = []
+        json.forEach((item) => {
+            if(item.hasOwnProperty(key) && item[key] == value)
+                list.push(item) 
+        });
+        return list
+    };
+
+    $(document).ready( function () {
 
         var table = $('#project_table').DataTable({
-            data: surveys,
+            data: render_surveys,
+            "createdRow": function( row, data, dataIndex ) {
+                if ( data.batched) {
+                    $(row).addClass( 'batched' )
+                }else{
+                    $(row).addClass( 'standard' )
+                }
+            },
             "columns": [ 
                 {   "data": null,
                     defaultContent: "",
@@ -73,21 +197,20 @@
         });
 
         table.rows().every( function(){ //Create 2 child rows and show BOTH(API restriction)
-            this.child(
-                    [
-                        format_info(this.data()), // maybe change so that not added into td
-                        format_slide(this.data())
-                    ]             
-                ).show()
+            if(this.data().batched){
+                this.child(
+                        [
+                            format_info(this.data()), // maybe change so that not added into td
+                            format_slide(this.data().minihits)
+                        ]             
+                    ).show()
+                this.child().last().hide()
+            }else{                
+                this.child(format_info(this.data())).show() // maybe change so that not added into td       
+            }
         })
-
-        table.rows().every( function(){ //Now hide the last one (the slider)
-            //console.log(this.data())
-            //TODO: Logic that summarizes minihits
-            this.child().last().hide()
-        })       
         
-        console.log($( 'selector', table.rows().nodes() ))
+        //console.log($( 'selector', table.rows().nodes() ))
 
         $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {            
             percentage = data.substring(data.indexOf("(")+1, data.indexOf(")")) // isolate percentage
@@ -100,12 +223,14 @@
             } );
         } ).draw();
 
-        $('#project_table tr:has(".info")').on('click', function(){ // if click on info row trigger click on DataTables-ParentRow
+        $('#project_table tr:has(".info")').on('click', function(event){ // if click on info row trigger click on DataTables-ParentRow
+            if($(event.target).is(":button"))
+                return            
             $(this).prev().trigger('click')
         })
 
         var animation_running = 0;
-        $('#project_table tbody tr[role="row"]').on('click', function () {
+        $('#project_table tbody tr.batched[role="row"]').on('click', function (event) {
 
             if(!animation_running) // wait for both animations to finish
                 animation_running = 1
@@ -140,6 +265,12 @@
                 });
             }
         });
+
+        $('#project_table tbody').on( 'click', 'button', function (event) {
+            event.stopPropagation()
+            //var data = table.row( $(this).parents('tr') ).data();
+            //alert( data[0] +"'s salary is: "+ data[ 5 ] );
+        } );
         
         function format_info ( data ) {
             // console.log(data)
@@ -151,49 +282,64 @@
                         '<td style="width:1rem"></td>'+
                         '<td>HITId:</td>'+
                         '<td>'+data['HITId']+'</td>'+
+                        '<td><button>ExportCSV</button></td>'+
                     '</tr>'+
                     '<tr>'+
                         '<td>Keywords:</td>'+
                         '<td>'+data['Keywords']+'</td>'+
                         '<td style="width:1rem"></td>'+
-                        '<td>HITStatus:</td>'+
-                        '<td>'+data['HITStatus']+'</td>'+
+                        '<td>HITTypeId:</td>'+
+                        '<td>'+data['HITTypeId']+'</td>'+
+                        '<td><button>ImportCSV</button></td>'+
                     '</tr>'+
                     '<tr>'+
                         '<td>Reward:</td>'+
                         '<td>$'+data['Reward']+'</td>'+
                         '<td style="width:1rem"></td>'+
-                        '<td>HITReviewStatus:</td>'+
-                        '<td>'+data['HITReviewStatus']+'</td>'+
+                        '<td>HITStatus:</td>'+
+                        '<td>'+data['HITStatus']+'</td>'+
+                        '<td><button>Pausieren/Fortsetzen</button></td>'+
                     '</tr>'+
                     '<tr>'+
                         '<td>QualificationRequirements:</td>'+
                         '<td>'+data['QualificationRequirements']+'</td>'+
                         '<td style="width:1rem"></td>'+
-                        '<td>AssignmentsPending:</td>'+
-                        '<td>'+data['NumberOfAssignmentsPending']+'</td>'+
+                        '<td>MiniBatched:</td>'+
+                        '<td>'+data['batched']+'</td>'+
+                        '<td><button>Abbrechen</button></td>'+
                     '</tr>'+
                 '</table>');
         }
 
         function format_slide ( data ) {
             // `d` is the original data object for the row
-            return $('<div class="slider">' +
-                '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
-                    '<tr>'+
-                        '<td>Full name:</td>'+
-                        '<td>'+'placeholder'+'</td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>Extension number:</td>'+
-                        '<td>'+'placeholder'+'</td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>Extra info:</td>'+
-                        '<td>And any further details here (images etc)...</td>'+
-                    '</tr>'+
-                '</table>'+
-            '</div>');
+            
+            $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+            
+            for(i in data){
+                hit = data[i]
+                if(hit.hasOwnProperty('CreationTime')){
+                    $tr = $('<tr id='+hit.HITId+' active>')
+                    $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
+                    $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
+                    $tr.append($('<td>').addClass('minihittd').text(hit.NumberOfAssignmentsCompleted+'/'+hit.workers+' ,P: '+hit.NumberOfAssignmentsPending))
+                    $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
+                    $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
+                    $table.append($tr)
+                }else{
+                    $tr = $('<tr inactive>')
+                    $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
+                    $tr.append($('<td>').addClass('minihittd').text('Queued'))
+                    $tr.append($('<td>').addClass('minihittd').text('0/'+hit.workers))
+                    $tr.append($('<td>').addClass('minihittd'))
+                    $tr.append($('<td>').addClass('minihittd'))
+                    $table.append($tr)
+
+                }
+            }
+            console.log($table)
+            $slider = $('<div>').addClass('slider').append( $table)
+            return $slider
         }
 
     } );
