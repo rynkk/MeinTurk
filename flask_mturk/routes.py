@@ -1,17 +1,19 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request
-from flask_mturk import app, db, client, ISO3166, SYSTEM_QUALIFICATION
+from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
 from flask_mturk.models import MiniGroup, MiniHIT, MiniLink
 from datetime import datetime
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
+from .api_calls import api
+from .helper import is_number, seconds_from_string
 
 
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
-    balance = get_balance()
-    hits = list_all_hits()
+    balance = api.get_balance()
+    hits = api.list_all_hits()
     groups = MiniGroup.query.all()
 
     order = []
@@ -31,10 +33,10 @@ def survey():
 
     percentage_interval = 5
     integer_list = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
-    balance = get_balance()
+    balance = api.get_balance()
 
     # we need to dynamically change the allowed options for the qual_select
-    all_qualifications = SYSTEM_QUALIFICATION + list_custom_qualifications()
+    all_qualifications = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
@@ -97,8 +99,8 @@ def survey():
 
         if(is_minibatched):
             # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
-            hit_type_id = create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            hit_id = create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batched')['HITId']
+            hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
+            hit_id = api.create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batched')['HITId']
 
             minigroup = MiniGroup(hit_type_id, True, html_question_value, time_till_expiration)
             minihit = MiniHIT(hit_type_id, 1, 9, hit_id)
@@ -123,7 +125,7 @@ def survey():
             db.session.commit()
 
         else:
-            create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
+            api.create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
         # time.sleep(3)  # wait for mturk endpoint to process the hit
 
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
@@ -151,7 +153,7 @@ def deletebatch(typeid):
         if(row.MiniHIT.uid is None):
             print("HIT was not created yet --- Skipping")
             continue
-        hit = get_hit(row.MiniHIT.uid)
+        hit = api.get_hit(row.MiniHIT.uid)
         if(hit['HITStatus'] == 'Disposed'):
             print("HIT exists locally but not in MTURK-Database --- Skipping")
             continue
@@ -164,7 +166,7 @@ def deletebatch(typeid):
             return "Abort"
 
     print("Deleting queued HITs from MTURK-Database")
-    delete_hits(hits_to_delete)
+    api.delete_hits(hits_to_delete)
     print("Deleting HITs from local Database")
     db.session.delete(group_to_delete)
     db.session.commit()
@@ -179,11 +181,16 @@ def deletehit(id):
         print("Deleting MiniHit")
         return "MiniHIT deleted"
     try:
-        get_hit(id)
-        delete_hit(id)
+        api.get_hit(id)
+        api.delete_hit(id)
         return "HIT deleted"
-    except client.exceptions.RequestError as err:
+    except api.client.exceptions.RequestError as err:
         return '<h3>' + str(err) + '</h3>'
+
+
+@app.route('/forcedeleteallhits')
+def forcedeleteallhits():
+    api.forcedelete_all_hits()
 
 
 @app.errorhandler(404)
@@ -194,161 +201,6 @@ def page_not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return error
-
-
-def get_hit(hitid):
-    response = client.get_hit(HITId=hitid)['HIT']
-    return response
-
-
-def create_hit(max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):
-    response = client.create_hit(
-        MaxAssignments=max,
-        AutoApprovalDelayInSeconds=autoacc,
-        LifetimeInSeconds=lifetime,
-        AssignmentDurationInSeconds=duration,
-        Reward=reward,
-        Title=title,
-        Keywords=keywords,
-        Description=desc,
-        Question=question,
-        QualificationRequirements=qualreq
-    )['HIT']
-    return response
-
-
-def create_hit_with_type(hittypeid, question, lifetime, max, reqanno=""):
-    response = client.create_hit_with_hit_type(
-        HITTypeId=hittypeid,
-        MaxAssignments=max,
-        LifetimeInSeconds=lifetime,
-        Question=question,
-        RequesterAnnotation=reqanno
-    )['HIT']
-    return response
-
-
-def create_hit_type(autoapp, duration, reward, title, keywords, desc, qualreq):
-    response = client.create_hit_type(
-        AutoApprovalDelayInSeconds=autoapp,
-        AssignmentDurationInSeconds=duration,
-        Reward=reward,
-        Title=title,
-        Keywords=keywords,
-        Description=desc,
-        QualificationRequirements=qualreq
-    )
-    return response['HITTypeId']
-
-
-def get_balance():
-    return client.get_account_balance()['AvailableBalance']
-
-
-def list_all_hits():
-    result = []
-    paginator = client.get_paginator('list_hits')
-    pages = paginator.paginate(PaginationConfig={'PageSize': 100})
-    for page in pages:
-        result += page['HITs']
-    return result
-
-
-def delete_hit(hit_id):
-    return client.delete_hit(HITId=hit_id)
-
-
-def delete_hits(hit_ids):
-    for id in hit_ids:
-        delete_hit(id)
-
-
-def delete_minihits(hit_type_id):
-    # DB QUERY UIDS AND DELETE EACH
-    pass
-
-
-def list_custom_qualifications():
-    result = []
-    paginator = client.get_paginator('list_qualification_types')
-    pages = paginator.paginate(
-        MustBeRequestable=False,
-        MustBeOwnedByCaller=True,
-        PaginationConfig={'PageSize': 100}
-    )
-    for page in pages:
-        result += page['QualificationTypes']
-    return result
-
-
-def expire_hit(hit_id):
-    client.update_expiration_for_hit(HITId=hit_id, ExpireAt=datetime(2015, 1, 1))
-
-
-def forcedelete_hit(hit_id):
-    expire_hit(hit_id)
-    time.sleep(5)
-    delete_hit(hit_id)
-
-
-@app.route("/forcedelete_all_hits")
-def forcedelete_all_hits(retry=False):
-    all_hits = list_all_hits()
-    missed_one = False
-    if(not all_hits):
-        return "nothing to delete"
-
-    print("**********EXPIRING HITS**********")
-    for obj in all_hits:
-        print("EXPIRING HIT with ID:", obj['HITId'])
-        expire_hit(obj['HITId'])
-
-    print("**********DELETING HITS**********")
-    for obj in all_hits:
-        if(obj['HITStatus'] == 'Reviewable'):
-            print("Deleteing HIT with ID:", obj['HITId'])
-            delete_hit(obj['HITId'])
-            continue
-
-        if(retry):
-            print("ERROR: HIT %s IS NOT EXPIRED --- ABORTING AFTER THIS TRY)" % (obj['HITId']))
-            continue
-
-        print("ERROR: HIT %s IS NOT EXPIRED --- RETRYING AFTER PROCESS IS FINISHED" % (obj['HITId']))
-        missed_one = True
-    if(missed_one):
-        return forcedelete_all_hits(True)
-    return "Done"
-
-
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        print(errors)
-        for error in errors:
-            flash(u"Error in the %s field - %s" % (
-                getattr(form, field).short_name,
-                errors
-            ))
-
-
-# Helper function to convert timeunit to int #
-def seconds_from_string(string):
-    if string == 'minutes':
-        return 60
-    if string == 'hours':
-        return 60 * 60
-    if string == 'days':
-        return 24 * 60 * 60
-    return -1
-
-
-# Helper function to check if string is integer #
-def is_number(string):
-    try:
-        int(string)
-        return True
-    except ValueError:
-        return False
 
 
 # Helper function to create a qualification object from 4 values #
@@ -373,6 +225,16 @@ def create_qualification_object(id, comparator, value, restriction):
     return qual_obj
 
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        print(errors)
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).short_name,
+                errors
+            ))
+
+
 def update_mini_hits():  # TODO make old MiniHIT paused
     query = db.session.query(MiniGroup, MiniLink, MiniHIT)\
         .filter(MiniGroup.group_id == MiniLink.group_id)\
@@ -381,7 +243,7 @@ def update_mini_hits():  # TODO make old MiniHIT paused
 
     for row in query:
         active_hit_uid = row.MiniHIT.uid  # MiniHIT.uid == HITTypeId
-        active_hit = get_hit(active_hit_uid)
+        active_hit = api.get_hit(active_hit_uid)
         print("Checking %s with HITStatus %s, from Group %s " % (active_hit_uid, active_hit['HITStatus'], row.MiniGroup.group_id))
 
         if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
@@ -403,7 +265,7 @@ def update_mini_hits():  # TODO make old MiniHIT paused
             workers = new_mini_hit.workers
 
             # Creating a new HIT with the assigned attributes and saving its ID
-            new_hit_id = create_hit_with_type(hittypeid, question, lifetime, workers, 'batched')['HITId']
+            new_hit_id = api.create_hit_with_type(hittypeid, question, lifetime, workers, 'batched')['HITId']
             print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.uid = new_hit_id

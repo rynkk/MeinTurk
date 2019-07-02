@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 29.06.2019 20:50(WIP)
+## TODO Stand 02.07.2019 20:38(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
@@ -25,6 +25,7 @@ WIP bash-script
   * Implementiere eine Workerübersicht im Dashboard
  #### 2. Priorität Hoch 
   * Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.
+  * Remake/Polish die MiniHIT-Gruppierung des Dashboards
  #### 3. Priorität Mittel
   * ~~Zeige akzeptierte Worker hinter Fortschritt-Spalte an~~ Anm: Pending hinter Fortschritt
  #### 4. Priorität Niedrig 
@@ -38,11 +39,12 @@ WIP bash-script
   * ~~Schedulerfunktion testen~~
   * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
   * Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
-  * Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden
+  * ~~Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden~~
  #### 2. Priorität Hoch
-  * von Werkzeug auf uWSGI umsteigen
+  * Refactor die order-list für das Dashboard
  #### 3. Priorität Mittel
-  * Refactor den ganzen blöden Code
+  * ~~Refactor den ganzen blöden Code~~
  #### 4. Priorität Niedrig
+  * Refactor den Code weiter
   * Lösche die StartDate Felder
   * requirements.txt aktualisieren und unnötige Packages rausschmeißen
