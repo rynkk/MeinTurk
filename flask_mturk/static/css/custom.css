@@ -180,3 +180,16 @@ body.loading {
 body.loading > .loading-modal{
     display: flex;
 }
+
+@keyframes highlight {
+    0% {
+        background-color: rgba(135,206,250, 1.0);
+    }
+    100% {
+        background-color: none
+    }
+  }
+  
+  .highlight {
+      animation: highlight 2s;
+  }
