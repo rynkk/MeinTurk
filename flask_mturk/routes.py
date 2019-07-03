@@ -16,7 +16,14 @@ def dashboard():
     hits = api.list_all_hits()
     groups = MiniGroup.query.all()
     order = []
+
+    # Often the API is not quick enough and does not add the created HIT
+    # to the list_all_hits, so if it is not there yet we need to add it manually
     createdhit = request.args.get('createdhit')
+    if(createdhit is not None):
+        new_hit = api.get_hit(createdhit)
+        if new_hit not in hits:
+            hits.append(new_hit)
 
     for group in groups:
         batch = {'batch_id': group.group_id, 'hits': []}
@@ -48,7 +55,7 @@ def survey():
     if form.validate_on_submit():
 
         # standard fields #
-        project_name = form.project_name.data
+        # project_name = form.project_name.data
         title = form.title.data
         description = form.description.data
         keywords = form.keywords.data
@@ -132,8 +139,7 @@ def survey():
 
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
 
-        api.get_hit(hit_id)  # This makes the redirect wait until the HIT is actually created in the AWS-Database
-        return redirect(url_for('dashboard', createdhit=hit_type_id))
+        return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
