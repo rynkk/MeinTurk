@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 02.07.2019 20:38(WIP)
+## TODO Stand 03.07.2019 13:27(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
@@ -46,5 +46,5 @@ WIP bash-script
   * ~~Refactor den ganzen blöden Code~~
  #### 4. Priorität Niedrig
   * Refactor den Code weiter
-  * Lösche die StartDate Felder
+  * ~~Lösche die StartDate Felder~~
   * requirements.txt aktualisieren und unnötige Packages rausschmeißen

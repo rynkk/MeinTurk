@@ -15,7 +15,7 @@
             {{ macros.render_long_text(form.title) }}
             {{ macros.render_long_text(form.description) }}
             {{ macros.render_long_text(form.keywords) }}
-            {{ macros.render_date_bool(form.starting_date, form.starting_date_set)}}
+            {#{ macros.render_date_bool(form.starting_date, form.starting_date_set)}#}
             {{ macros.render_int_unit(form.time_till_expiration) }}
             {{ macros.render_next_prev(1) }}
         </div>

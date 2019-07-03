@@ -132,8 +132,8 @@ class SurveyForm(FlaskForm):
     title = StringField('Titel', description='Titel der Survey der dem Bearbeiter angezeigt wird', validators=[InputRequired()])
     description = StringField('Beschreibung', description='Aussagekräftige Beschreibung der Survey', validators=[InputRequired()])
     keywords = StringField('Schlagwörter', description='Tags, nach denen der Bearbeiter und der Ersteller filtern kann (optional)', validators=[Optional()])
-    starting_date = DateTimeField('Startdatum (GMT+1)', description='Verzögerter Surveybeginn (optional)', validators=[Optional()])
-    starting_date_set = BooleanField('Survey ohne Verzögerung starten', default=True)
+    # starting_date = DateTimeField('Startdatum (GMT+1)', description='Verzögerter Surveybeginn (optional)', validators=[Optional()])
+    # starting_date_set = BooleanField('Survey ohne Verzögerung starten', default=True)
     time_till_expiration = FormField(IntUnitForm, 'Dauer bis Ablauf', description='Zeit bis die Survey ungültig und abgebrochen wird (optional)')
 
     # Worker allgemein #
