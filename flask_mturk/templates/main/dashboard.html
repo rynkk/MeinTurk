@@ -63,8 +63,6 @@
     $(document).ready( function () {
 
         render_surveys=[]
-        console.log(surveys)
-        console.log(ordering)
         
         for(hit_index in surveys){ // Add HITs that are not to be batched to 
             hit = surveys[hit_index]
@@ -76,7 +74,6 @@
         
         ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
             minihits = get_elements_with_value(surveys, "RequesterAnnotation", "batch"+item.batch_id)
-            //console.log(item.hits)
             hits_batch_id = item.batch_id
             hits_order = item.hits
             for(hit_index in minihits){
@@ -95,7 +92,6 @@
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
-        //console.log(render_surveys)
     });
 
     function compare( a, b ) {
@@ -164,6 +160,7 @@
                 return item
             }
         }
+        return null
     }
 
     function get_elements_with_value(json, key, value){
@@ -248,7 +245,10 @@
 
         if(createdhit != null){
             table.rows().every( function(){
-                if(this.data().hasOwnProperty('HITId') && this.data()['HITId']==createdhit){
+                // check if either row or sliderchild has ID
+                // TODO: wth did I do with get_element_with_value
+                data = this.data()
+                if( (data.hasOwnProperty("HITId") && data["HITId"] == createdhit) || get_element_with_value(data.minihits,"HITId", createdhit) ){
                     this.show()
                     $row = $(this.node())
                     $('html, body').animate({
