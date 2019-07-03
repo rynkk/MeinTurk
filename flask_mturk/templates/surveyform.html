@@ -57,7 +57,7 @@
             {{ macros.render_next_prev(4) }}
         </div>
         <div id="p5" class="tab-pane">
-            {{ form.submit }}
+            {{ form.submitform }}
         </div>
 
 
@@ -92,12 +92,12 @@
                     error.insertAfter("#datetimepicker")
                 else
                     error.insertAfter(element)
-            }/*,
+            },
             submitHandler: function(form, event){
-                //console.log("form"+form)
-                //console.log(event)
+                $('body').addClass("loading")
+                $(".loading-modal > p").text("Please wait while your Survey is being created!")
                 form.submit()
-            }*/
+            }
         });
 
     $('form#sform').find('input').each(function(){

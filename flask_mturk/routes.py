@@ -15,8 +15,9 @@ def dashboard():
     balance = api.get_balance()
     hits = api.list_all_hits()
     groups = MiniGroup.query.all()
-
     order = []
+    createdhit = request.args.get('createdhit')
+
     for group in groups:
         batch = {'batch_id': group.group_id, 'hits': []}
         for hit in group.minihits:
@@ -24,7 +25,7 @@ def dashboard():
         order.append(batch)
     # TODO: Outsource logic to client?
 
-    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance)
+    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, createdhit=createdhit)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -125,11 +126,14 @@ def survey():
             db.session.commit()
 
         else:
-            api.create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
-        # time.sleep(3)  # wait for mturk endpoint to process the hit
+            hit = api.create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
+            hit_type_id = hit['HITTypeId']
+            hit_id = hit['HITId']
 
         # flash(f'Survey erstellt für {form.username.data}!', 'success')
-        return redirect(url_for('dashboard'))
+
+        api.get_hit(hit_id)  # This makes the redirect wait until the HIT is actually created in the AWS-Database
+        return redirect(url_for('dashboard', createdhit=hit_type_id))
     else:
         flash_errors(form)
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
@@ -139,7 +143,7 @@ def survey():
 def cleardb():
     db.drop_all()
     db.create_all()
-    return "cleared"
+    return "200 OK"
 
 
 @app.route("/deletebatch/<awsid:typeid>")
@@ -170,12 +174,12 @@ def deletebatch(typeid):
     print("Deleting HITs from local Database")
     db.session.delete(group_to_delete)
     db.session.commit()
-    return "OK"
+    return "200 OK"
 
 
 @app.route('/dashboard/deletehit/<awsid:id>')
 def deletehit(id):
-    query = db.session.query(MiniHIT).filter(MiniHIT.uid == id).first()
+    query = db.session.query(MiniHIT).filter(MiniHIT.uid == id).one()
 
     if(query is not None):
         print("Deleting MiniHit")
@@ -191,6 +195,33 @@ def deletehit(id):
 @app.route('/forcedeleteallhits')
 def forcedeleteallhits():
     api.forcedelete_all_hits()
+    return "200 OK"
+
+
+@app.route('/db/delete-queued', methods=['POST'])
+def delete_queued_from_db():
+    # TODO: test behaviour if trying to delete hit that was created
+    group_id = request.args.get('group_id')
+    position = request.args.get('position')
+
+    # Deleting requested QUEUED HIT, throws exception if HIT was created already
+    to_delete = MiniHIT.query\
+        .filter(MiniHIT.parent_id == group_id)\
+        .filter(MiniHIT.position == position)\
+        .filter(MiniHIT.uid.is_(None)).one()
+
+    db.session.delete(to_delete)
+
+    # We need to correct the indice of the following HITs to maintain database integrity
+    to_index = MiniHIT.query\
+        .filter(MiniHIT.parent_id == group_id)\
+        .filter(MiniHIT.position > position).all()
+
+    for hit in to_index:
+        hit.position -= 1
+
+    db.session.commit()
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 @app.errorhandler(404)
@@ -257,7 +288,7 @@ def update_mini_hits():  # TODO make old MiniHIT paused
             # Getting the new MiniHIT-DB-entry
             new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position)\
                                         .filter(MiniHIT.parent_id == hittypeid)\
-                                        .first()
+                                        .one()
             if(new_mini_hit is None):
                 print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
@@ -278,5 +309,5 @@ db.create_all()
 import os
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created once, else it will run twice which will screw up the database
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_mini_hits, 'interval', seconds=5)
+    scheduler.add_job(update_mini_hits, 'interval', seconds=15)
     scheduler.start()

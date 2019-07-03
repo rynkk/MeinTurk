@@ -1,5 +1,5 @@
 from flask_mturk import client
-import datetime
+from datetime import datetime
 import time
 
 
@@ -90,6 +90,7 @@ class Api:
             self.delete_hit(id)
 
     def forcedelete_all_hits(self, retry=False):
+        # TODO: fix, also cap retries at 10 instead of 2
         all_hits = self.list_all_hits()
         missed_one = False
         if(not all_hits):

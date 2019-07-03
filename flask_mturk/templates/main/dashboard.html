@@ -33,6 +33,7 @@
     $(document).ready( function () {
         surveys = {{ surveys | tojson }};
         ordering = {{ ordering | tojson }};
+        createdhit = {{ createdhit | tojson}};
     });
     
     $(document).ready( function () {
@@ -50,7 +51,8 @@
         
         ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
             minihits = get_elements_with_value(surveys, "HITTypeId", item.batch_id)
-            console.log(item.hits)
+            //console.log(item.hits)
+            hits_batch_id = item.batch_id
             hits_order = item.hits
             for(hit_index in minihits){
                 hit = minihits[hit_index] 
@@ -62,13 +64,13 @@
             }
             for(i in hits_order){
                 if(hits_order[i].id == null)
-                    minihits.push({'position':hits_order[i].position, 'workers':hits_order[i].workers})
+                    minihits.push({'HITTypeId':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
             hit_group = summarize_minihits(minihits)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
-        console.log(render_surveys)
+        //console.log(render_surveys)
     });
 
     function compare( a, b ) {
@@ -153,7 +155,7 @@
         var table = $('#project_table').DataTable({
             data: render_surveys,
             "createdRow": function( row, data, dataIndex ) {
-                if ( data.batched) {
+                if (data.batched) {
                     $(row).addClass( 'batched' )
                 }else{
                     $(row).addClass( 'standard' )
@@ -183,7 +185,7 @@
                     "data": null,
                     "visible": false,
                     "render": function(data, type, row){  //This makes the infochild searchable, too
-                        return data.Description + data.HITStatus + data.Keywords + data.HITReviewStatus
+                        return data.Description + data.HITStatus + data.Keywords + data.HITReviewStatus + data.HITId + data.HITTypeId
                     }
                 },
                 {
@@ -195,8 +197,14 @@
             ],
             "order": [[ 1, 'asc' ]]
         });
-
+        // TODO: finish
+        // TODO: dont save IDs etc in DOMs but get them via the row.data
         table.rows().every( function(){ //Create 2 child rows and show BOTH(API restriction)
+            console.log(createdhit)
+            console.log(this.data().HITTypeId)
+           if(this.data().HITTypeId == createdhit){
+                console.log(this.data())
+            }
             if(this.data().batched){
                 this.child(
                         [
@@ -210,12 +218,34 @@
             }
         })
         
-        //console.log($( 'selector', table.rows().nodes() ))
+        
+
 
         $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {            
             percentage = data.substring(data.indexOf("(")+1, data.indexOf(")")) // isolate percentage
             return percentage
         };
+        /* https://datatables.net/plug-ins/api/row().show() */
+        $.fn.dataTable.Api.register('row().show()', function() {
+            var page_info = this.table().page.info();
+            // Get row index
+            var new_row_index = this.index();
+            // Row position
+            var row_position = this.table().rows()[0].indexOf( new_row_index );
+            // Already on right page ?
+            if( row_position >= page_info.start && row_position < page_info.end ) {
+                // Return row object
+                return this;
+            }
+            // Find page number
+            var page_to_display = Math.floor( row_position / this.table().page.len() );
+            // Go to that page
+            this.table().page( page_to_display );
+            // Return row object
+            return this;
+        });
+
+
 
         table.on( 'order.dt search.dt', function () {
             table.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
@@ -271,9 +301,19 @@
             //var data = table.row( $(this).parents('tr') ).data();
             //alert( data[0] +"'s salary is: "+ data[ 5 ] );
         } );
+
+        $('.delete-queued').on( 'click', function (event) {
+            group_id = $(this).closest('table').attr('data-group-id')
+            position = $(this).closest('tr').children("td:first").text()
+
+            s = "?group_id="+group_id+"&position="+position
+            $.post( "db/delete-queued"+s, function( data ) {
+                console.log(data)
+              });
+            event.stopPropagation()
+        } );
         
         function format_info ( data ) {
-            // console.log(data)
             // `d` is the original data object for the row
             return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">'+
                     '<tr>'+
@@ -314,13 +354,15 @@
         function format_slide ( data ) {
             // `d` is the original data object for the row
             
-            $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+            //console.log(data)
+            group_id = data[0].HITTypeId
+            $table = $(' <table data-group-id='+group_id+' cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
             
             for(i in data){
                 hit = data[i]
                 if(hit.hasOwnProperty('CreationTime')){
-                    $tr = $('<tr id='+hit.HITId+' active>')
-                    $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
+                    $tr = $('<tr data-id='+hit.HITId+' active>')
+                    $tr.append($('<td>').addClass('minihittd minihitposition').text(hit.position)) //hit.position should be same as i always
                     $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
                     $tr.append($('<td>').addClass('minihittd').text(hit.NumberOfAssignmentsCompleted+'/'+hit.workers+' ,P: '+hit.NumberOfAssignmentsPending))
                     $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
@@ -333,11 +375,14 @@
                     $tr.append($('<td>').addClass('minihittd').text('0/'+hit.workers))
                     $tr.append($('<td>').addClass('minihittd'))
                     $tr.append($('<td>').addClass('minihittd'))
+                    $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
+
+                    $tr.append($('<td>').addClass('minihittd').append($delbtn))
                     $table.append($tr)
 
                 }
             }
-            console.log($table)
+            //console.log($table)
             $slider = $('<div>').addClass('slider').append( $table)
             return $slider
         }

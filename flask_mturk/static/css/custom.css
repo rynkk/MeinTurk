@@ -146,3 +146,37 @@ a[data-toggle="tab"]{
     padding-left:5px;
     cursor: pointer;
  }
+
+.fa, .fas{
+    transform: translateY(-10%);
+}
+
+.loading-modal {
+    display: none;
+    position: fixed;    
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('http://sampsonresume.com/labs/pIkfp.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+.loading-modal > p {
+    top: 10%;
+    position: relative;
+
+}
+
+body.loading {
+    overflow: hidden;   
+}
+
+body.loading > .loading-modal{
+    display: flex;
+}

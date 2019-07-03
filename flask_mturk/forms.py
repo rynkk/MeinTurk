@@ -25,16 +25,16 @@ default_value = """<!-- For help on using this template, see the blog post: http
 <div class="row" id="workContent">
 <div class="col-xs-12 col-md-6 col-md-offset-3"><!-- Content for Worker -->
 <table class="table table-condensed table-bordered">
-	<colgroup>
-		<col class="col-xs-4 col-md-4" />
-		<col class="col-xs-8 col-md-8" />
-	</colgroup>
-	<tbody>
-		<tr>
-			<td><label>Survey link:</label></td>
-			<td><a class="dont-break-out" href="http://[example.com/survey345.html]" target="_blank">http://example.com/survey345.html</a></td>
-		</tr>
-	</tbody>
+<colgroup>
+<col class="col-xs-4 col-md-4" />
+<col class="col-xs-8 col-md-8" />
+</colgroup>
+<tbody>
+<tr>
+<td><label>Survey link:</label></td>
+<td><a class="dont-break-out" href="http://[example.com/survey345.html]" target="_blank">http://example.com/survey345.html</a></td>
+</tr>
+</tbody>
 </table>
 <!-- End Content for Worker --><!-- Input from Worker -->
 
@@ -53,7 +53,7 @@ default_value = """<!-- For help on using this template, see the blog post: http
   white-space: normal;
 }
 .image{
-  margin-bottom: 15px; 
+  margin-bottom: 15px;
 }
 /* CSS for breaking long words/urls */
 .dont-break-out {
@@ -159,12 +159,10 @@ class SurveyForm(FlaskForm):
     editor_field = CKEditorField('editor_field', default=default_value)
 
     # Finish #
-    submit = SubmitField('Survey erstellen')
+    submitform = SubmitField('Survey erstellen')
 
     pages = ['Allgemein', 'Worker allg.', 'Worker speziell', 'SurveyLayout', 'Finish']
 
     def validate_minibatch(form, field):
         if field.data and form.amount_workers.data < 10:
             raise ValidationError("Stop trying to trick the validation! You can only minibatch with more that 9 workers!")
-
-

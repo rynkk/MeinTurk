@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 03.07.2019 13:27(WIP)
+## TODO Stand 03.07.2019 18:11(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
@@ -48,3 +48,14 @@ WIP bash-script
   * Refactor den Code weiter
   * ~~Lösche die StartDate Felder~~
   * requirements.txt aktualisieren und unnötige Packages rausschmeißen
+
+  ### Bugs
+  #### DB-IntegrityError
+   1. Reproduzieren:
+     * Erstelle mehrere batched surveys mit gleichem Namen, Beschreibung und Description (Rest so lassen) und erstelle den HIT
+   2. Warum:
+     * HITs werden über die HITTypeId organisiert
+     * HITTypeIds sind nicht einzigartig sondern kommen öfter vor, wenn die gleichen Parameter für CreateHITType gewählt werden
+     * HITs können bei mehreren gleichen HITTypeIds nicht eindeutig über diese organisiert werden
+   3. Fix:
+     * Benutze statt HITTypeIds eine eindeutige selbstgenerierte ID (sqlalchemy bietet sich an) und speicher sie in der RequesterAnnotation jedes batchedHits  
