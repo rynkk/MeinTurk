@@ -16,12 +16,12 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 03.07.2019 18:11(WIP)
+## TODO Stand 04.07.2019 00:43(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
   * Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein
-  * Füge Buttons für jede HITRow und MiniHITRow im Dashboard ein: HIT/MiniHIT abbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)
+  * Füge Buttons für jede HITRow und ~~MiniHITRow~~ im Dashboard ein: HIT~~/MiniHIT~~ abbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)
   * Implementiere eine Workerübersicht im Dashboard
  #### 2. Priorität Hoch 
   * Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.
@@ -50,12 +50,12 @@ WIP bash-script
   * requirements.txt aktualisieren und unnötige Packages rausschmeißen
 
   ### Bugs
-  #### DB-IntegrityError
-   1. Reproduzieren:
-     * Erstelle mehrere batched surveys mit gleichem Namen, Beschreibung und Description (Rest so lassen) und erstelle den HIT
-   2. Warum:
-     * HITs werden über die HITTypeId organisiert
-     * HITTypeIds sind nicht einzigartig sondern kommen öfter vor, wenn die gleichen Parameter für CreateHITType gewählt werden
-     * HITs können bei mehreren gleichen HITTypeIds nicht eindeutig über diese organisiert werden
-   3. Fix:
-     * Benutze statt HITTypeIds eine eindeutige selbstgenerierte ID (sqlalchemy bietet sich an) und speicher sie in der RequesterAnnotation jedes batchedHits  
+  #### ~~DB-IntegrityError~~
+   1. ~~Reproduzieren:~~
+    * ~~Erstelle mehrere batched surveys mit gleichem Namen, Beschreibung und Description (Rest so lassen) und erstelle den HIT~~
+   2. ~~Warum:~~
+    * ~~HITs werden über die HITTypeId organisiert~~
+    * ~~HITTypeIds sind nicht einzigartig sondern kommen öfter vor, wenn die gleichen Parameter für CreateHITType gewählt werden~~
+    * ~~HITs können bei mehreren gleichen HITTypeIds nicht eindeutig über diese organisiert werden~~
+   3. ~~Fix:~~
+    * ~~Benutze statt HITTypeIds eine eindeutige selbstgenerierte ID (sqlalchemy bietet sich an) und speicher sie in der RequesterAnnotation jedes batchedHits~~
