@@ -63,17 +63,19 @@
     $(document).ready( function () {
 
         render_surveys=[]
+        console.log(surveys)
+        console.log(ordering)
         
         for(hit_index in surveys){ // Add HITs that are not to be batched to 
             hit = surveys[hit_index]
-            if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batched'))
+            if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batch'))
                 continue
-            hit.batched = false           
+            hit.batched = false
             render_surveys.push(hit)
         }
         
         ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
-            minihits = get_elements_with_value(surveys, "HITTypeId", item.batch_id)
+            minihits = get_elements_with_value(surveys, "RequesterAnnotation", "batch"+item.batch_id)
             //console.log(item.hits)
             hits_batch_id = item.batch_id
             hits_order = item.hits
@@ -87,7 +89,7 @@
             }
             for(i in hits_order){
                 if(hits_order[i].id == null)
-                    minihits.push({'HITTypeId':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
+                    minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
             hit_group = summarize_minihits(minihits)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
@@ -149,7 +151,7 @@
             delete array[i].Reward
             delete array[i].QualificationRequirements
             delete array[i].Question
-            delete array[i].RequesterAnnotation
+            //delete array[i].RequesterAnnotation
         }
         hitgroup.minihits = array
         return hitgroup
@@ -309,9 +311,9 @@
         } );
 
         $('.delete-queued').on( 'click', function (event) {
-            group_id = $(this).closest('table').attr('data-group-id')
+            // should use row.data() instead of accessing html-data
+            group_id = $(this).closest('table').attr('data-group-id').substring(5)
             position = $(this).closest('tr').children("td:first").text()
-
             s = "?group_id="+group_id+"&position="+position
             $.post( "db/delete-queued"+s, function( data ) {
                 console.log(data)
@@ -361,7 +363,7 @@
             // `d` is the original data object for the row
             
             //console.log(data)
-            group_id = data[0].HITTypeId
+            group_id = data[0].RequesterAnnotation
             $table = $(' <table data-group-id='+group_id+' cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
             
             for(i in data){

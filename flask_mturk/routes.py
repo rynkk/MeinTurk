@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request
 from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
-from flask_mturk.models import MiniGroup, MiniHIT, MiniLink
+from flask_mturk.models import MiniGroup, MiniHIT
 from datetime import datetime
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -26,9 +26,9 @@ def dashboard():
             hits.append(new_hit)
 
     for group in groups:
-        batch = {'batch_id': group.group_id, 'hits': []}
+        batch = {'batch_id': group.id, 'hits': []}
         for hit in group.minihits:
-            batch['hits'].append({'id': hit.uid, 'workers': hit.workers, 'position': hit.position})
+            batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
     # TODO: Outsource logic to client?
 
@@ -95,8 +95,6 @@ def survey():
             qualifications.append(obj)
 
         # conditional fields #
-        # is_starting_instantly = form.starting_date_set.data # maybe get rid of ability to postpone releases
-        # start_date = form.starting_date.data  # convert to right timezone
         is_minibatched = form.minibatch.data
         # minibatch_qualification_name = form.qualification_name.data
 
@@ -108,28 +106,29 @@ def survey():
         if(is_minibatched):
             # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            hit_id = api.create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batched')['HITId']
-
-            minigroup = MiniGroup(hit_type_id, True, html_question_value, time_till_expiration)
-            minihit = MiniHIT(hit_type_id, 1, 9, hit_id)
-            minilink = MiniLink(hit_type_id, hit_id)
+            minigroup = MiniGroup(active=True, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id)
             db.session.add(minigroup)
+            db.session.flush()
+            group_id = minigroup.id
+            hit_id = api.create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batch%s' % group_id)['HITId']
+            minihit = MiniHIT(group_id=group_id, active=True, position=1, workers=9, id=hit_id)
             db.session.add(minihit)
-            db.session.add(minilink)
             amount_workers_last_hit = amount_workers % 9
             amount_workers_hits = amount_workers - amount_workers_last_hit - 9  # - 9 because we already created one HIT with 9 workers
-            print("HitType=", hit_type_id)
-            print("Workers total", amount_workers)
-            print("Workers minus the last hit", amount_workers_hits + 9)
-            print("Workers last hit", amount_workers_last_hit)
-            print("adding active minihit to DB")
+            # print("GroupId=", group_id)
+            # print("Workers total", amount_workers)
+            # print("Workers minus the last hit", amount_workers_hits + 9)
+            # print("Workers last hit", amount_workers_last_hit)
+            # print("adding active minihit to DB")
             amount_full_hits = int(amount_workers_hits / 9)
             for i in range(amount_full_hits):
                 print("adding inactive minihit", i + 1, "to DB")
-                db.session.add(MiniHIT(hit_type_id, i + 2, 9))
+                empty_minihit = MiniHIT(group_id=group_id, active=False, position=i + 2, workers=9, id=None)
+                db.session.add(empty_minihit)
 
             print("adding last minihit with", amount_workers_last_hit, "workers")
-            db.session.add(MiniHIT(hit_type_id, amount_full_hits + 2, amount_workers_last_hit))
+            empty_minihit = MiniHIT(group_id=group_id, active=False, position=amount_full_hits + 2, workers=amount_workers_last_hit, id=None)
+            db.session.add(empty_minihit)
             db.session.commit()
 
         else:
@@ -152,25 +151,25 @@ def cleardb():
     return "200 OK"
 
 
-@app.route("/deletebatch/<awsid:typeid>")
-def deletebatch(typeid):
-    query = db.session.query(MiniGroup, MiniHIT).filter(MiniGroup.group_id == typeid and MiniHIT.parent_id == typeid).all()
+@app.route("/deletebatch/<awsid:batchid>")
+def deletebatch(batchid):
+    query = db.session.query(MiniGroup, MiniHIT).filter(MiniGroup.gid == batchid and MiniHIT.group_id == batchid).all()
     if not query:
         return "No such Batch"
     group_to_delete = query[0].MiniGroup
     hits_to_delete = []
     for row in query:
-        if(row.MiniHIT.uid is None):
+        if(row.MiniHIT.id is None):
             print("HIT was not created yet --- Skipping")
             continue
-        hit = api.get_hit(row.MiniHIT.uid)
+        hit = api.get_hit(row.MiniHIT.id)
         if(hit['HITStatus'] == 'Disposed'):
             print("HIT exists locally but not in MTURK-Database --- Skipping")
             continue
 
         if(hit['HITStatus'] in ['Reviewable', 'Reviewed']):
-            print("Queueing %s for deletion" % (row.MiniHIT.uid))
-            hits_to_delete.append(row.MiniHIT.uid)
+            print("Queueing %s for deletion" % (row.MiniHIT.id))
+            hits_to_delete.append(row.MiniHIT.id)
         else:
             print("Tried to delete Batch with active HITs --- Aborting")
             return "Abort"
@@ -185,7 +184,7 @@ def deletebatch(typeid):
 
 @app.route('/dashboard/deletehit/<awsid:id>')
 def deletehit(id):
-    query = db.session.query(MiniHIT).filter(MiniHIT.uid == id).one()
+    query = db.session.query(MiniHIT).filter(MiniHIT.id == id).one()
 
     if(query is not None):
         print("Deleting MiniHit")
@@ -212,15 +211,15 @@ def delete_queued_from_db():
 
     # Deleting requested QUEUED HIT, throws exception if HIT was created already
     to_delete = MiniHIT.query\
-        .filter(MiniHIT.parent_id == group_id)\
+        .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position)\
-        .filter(MiniHIT.uid.is_(None)).one()
+        .filter(MiniHIT.id.is_(None)).one()
 
     db.session.delete(to_delete)
 
     # We need to correct the indice of the following HITs to maintain database integrity
     to_index = MiniHIT.query\
-        .filter(MiniHIT.parent_id == group_id)\
+        .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position > position).all()
 
     for hit in to_index:
@@ -273,40 +272,48 @@ def flash_errors(form):
 
 
 def update_mini_hits():  # TODO make old MiniHIT paused
-    query = db.session.query(MiniGroup, MiniLink, MiniHIT)\
-        .filter(MiniGroup.group_id == MiniLink.group_id)\
-        .filter(MiniLink.active_hit == MiniHIT.uid)\
+    query = db.session.query(MiniGroup, MiniHIT)\
+        .filter(MiniGroup.id == MiniHIT.group_id)\
+        .filter(MiniHIT.active)\
         .filter(MiniGroup.active).all()
 
     for row in query:
-        active_hit_uid = row.MiniHIT.uid  # MiniHIT.uid == HITTypeId
-        active_hit = api.get_hit(active_hit_uid)
-        print("Checking %s with HITStatus %s, from Group %s " % (active_hit_uid, active_hit['HITStatus'], row.MiniGroup.group_id))
+        active_hit_id = row.MiniHIT.id  # MiniHIT.uid == HITTypeId
+        active_hit = api.get_hit(active_hit_id)
+        print("Checking %s with HITStatus %s, from Group %s " % (active_hit_id, active_hit['HITStatus'], row.MiniGroup.id))
 
         if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
             print("Assignment done, creating new one")
             new_position = row.MiniHIT.position + 1
+
             # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
-            hittypeid = row.MiniGroup.group_id
+            group_id = row.MiniGroup.id
+            hittypeid = row.MiniGroup.type_id
             question = row.MiniGroup.layout
             lifetime = row.MiniGroup.lifetime
 
+            # Because the current MiniHIT is expired we set it to inactive
+            row.MiniHIT.active = False
+
             # Getting the new MiniHIT-DB-entry
             new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position)\
-                                        .filter(MiniHIT.parent_id == hittypeid)\
-                                        .one()
+                                        .filter(MiniHIT.group_id == group_id)\
+                                        .first()
+
+            # Checking if there is a following MiniHIT
             if(new_mini_hit is None):
                 print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
                 continue
+
             workers = new_mini_hit.workers
 
             # Creating a new HIT with the assigned attributes and saving its ID
-            new_hit_id = api.create_hit_with_type(hittypeid, question, lifetime, workers, 'batched')['HITId']
+            new_hit_id = api.create_hit_with_type(hittypeid, question, lifetime, workers, 'batch%r' % group_id)['HITId']
             print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
-            new_mini_hit.uid = new_hit_id
-            row.MiniLink.active_hit = new_hit_id
+            new_mini_hit.id = new_hit_id
+            new_mini_hit.active = True
     db.session.commit()
 
 
