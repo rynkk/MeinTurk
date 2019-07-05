@@ -9,11 +9,10 @@ class Api:
 
     # Elementary functions #
     def get_hit(self, hitid):
-        response = self.client.get_hit(HITId=hitid)['HIT']
-        return response
+        return self.client.get_hit(HITId=hitid)['HIT']
 
     def expire_hit(self, hit_id):
-        self.client.update_expiration_for_hit(HITId=hit_id, ExpireAt=datetime(2015, 1, 1))
+        return self.client.update_expiration_for_hit(HITId=hit_id, ExpireAt=datetime(2015, 1, 1))
 
     def get_balance(self):
         return self.client.get_account_balance()['AvailableBalance']
@@ -67,6 +66,17 @@ class Api:
             result += page['HITs']
         return result
 
+    def list_assignments_for_hit(self, hitid):
+        result = []
+        paginator = self.client.get_paginator('list_assignments_for_hit')
+        pages = paginator.paginate(
+            HITId=hitid,
+            PaginationConfig={'PageSize': 100}
+        )
+        for page in pages:
+            result += page['Assignments']
+        return result
+
     def list_custom_qualifications(self):
         result = []
         paginator = self.client.get_paginator('list_qualification_types')
@@ -89,6 +99,12 @@ class Api:
         for id in hit_ids:
             self.delete_hit(id)
 
+    def list_assignments_for_hits(self, hit_ids):
+        result = []
+        for id in hit_ids:
+            result += self.list_assignments_for_hit(id)
+        return result
+
     def forcedelete_all_hits(self, retry=False):
         # TODO: fix, also cap retries at 10 instead of 2
         all_hits = self.list_all_hits()
@@ -100,6 +116,7 @@ class Api:
         for obj in all_hits:
             print("EXPIRING HIT with ID:", obj['HITId'])
             self.expire_hit(obj['HITId'])
+            # Maybe add time.sleep(1)here
 
         print("**********DELETING HITS**********")
         for obj in all_hits:
