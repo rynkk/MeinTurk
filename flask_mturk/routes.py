@@ -1,9 +1,9 @@
-from flask import render_template, url_for, flash, redirect, jsonify, json, request
+from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
 from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION
-from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm
+from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
 from flask_mturk.models import MiniGroup, MiniHIT
-from datetime import datetime
-import time
+import csv
+import io
 from apscheduler.schedulers.background import BackgroundScheduler
 from .api_calls import api
 from .helper import is_number, seconds_from_string
@@ -32,7 +32,9 @@ def dashboard():
         order.append(batch)
     # TODO: Outsource logic to client?
 
-    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, createdhit=createdhit)
+    uform = UploadForm()
+
+    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -149,6 +151,81 @@ def cleardb():
     db.drop_all()
     db.create_all()
     return "200 OK"
+
+
+@app.route("/export/<id>")
+@app.route("/export/<id>/<batched>")
+def export(id, batched=False):
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Answer', 'Approve', 'Reject', 'Bonus', 'Softblock']
+
+    assignments = get_assignments(id, batched, ['Submitted'])  # Add only submitted (non-rejected/-approved) Assignments to export
+
+    si = io.StringIO()
+    csv_writer = csv.DictWriter(si, fieldnames)
+    csv_writer.writeheader()
+    for a in assignments:
+        csv_writer.writerow({'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Answer': a['Answer']})
+
+    return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=results.csv"})
+
+
+@app.route("/upload", methods=['POST'])
+def upload():
+    # TODO: IMPLEMENT LOGIC HERE
+    form = UploadForm()
+    if form.validate_on_submit():
+        total_bonus = 0.0
+        total_approved = 0
+        total_rejected = 0
+
+        csvfile = form.file.data
+        csvdata = io.StringIO(csvfile.read().decode('utf-8'))
+        csvreader = csv.DictReader(csvdata)
+        for row in csvreader:
+            hitid= row['HITId']
+            assignmentid = row['AssignmentId']
+            workerid = row['WorkerId']
+            approve = row['Approve']
+            reject = row['Reject']
+            bonus = row['Bonus']
+            softblock = row['Softblock']
+            # First iteration for validation???
+        return json.dumps({'success': True, 'data': 'asd'}), 200, {'ContentType': 'application/json'}
+
+    return json.dumps({'success': False, 'errors': form.errors['file']}), 400, {'ContentType': 'application/json'}
+
+
+def get_assignments(id, batched, status=None):
+    batched = (batched == 'True')
+    if(batched):
+        hits = db.session.query(MiniHIT.id)\
+            .filter(MiniHIT.group_id == id)\
+            .filter(MiniHIT.id.isnot(None)).all()
+        ids = []
+        for hit in hits:
+            ids.append(hit.id)
+        assignments = api.list_assignments_for_hits(ids, status)
+    else:
+        assignments = api.list_assignments_for_hit(id, status)
+
+    for assignment in assignments:
+
+        answer_xml = assignment['Answer']
+        start = answer_xml.index("<FreeText>") + len("<FreeText>")
+        end = answer_xml.index("</FreeText>")
+        assignment['Answer'] = answer_xml[start:end]
+
+    return assignments
+
+
+
+
+@app.route("/list_assignments/<id>")
+@app.route("/list_assignments/<id>/<batched>")
+def list_assignments(id, batched=False):
+
+    assignments = get_assignments(id, batched)
+    return jsonify(assignments)
 
 
 @app.route("/deletebatch/<awsid:batchid>")

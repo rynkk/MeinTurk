@@ -66,11 +66,14 @@ class Api:
             result += page['HITs']
         return result
 
-    def list_assignments_for_hit(self, hitid):
+    def list_assignments_for_hit(self, hitid, status=None):
         result = []
+        if status is None:
+            status = ['Submitted', 'Approved', 'Rejected']
         paginator = self.client.get_paginator('list_assignments_for_hit')
         pages = paginator.paginate(
             HITId=hitid,
+            AssignmentStatuses=status,
             PaginationConfig={'PageSize': 100}
         )
         for page in pages:
@@ -99,10 +102,10 @@ class Api:
         for id in hit_ids:
             self.delete_hit(id)
 
-    def list_assignments_for_hits(self, hit_ids):
+    def list_assignments_for_hits(self, hit_ids, status=None):
         result = []
         for id in hit_ids:
-            result += self.list_assignments_for_hit(id)
+            result += self.list_assignments_for_hit(id, status)
         return result
 
     def forcedelete_all_hits(self, retry=False):

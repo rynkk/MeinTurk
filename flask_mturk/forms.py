@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import FormField, StringField, BooleanField, DecimalField, RadioField, TextAreaField
-from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, FieldList
+from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, FieldList, FileField
 from flask_ckeditor import CKEditorField
-from wtforms.validators import Optional, InputRequired, DataRequired, Length, EqualTo, NumberRange, ValidationError, Regexp
+from wtforms.validators import Optional, InputRequired, DataRequired, Length, ValidationError, Regexp
 
 default_value = """<!-- For help on using this template, see the blog post: https://blog.mturk.com/editing-the-survey-link-project-template-in-the-ui-7c75285105fb#.py7towsdx --><!-- HIT template: SurveyLink-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
 <meta content="width=device-width,initial-scale=1" name="viewport" />
@@ -166,3 +167,10 @@ class SurveyForm(FlaskForm):
     def validate_minibatch(form, field):
         if field.data and form.amount_workers.data < 10:
             raise ValidationError("Stop trying to trick the validation! You can only minibatch with more that 9 workers!")
+
+
+class UploadForm(FlaskForm):
+    file = FileField('file', validators=[
+        FileRequired(),
+        FileAllowed(['csv', 'xlsx', 'txt', 'someothercsvtypes'], 'Only CSV-Files are allowed!')
+    ])

@@ -12,7 +12,51 @@
 {% endblock head %}
 
 {% block body %}
-<div id="modal"></div>
+
+<div class="modal fade" id="uploadmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Placeholder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:2rem 1rem">
+                <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
+                    {{ uploadform.hidden_tag() }}
+                    {#{ uploadform.hit_id}#}
+                    {{ uploadform.file(class="form-control-file") }}
+                    <label class="error"></label>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="uploadbtn" type="button" class="btn btn-primary">Upload CSV</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="progressmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered  modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Placeholder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid container-big">
     <table id="project_table" class="table striped" style="width:100%">
         <thead>
@@ -122,6 +166,7 @@
                 hitgroup.AutoApprovalDelayInSeconds = array[i].AutoApprovalDelayInSeconds
                 hitgroup.Reward = array[i].Reward
                 hitgroup.QualificationRequirements = array[i].QualificationRequirements
+                hitgroup.batch_id = parseInt(array[i].RequesterAnnotation.substr(5))
             }
             if(i == array.length-1){ // if the last hit of a batch is still queued we can only guess the expiration date of the "entire" batch
                 if(array[i].hasOwnProperty('CreationTime'))
@@ -178,7 +223,7 @@
             data: render_surveys,
             "createdRow": function( row, data, dataIndex ) {
                 if (data.batched) {
-                    $(row).addClass( 'batched' )
+                    $(row).addClass( 'batched' ) //TODO: work more with jquery data()
                 }else{
                     $(row).addClass( 'standard' )
                 }
@@ -231,9 +276,10 @@
                             format_slide(this.data().minihits)
                         ]             
                     ).show()
+                this.child().first().addClass("info-row")
                 this.child().last().hide()
             }else{                
-                this.child(format_info(this.data())).show() // maybe change so that not added into td       
+                this.child(format_info(this.data()),'info-row').show() // maybe change so that not added into td       
             }
         })
 
@@ -304,15 +350,9 @@
             }
         });
 
-        $('#project_table tbody').on( 'click', 'button', function (event) {
-            event.stopPropagation()
-            //var data = table.row( $(this).parents('tr') ).data();
-            //alert( data[0] +"'s salary is: "+ data[ 5 ] );
-        } );
-
         $('.delete-queued').on( 'click', function (event) {
             // should use row.data() instead of accessing html-data
-            group_id = $(this).closest('table').attr('data-group-id').substring(5)
+            group_id = $(this).closest('table').data('group-id').substring(5)
             position = $(this).closest('tr').children("td:first").text()
             s = "?group_id="+group_id+"&position="+position
             $.post( "db/delete-queued"+s, function( data ) {
@@ -320,9 +360,92 @@
               });
             event.stopPropagation()
         } );
+
+        $('#progressmodal').on('show.bs.modal', function(event){
+            var modal = $(this)
+            var button = $(event.relatedTarget)
+            var position = button.data("position")
+            var id = button.data("id")
+            modal.find(".modal-title").text("Progress for "+position+". HIT")
+            contentdiv = modal.find(".modal-body .container-fluid").empty()
+            fetch("/list_assignments/"+id)
+                .then(function(response){
+                    return response.json()
+                }).then(function(data){
+                    head = $('<div class="row border-bottom">')
+                    head.append($('<div class="col-md-1">'))
+                        .append($('<div class="col-md-3 text-center">').append('<h6>WorkerID</h6>'))
+                        .append($('<div class="col-md-3 text-center">').append('<h6>Answer</h6>'))
+                        .append($('<div class="col-md-2 text-center">').append('<h6>Status</h6>'))
+                        .append($('<div class="col-md-3 text-center">').append('<h6>Submission Date</h6>'))
+                    contentdiv.append(head)
+                    data.forEach(function(elem, index){
+                        row = $('<div class="row pt-3">')
+                        $index = $('<div class="col-md-1 text-center">').text(index+1)
+                        worker = $('<div class="col-md-3 text-center">').text(elem.WorkerId)
+                        answer = $('<div class="col-md-3 text-center">').text(elem.Answer)
+                        ass_status= $('<div class="col-md-2 text-center">').text(elem.AssignmentStatus)
+                        sub_date= $('<div class="col-md-3 text-center">').text(elem.SubmitTime)
+                        row.append($index).append(worker).append(answer).append(ass_status).append(sub_date)
+                        contentdiv.append(row)
+                    })
+                    if(!data.length){
+                        row = $('<div class="row p-5">')
+                        row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
+                        contentdiv.append(row)
+                    }
+                        
+                })
+        })
+
+        $('#uploadmodal').on('show.bs.modal', function(event){
+            var modal = $(this)
+            var button = $(event.relatedTarget)
+            var row = button.closest("tr.info-row").prev()
+            var data = table.row(row).data()
+            var title = data.Title
+            modal.find(".modal-title").text("CSV-Import for\n"+data.Title).css("white-space", "pre")
+            $("#uploadmodal #file").removeClass("error")
+            $("#uploadmodal label.error").empty()
+        });
+
+        $("#uploadbtn").on("click", function(){
+            var form = $('#uploadform')[0]
+            console.log(form)
+            var formData = new FormData(form);
+            //$(this).prop("disabled",true);
+            //LOADING
+
+            fetch('/upload', { // Your POST endpoint
+                method: 'POST',
+                body: formData // This is your file object
+              }).then( response => response.json())
+                .then(json => {
+                    console.log(json)
+                    if(json.success){
+                        $("#uploadmodal #file").removeClass("error")
+                        $("#uploadmodal label.error").empty()
+                    }
+                    else{
+                        $("#uploadmodal label.error").empty()
+                        $(this).prop("disabled",false);
+                        $("#uploadmodal #file").addClass("error")
+                        for (i in json.errors){
+                            $("#uploadmodal label.error").append(json.errors[i])
+                        }
+                    }
+                })
+        })      
         
         function format_info ( data ) {
-            // `d` is the original data object for the row
+            // `d` is the original data object for the row            
+            if(data.batched)
+                query = data.batch_id+'/True'
+            else
+                query = data.HITId
+
+            exportlink = '<a class="btn btn-primary" role="button" href="/export/'+query+'" download>ExportCSV</a>'
+
             return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">'+
                     '<tr>'+
                         '<td>Description:</td>'+
@@ -330,7 +453,7 @@
                         '<td style="width:1rem"></td>'+
                         '<td>HITId:</td>'+
                         '<td>'+data['HITId']+'</td>'+
-                        '<td><button>ExportCSV</button></td>'+
+                        '<td>'+exportlink+'</td>'+
                     '</tr>'+
                     '<tr>'+
                         '<td>Keywords:</td>'+
@@ -338,7 +461,7 @@
                         '<td style="width:1rem"></td>'+
                         '<td>HITTypeId:</td>'+
                         '<td>'+data['HITTypeId']+'</td>'+
-                        '<td><button>ImportCSV</button></td>'+
+                        '<td><button type="button" data-toggle="modal" data-target="#uploadmodal">ImportCSV</button></td>'+
                     '</tr>'+
                     '<tr>'+
                         '<td>Reward:</td>'+
@@ -353,7 +476,7 @@
                         '<td>'+data['QualificationRequirements']+'</td>'+
                         '<td style="width:1rem"></td>'+
                         '<td>MiniBatched:</td>'+
-                        '<td>'+data['batched']+'</td>'+
+                        '<td>'+data['batched']+(data['batch_id']==undefined?"":":"+data['batch_id'])+'</td>'+
                         '<td><button>Abbrechen</button></td>'+
                     '</tr>'+
                 '</table>');
@@ -375,6 +498,9 @@
                     $tr.append($('<td>').addClass('minihittd').text(hit.NumberOfAssignmentsCompleted+'/'+hit.workers+' ,P: '+hit.NumberOfAssignmentsPending))
                     $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
                     $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
+                    $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
+                        .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
+                    $tr.append($('<td>').addClass('minihittd').append($progressbtn))
                     $table.append($tr)
                 }else{
                     $tr = $('<tr inactive>')
@@ -387,10 +513,8 @@
 
                     $tr.append($('<td>').addClass('minihittd').append($delbtn))
                     $table.append($tr)
-
                 }
             }
-            //console.log($table)
             $slider = $('<div>').addClass('slider').append( $table)
             return $slider
         }
