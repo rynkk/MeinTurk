@@ -16,15 +16,15 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 04.07.2019 00:43(WIP)
+## TODO Stand 06.07.2019 18:23(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
-  * Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein
-  * Füge Buttons für jede HITRow und ~~MiniHITRow~~ im Dashboard ein: HIT~~/MiniHIT~~ abbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)
-  * Implementiere eine Workerübersicht im Dashboard
+	* Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein
+  * ~~Füge Buttons für jede HITRow und MiniHITRow im Dashboard ein: HIT/MiniHITabbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)~~
+  * ~~Implementiere eine Workerübersicht im Dashboard~~ Erledigt für MiniHITs, TODO für batches
  #### 2. Priorität Hoch 
-  * Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.
+  * ~~Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.~~
   * Remake/Polish die MiniHIT-Gruppierung des Dashboards
  #### 3. Priorität Mittel
   * ~~Zeige akzeptierte Worker hinter Fortschritt-Spalte an~~ Anm: Pending hinter Fortschritt
@@ -38,7 +38,7 @@ WIP bash-script
  #### 1. Priorität Erforderlich 
   * ~~Schedulerfunktion testen~~
   * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
-  * Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
+  * Implementiere einen CSV-Import und ~~-Export~~ zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
   * ~~Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden~~
  #### 2. Priorität Hoch
   * Refactor die order-list für das Dashboard
@@ -49,13 +49,13 @@ WIP bash-script
   * ~~Lösche die StartDate Felder~~
   * requirements.txt aktualisieren und unnötige Packages rausschmeißen
 
-  ### Bugs
-  #### ~~DB-IntegrityError~~
-   1. ~~Reproduzieren:~~
-    * ~~Erstelle mehrere batched surveys mit gleichem Namen, Beschreibung und Description (Rest so lassen) und erstelle den HIT~~
-   2. ~~Warum:~~
-    * ~~HITs werden über die HITTypeId organisiert~~
-    * ~~HITTypeIds sind nicht einzigartig sondern kommen öfter vor, wenn die gleichen Parameter für CreateHITType gewählt werden~~
-    * ~~HITs können bei mehreren gleichen HITTypeIds nicht eindeutig über diese organisiert werden~~
-   3. ~~Fix:~~
-    * ~~Benutze statt HITTypeIds eine eindeutige selbstgenerierte ID (sqlalchemy bietet sich an) und speicher sie in der RequesterAnnotation jedes batchedHits~~
+### Bugs
+ #### ~~DB-IntegrityError~~
+  1. ~~Reproduzieren:~~
+   * ~~Erstelle mehrere batched surveys mit gleichem Namen, Beschreibung und Description (Rest so lassen) und erstelle den HIT~~
+  2. ~~Warum:~~
+   * ~~HITs werden über die HITTypeId organisiert~~
+   * ~~HITTypeIds sind nicht einzigartig sondern kommen öfter vor, wenn die gleichen Parameter für CreateHITType gewählt werden~~
+   * ~~HITs können bei mehreren gleichen HITTypeIds nicht eindeutig über diese organisiert werden~~
+  3. ~~Fix:~~
+   * ~~Benutze statt HITTypeIds eine eindeutige selbstgenerierte ID (sqlalchemy bietet sich an) und speicher sie in der RequesterAnnotation jedes batchedHits~~
