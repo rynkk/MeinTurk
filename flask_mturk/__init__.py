@@ -22,6 +22,8 @@ app.config.from_pyfile('cred.cfg')
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
 
+MAX_BONUS = 5.0
+
 ISO3166 = ""
 filename = os.path.join(app.instance_path, 'iso3166cc.json')
 with open(filename) as f:

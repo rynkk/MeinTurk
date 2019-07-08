@@ -16,11 +16,11 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 06.07.2019 18:23(WIP)
+## TODO Stand 08.07.2019 21:51(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
-	* Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein
+  * Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein
   * ~~Füge Buttons für jede HITRow und MiniHITRow im Dashboard ein: HIT/MiniHITabbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)~~
   * ~~Implementiere eine Workerübersicht im Dashboard~~ Erledigt für MiniHITs, TODO für batches
  #### 2. Priorität Hoch 
@@ -38,7 +38,7 @@ WIP bash-script
  #### 1. Priorität Erforderlich 
   * ~~Schedulerfunktion testen~~
   * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
-  * Implementiere einen CSV-Import und ~~-Export~~ zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls
+  * ~~Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken~~ inkl. ApiCalls
   * ~~Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden~~
  #### 2. Priorität Hoch
   * Refactor die order-list für das Dashboard

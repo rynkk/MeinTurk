@@ -11,10 +11,10 @@ def seconds_from_string(string):
     return -1
 
 
-# Helper function to check if string is integer #
+# Helper function to check if string is number(float) #
 def is_number(string):
     try:
-        int(string)
+        float(string)
         return True
     except ValueError:
         return False

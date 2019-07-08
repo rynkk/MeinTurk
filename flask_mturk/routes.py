@@ -1,5 +1,5 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
-from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION
+from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
 from flask_mturk.models import MiniGroup, MiniHIT
 import csv
@@ -156,7 +156,8 @@ def cleardb():
 @app.route("/export/<id>")
 @app.route("/export/<id>/<batched>")
 def export(id, batched=False):
-    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Answer', 'Approve', 'Reject', 'Bonus', 'Softblock']
+    batched = (batched == 'True' or batched == 'true')
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
 
     assignments = get_assignments(id, batched, ['Submitted'])  # Add only submitted (non-rejected/-approved) Assignments to export
 
@@ -173,30 +174,85 @@ def export(id, batched=False):
 def upload():
     # TODO: IMPLEMENT LOGIC HERE
     form = UploadForm()
+
     if form.validate_on_submit():
-        total_bonus = 0.0
-        total_approved = 0
-        total_rejected = 0
 
         csvfile = form.file.data
         csvdata = io.StringIO(csvfile.read().decode('utf-8'))
+
+        csvreader = csv.DictReader(csvdata)
+        # checking if the csv contains valid data
+        errors = {}
+        assignments = get_assignments(form.hit_identifier.data, form.hit_batched.data)  # maybe make status Submitted
+        if not assignments:
+            return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': 'No Assignments found.'}}), 404, {'ContentType': 'application/json'}
+        for index, row in enumerate(csvreader, 1):
+            try:
+                hitid = row['HITId']
+                assignmentid = row['AssignmentId']
+                workerid = row['WorkerId']
+                approve = row['Approve']
+                reject = row['Reject']
+                bonus = row['Bonus']
+                reason = row['Reason']
+                row['Softblock']
+            except KeyError as e:
+                return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': 'CSV header not formatted properly: </br> Missing header %s' % e}}), 422, {'ContentType': 'application/json'}
+
+            if approve and reject:
+                errors.setdefault(index, []).append('Approve and Reject are both set.')
+            if not approve and not reject:
+                errors.setdefault(index, []).append('Approve and Reject are both not set.')
+
+            valid_hit_assignment_worker = False
+            for assignment in assignments:
+                if assignment['AssignmentId'] == assignmentid\
+                        and assignment['WorkerId'] == workerid\
+                        and assignment['HITId'] == hitid:
+                    valid_hit_assignment_worker = True
+
+                    # No duplicates allowed
+                    if 'DuplicateCheck' in assignment:
+                        errors.setdefault(index, []).append('Duplicate HIT/Assignment/Worker combination.')
+                    else:
+                        assignment['DuplicateCheck'] = True
+
+            if not valid_hit_assignment_worker:
+                errors.setdefault(index, []).append('Non-valid HIT/Assignment/Worker combination.')
+            if bonus and not is_number(bonus):
+                errors.setdefault(index, []).append('Bonus not a valid number.')
+            if is_number(bonus) and float(bonus) > MAX_BONUS:
+                errors.setdefault(index, []).append('Bonus is too high. MAX: %s.' % MAX_BONUS)
+            if bonus and not reason:
+                errors.setdefault(index, []).append('Bonus assigned but no reason given.')
+
+        if errors:
+            return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
+
+        # Creating new DictReader -> going back to starting position of file
         csvreader = csv.DictReader(csvdata)
         for row in csvreader:
-            hitid= row['HITId']
+            print(row)
+            hitid = row['HITId']
             assignmentid = row['AssignmentId']
             workerid = row['WorkerId']
             approve = row['Approve']
             reject = row['Reject']
             bonus = row['Bonus']
+            reason = row['Reason']
             softblock = row['Softblock']
-            # First iteration for validation???
+
+            unique_token_bonus = assignmentid + workerid
+
+            #  TODO: LOGIC (API CALLS)
+
+        # First iteration for validation???
         return json.dumps({'success': True, 'data': 'asd'}), 200, {'ContentType': 'application/json'}
 
-    return json.dumps({'success': False, 'errors': form.errors['file']}), 400, {'ContentType': 'application/json'}
+    return json.dumps({'success': False, 'errortype': 'form', 'errors': form.errors}), 400, {'ContentType': 'application/json'}
 
 
 def get_assignments(id, batched, status=None):
-    batched = (batched == 'True')
     if(batched):
         hits = db.session.query(MiniHIT.id)\
             .filter(MiniHIT.group_id == id)\
@@ -216,8 +272,6 @@ def get_assignments(id, batched, status=None):
         assignment['Answer'] = answer_xml[start:end]
 
     return assignments
-
-
 
 
 @app.route("/list_assignments/<id>")
@@ -286,11 +340,13 @@ def delete_queued_from_db():
     group_id = request.args.get('group_id')
     position = request.args.get('position')
 
-    # Deleting requested QUEUED HIT, throws exception if HIT was created already
     to_delete = MiniHIT.query\
         .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position)\
-        .filter(MiniHIT.id.is_(None)).one()
+        .filter(MiniHIT.id.is_(None)).one_or_none()
+
+    if(to_delete is None):
+        return json.dumps({'success': False, 'error': 'ERROR'}), 423, {'ContentType': 'application/json'}
 
     db.session.delete(to_delete)
 
@@ -304,6 +360,8 @@ def delete_queued_from_db():
 
     db.session.commit()
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+    # Deleting requested QUEUED HIT, throws exception if HIT was created already
 
 
 @app.errorhandler(404)

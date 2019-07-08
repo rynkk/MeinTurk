@@ -4,6 +4,8 @@ from wtforms import FormField, StringField, BooleanField, DecimalField, RadioFie
 from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, FieldList, FileField
 from flask_ckeditor import CKEditorField
 from wtforms.validators import Optional, InputRequired, DataRequired, Length, ValidationError, Regexp
+from wtforms.widgets import HiddenInput
+
 
 default_value = """<!-- For help on using this template, see the blog post: https://blog.mturk.com/editing-the-survey-link-project-template-in-the-ui-7c75285105fb#.py7towsdx --><!-- HIT template: SurveyLink-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
 <meta content="width=device-width,initial-scale=1" name="viewport" />
@@ -170,6 +172,8 @@ class SurveyForm(FlaskForm):
 
 
 class UploadForm(FlaskForm):
+    hit_batched = BooleanField(validators=[InputRequired('Do not tinker with the hidden fields!')], widget=HiddenInput())
+    hit_identifier = StringField(validators=[InputRequired('Do not tinker with the hidden fields!!!')], widget=HiddenInput())
     file = FileField('file', validators=[
         FileRequired(),
         FileAllowed(['csv', 'xlsx', 'txt', 'someothercsvtypes'], 'Only CSV-Files are allowed!')

@@ -162,7 +162,7 @@ a[data-toggle="tab"]{
     height: 100%;
     width: 100%;
     background: rgba( 255, 255, 255, .8 ) 
-                url('http://sampsonresume.com/labs/pIkfp.gif') 
+                url("loading-circle.gif")
                 50% 50% 
                 no-repeat;
 }
