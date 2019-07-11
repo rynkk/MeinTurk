@@ -57,7 +57,44 @@
             {{ macros.render_next_prev(4) }}
         </div>
         <div id="p5" class="tab-pane">
+            <h2>HIT Overview</h2>
+            <div class="container pt-3 mb-5 ml-1">
+                <div class="row">
+                        <div class="col-5">Title</div>
+                        <div class="col-auto">We eat donuts (~10 min)</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">MiniBatched</div>
+                        <div class="col-auto">MiniBatching is enabled</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Amount of HITs</div>
+                        <div class="col-auto">14 HITs</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Amount of Workers for each HIT</div>
+                        <div class="col-auto">23 Workers for each HIT, 5 for the last HIT</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Masters Qualification</div>
+                        <div class="col-auto">Masters not necessary</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Requirements set</div>
+                        <div class="col-auto">TEST,ENTE,GUT</div>
+                </div>
+                <div class="row">
+                        <div class="col-5"><h6>Calculated Max. Cost</h6></div>
+                        <div class="col-auto">$12.05</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Preview(CLICK!)</div>
+                        <div class="col-auto"></div>
+                </div>
+            </div>
+            
             {{ form.submitform }}
+            {{ macros.render_next_prev(5) }}
         </div>
 
 
