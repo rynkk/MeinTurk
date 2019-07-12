@@ -61,38 +61,50 @@
             <div class="container pt-3 mb-5 ml-1">
                 <div class="row">
                         <div class="col-5">Title</div>
-                        <div class="col-auto">We eat donuts (~10 min)</div>
+                        <div id="overview_title" class="col-auto">We eat donuts (~10 min)</div>
                 </div>
                 <div class="row">
                         <div class="col-5">MiniBatched</div>
-                        <div class="col-auto">MiniBatching is enabled</div>
+                        <div id="overview_minibatch" class="col-auto">MiniBatching is enabled</div>
                 </div>
                 <div class="row">
                         <div class="col-5">Amount of HITs</div>
-                        <div class="col-auto">14 HITs</div>
+                        <div id="overview_hits" class="col-auto">14 HITs</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Amount of Workers</div>
+                        <div id="overview_workers" class="col-auto">121 Workers</div>
                 </div>
                 <div class="row">
                         <div class="col-5">Amount of Workers for each HIT</div>
-                        <div class="col-auto">23 Workers for each HIT, 5 for the last HIT</div>
+                        <div id="overview_workers_per_hit" class="col-auto">23 Workers for each HIT, 5 for the last HIT</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Lifetime of each HIT</div>
+                        <div id="overview_workers_per_hit" class="col-auto">1 Day</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Allotted Time per Worker</div>
+                        <div id="overview_workers_per_hit" class="col-auto">1 Hour</div>
+                </div>
+                <div class="row">
+                        <div class="col-5">Time until approval</div>
+                        <div id="overview_workers_per_hit" class="col-auto">1 Day</div>
                 </div>
                 <div class="row">
                         <div class="col-5">Masters Qualification</div>
-                        <div class="col-auto">Masters not necessary</div>
+                        <div id="overview_masters" class="col-auto">Masters not necessary</div>
                 </div>
                 <div class="row">
                         <div class="col-5">Requirements set</div>
-                        <div class="col-auto">TEST,ENTE,GUT</div>
+                        <div id="overview_requirements" class="col-auto">TEST,ENTE,GUT</div>
                 </div>
                 <div class="row">
                         <div class="col-5"><h6>Calculated Max. Cost</h6></div>
-                        <div class="col-auto">$12.05</div>
-                </div>
-                <div class="row">
-                        <div class="col-5">Preview(CLICK!)</div>
-                        <div class="col-auto"></div>
+                        <div id="overview_cost" class="col-auto">$12.05</div>
                 </div>
             </div>
-            
+            <button type="button" id="previewButton">Preview</button>
             {{ form.submitform }}
             {{ macros.render_next_prev(5) }}
         </div>
@@ -104,6 +116,17 @@
 {{ ckeditor.config(name='editor_field')}}
 
 <script>
+    $('#previewButton').on('click', function(){
+        var popup = window.open("","Preview","width=800,height=600,scrollbars=1,resizable=1")
+        start = '<!DOCTYPE html><html><head><title>HIT</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><script type="text/javascript" src="https://s3.amazonaws.com/mturk-public/externalHIT_v1.js"><\/script></head><body><form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="" name="assignmentId" id="assignmentId" />'
+        html = CKEDITOR.instances.editor_field.getData()
+        end = '<p class="text-center"><input type="submit" id="submitButton" class="btn btn-primary" value="Submit" /></p></form><script language="Javascript">turkSetAssignmentID();<\/script></body></html>'
+        
+        popup.document.open()
+        popup.document.write(start+html+end)
+        popup.document.close()
+
+    })
 
         $('form input').on('keypress', function(e) {
             return e.which !== 13;
@@ -145,16 +168,6 @@
                 $label.text($label.text()+"*")
         }
     });
-
-
-
-
-    $(".optional-date").toggle($('#starting_date_set').prop("checked")==false); //if page reloaded after submit make sure that starting date is set appropriate
-
-    $('#starting_date_set').on('change', function() {
-        $(".optional-date").toggle(!this.checked);
-    });
-
     
     $(".mbqual").toggle($('#minibatch').prop("checked"));   //if page reloaded after submit make sure that mbqual is set appropriately
     if($('#minibatch').prop("checked"))                     //if page reloaded after submit make sure that batches is set appropriately
@@ -248,11 +261,6 @@
     })
     
     $('i[data-toggle="tooltip"]').tooltip()
-        
-    
-
-        
-
 </script>
 
 <script>
