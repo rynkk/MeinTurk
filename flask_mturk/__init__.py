@@ -17,22 +17,30 @@ app.url_map.converters['awsid'] = IDConverter
 app.config['CKEDITOR_HEIGHT'] = 600
 
 
-app.config.from_pyfile('cred.cfg')
+app.config.from_pyfile('settings.cfg')
 
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
 
-MAX_BONUS = 5.0
 
-ISO3166 = ""
 filename = os.path.join(app.instance_path, 'iso3166cc.json')
 with open(filename) as f:
     ISO3166 = json.load(f)
 
-SYSTEM_QUALIFICATION = ""
+
 filename = os.path.join(app.instance_path, 'system_qualification.json')
 with open(filename, encoding='utf-8') as f:
     SYSTEM_QUALIFICATION = json.load(f)
+
+if(app.config.get('SOFTBLOCK_QUALIFICATION_ID') is None):
+    print("*** ERROR: SOFTBLOCK_QUALIFICATION_ID in config not set, unable to softblock workers using the CSV import. ***")
+    print("*** ABORTING***")
+    exit()
+
+MAX_BONUS = app.config.get('MAX_BONUS')
+if(MAX_BONUS is None):
+    print("*** WARNING: MAX_BONUS in config not set, defaulting to $5.0")
+    MAX_BONUS = 5.0
 
 
 # Connect to MTurk-Server

@@ -117,16 +117,22 @@
             render_surveys.push(hit)
         }
         
+        //TODO CHANGE THIS 
         ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
             minihits = get_elements_with_value(surveys, "RequesterAnnotation", "batch"+item.batch_id)
             hits_batch_id = item.batch_id
             hits_order = item.hits
-            for(hit_index in minihits){
-                hit = minihits[hit_index] 
+            for(i=0; i<minihits.length; i++){
+                hit = minihits[i] 
                 if(hit.hasOwnProperty("HITId")){ //if hit is not queued it has an ID
                     hit_order = get_element_with_value(hits_order, "id", hit.HITId)
-                    hit.position = hit_order.position
-                    hit.workers = hit_order.workers
+                    if(hit_order){
+                        hit.position = hit_order.position
+                        hit.workers = hit_order.workers
+                    }else{ // Ignore HITs that dont appear in the hit_order
+                        minihits.splice(i, 1);
+                        i-=1
+                    }
                 }
             }
             for(i in hits_order){
@@ -360,8 +366,11 @@
             $.post( "db/delete-queued"+s, function( data ) {
                 console.log(data)
               });
-            event.stopPropagation()
         } );
+
+        $('.export-btn').on('click', function (event){
+            event.stopPropagation()
+        })
 
         $('#progressmodal').on('show.bs.modal', function(event){
             var modal = $(this)
@@ -414,6 +423,7 @@
             $("#uploadmodal #file").removeClass("error")
             $("#uploadmodal label.error").empty()
             $("#uploadmodal div.error").empty()
+            $("#uploadmodal div.success").empty()
         });
 
         $("#uploadbtn").on("click", function(){
@@ -437,8 +447,23 @@
               }).then( response => response.json())
                 .then(json => {
                     $('body').removeClass("loading")
-                    if(json.success){
+                    if(json.success){                        
+                        row = $("<div>").addClass("row")
+                        col = $("<div>").addClass("col-3")
+                        row_one = row.clone()
+                        row_one.append(col.clone().text("Approved"))
+                               .append(col.clone().text(json.data.approved))
+                               .append(col.clone().text("Rejected"))
+                               .append(col.clone().text(json.data.rejected))
 
+                        row_two = row.clone()                        
+                        row_two.append(col.clone().text("Bonus paid"))
+                               .append(col.clone().text("$"+json.data.bonus))
+                               .append(col.clone().text("Softblocked"))
+                               .append(col.clone().text(json.data.softblocked))
+                        row.clone
+                        $("#uploadmodal div.success").append(row_two).append(row_one)
+                        console.log(json)
                     }
                     else{
                         $("#uploadmodal label.error").empty()
@@ -475,7 +500,7 @@
             else
                 query = data.HITId
 
-            exportlink = '<a class="btn btn-primary" role="button" href="/export/'+query+'" download>ExportCSV</a>'
+            exportlink = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'" download>ExportCSV</a>'
             uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">ImportCSV</button>')
                         .data('batched', data.batched)
                         .data('identifier', data.batched?data.batch_id:data.HITId)

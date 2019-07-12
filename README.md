@@ -16,7 +16,7 @@ WIP
 WIP bash-script
 ```
 
-## TODO Stand 08.07.2019 21:51(WIP)
+## TODO Stand 12.07.2019 14:12(WIP)
 
 ### Frontend
  #### 1. Priorität Erforderlich 
@@ -37,8 +37,8 @@ WIP bash-script
 ### Backend
  #### 1. Priorität Erforderlich 
   * ~~Schedulerfunktion testen~~
-  * Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs
-  * ~~Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken~~ inkl. ApiCalls
+  * ~~Implementiere eine automatische Qualifikationsvergabe für Worker nach Bearbeitung eines MiniHITs~~
+  * ~~Implementiere einen CSV-Import und -Export zum Akzeptieren, Ablehnen, Bonus zahlen und Softblocken inkl. ApiCalls~~
   * ~~Restrukturiere Dashboard, sodass zusammengehörige MiniHITs gruppiert mit Overview-Reihe angezeigt werden~~
  #### 2. Priorität Hoch
   * Refactor die order-list für das Dashboard

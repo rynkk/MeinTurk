@@ -24,11 +24,23 @@ class Api:
     def approve_assignment(self, assignment_id):
         return client.approve_assignment(AssignmentId=assignment_id)
 
+    def reject_assignment(self, assignment_id, reason):
+        return client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
+
     def associate_qualification_with_worker(self, worker_id, qualification_id):
         return client.associate_qualification_with_worker(
             QualificationTypeId=qualification_id,
             WorkerId=worker_id,
             SendNotification=False,
+        )
+
+    def send_bonus(self, worker_id, assignment_id, bonus_amount, reason, token):
+        return client.send_bonus(
+            WorkerId=worker_id,
+            BonusAmount=bonus_amount,
+            AssignmentId=assignment_id,
+            Reason=reason,
+            UniqueRequestToken=token
         )
 
     def create_hit(self, max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):

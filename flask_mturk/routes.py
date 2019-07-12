@@ -97,6 +97,11 @@ def survey():
             obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
 
+        # softblock qualification #
+        id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
+        obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+        qualifications.append(obj)
+
         # conditional fields #
         is_minibatched = form.minibatch.data
 
@@ -104,7 +109,7 @@ def survey():
             if(form.qualification_name.data == ""):
                 now = datetime.datetime.now()
                 print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
-                qualification_name = 'ParticipatedIn%s%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))            
+                qualification_name = 'ParticipatedIn%s%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))
             else:
                 qualification_name = form.qualification_name.data
 
@@ -114,7 +119,6 @@ def survey():
             qualifications.append(obj)
 
         if(is_minibatched):
-            # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
             minigroup = MiniGroup(active=True, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
@@ -154,6 +158,12 @@ def survey():
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
 
 
+@app.route("/createsoftblock")
+def softblock():
+    qualification = api.create_qualification_type("Thank you!", "thanks", "For you splendid performance we award you this special qualification. Thank you again!")
+    return jsonify(qualification)
+
+
 @app.route("/cleardb")
 def cleardb():
     db.drop_all()
@@ -180,7 +190,6 @@ def export(id, batched=False):
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    # TODO: IMPLEMENT LOGIC HERE
     form = UploadForm()
 
     if form.validate_on_submit():
@@ -207,6 +216,7 @@ def upload():
             except KeyError as e:
                 return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': 'CSV header not formatted properly: </br> Missing header %s' % e}}), 422, {'ContentType': 'application/json'}
 
+            # TODO:Check if assignment to be approved/rejected is Submitted and not rejected/approved already
             if approve and reject:
                 errors.setdefault(index, []).append('Approve and Reject are both set.')
             if not approve and not reject:
@@ -237,7 +247,12 @@ def upload():
         if errors:
             return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
 
-        # Creating new DictReader -> going back to starting position of file
+        total_approved = 0
+        total_rejected = 0
+        total_softblocked = 0
+        total_bonus = 0.0
+
+        # Going back to beginning of CSV if data appeared valid
         csvdata.seek(0)
         csvreader = csv.DictReader(csvdata)
         for row in csvreader:
@@ -250,16 +265,30 @@ def upload():
             bonus = row['Bonus']
             reason = row['Reason']
             softblock = row['Softblock']
-            print(assignmentid)
-            api.approve_assignment(assignmentid)
-            print("approve")
-
             unique_token_bonus = assignmentid + workerid
 
-            #  TODO: LOGIC (API CALLS)
+            if approve:
+                api.approve_assignment(assignmentid)
+                total_approved += 1
+            if reject:  # Maybe add custom reason slot to csv
+                api.reject_assignment(assignmentid, "We are sorry to inform you that your answer did not match our quality standards.")
+                total_rejected += 1
+            if bonus:
+                api.send_bonus(workerid, assignmentid, bonus, reason, unique_token_bonus)
+                total_bonus += float(bonus)
 
-        # First iteration for validation???
-        return json.dumps({'success': True, 'data': 'asd'}), 200, {'ContentType': 'application/json'}
+            if softblock:
+                softblock_id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
+                api.associate_qualification_with_worker(workerid, softblock_id)
+                total_softblocked += 1
+
+        data = {}
+        data['approved'] = total_approved
+        data['rejected'] = total_rejected
+        data['softblocked'] = total_softblocked
+        data['bonus'] = total_bonus
+
+        return json.dumps({'success': True, 'data': data}), 200, {'ContentType': 'application/json'}
 
     return json.dumps({'success': False, 'errortype': 'form', 'errors': form.errors}), 400, {'ContentType': 'application/json'}
 
