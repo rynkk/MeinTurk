@@ -1,6 +1,7 @@
 from flask_mturk import client
 from datetime import datetime
 import time
+from botocore.exceptions import ClientError
 
 
 class Api:
@@ -19,6 +20,16 @@ class Api:
 
     def delete_hit(self, hit_id):
         return self.client.delete_hit(HITId=hit_id)
+
+    def approve_assignment(self, assignment_id):
+        return client.approve_assignment(AssignmentId=assignment_id)
+
+    def associate_qualification_with_worker(self, worker_id, qualification_id):
+        return client.associate_qualification_with_worker(
+            QualificationTypeId=qualification_id,
+            WorkerId=worker_id,
+            SendNotification=False,
+        )
 
     def create_hit(self, max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):
         response = self.client.create_hit(
@@ -56,6 +67,15 @@ class Api:
             QualificationRequirements=qualreq
         )
         return response['HITTypeId']
+
+    def create_qualification_type(self, name, keywords, description):
+        response = client.create_qualification_type(
+            Name=name,
+            Keywords=keywords,
+            Description=description,
+            QualificationTypeStatus='Active',
+        )['QualificationType']
+        return response
 
     # Paginated functions #
     def list_all_hits(self):
@@ -108,8 +128,15 @@ class Api:
             result += self.list_assignments_for_hit(id, status)
         return result
 
+    #  probably have to check every hit because of race condition where hit is expired but people just accepted it which will effectively allow them to answer multiple MiniHITs
+    def grant_qualifications_for_hit(self, hit_id, qualification_id):
+        assignments = self.list_assignments_for_hit(hit_id)
+        for assignment in assignments:
+            print("assigning qualification %s to Worker %s" % (qualification_id, assignment['WorkerId']))
+            self.associate_qualification_with_worker(assignment['WorkerId'], qualification_id)
+
     def forcedelete_all_hits(self, retry=False):
-        # TODO: fix, also cap retries at 10 instead of 2
+        # TODO: fix, also cap retries at 10 instead of 2 Need to check if there are assignments that are not approved or rejected
         all_hits = self.list_all_hits()
         missed_one = False
         if(not all_hits):
@@ -123,9 +150,13 @@ class Api:
 
         print("**********DELETING HITS**********")
         for obj in all_hits:
-            if(obj['HITStatus'] == 'Reviewable'):
+            print(obj['HITStatus'])
+            if(obj['HITStatus'] == 'Reviewable' or obj['HITStatus'] == 'Reviewing'):
                 print("Deleteing HIT with ID:", obj['HITId'])
-                self.delete_hit(obj['HITId'])
+                try:
+                    self.delete_hit(obj['HITId'])
+                except ClientError:
+                    print("HIT has unsubmitted or unapproved Assignments --- Skipping")
                 continue
 
             if(retry):

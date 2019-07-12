@@ -8,6 +8,7 @@ class MiniGroup(db.Model):
     layout = db.Column(db.String, nullable=False)
     lifetime = db.Column(db.Integer, nullable=False)
     type_id = db.Column(db.String(80), nullable=False)
+    batch_qualification = db.Column(db.String(80), nullable=False)
     minihits = db.relationship("MiniHIT", cascade="all, delete, delete-orphan", backref="mini_group")
 
     def __repr__(self):

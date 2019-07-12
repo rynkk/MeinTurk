@@ -98,8 +98,8 @@ class NonValidatingSelectField(SelectField):
 
 
 class IntUnitForm(FlaskForm):
-    int_field = IntegerField(default=3, validators=[InputRequired()])
-    unit_field = SelectField(default='days', validators=[InputRequired()],
+    int_field = IntegerField(default=1, validators=[InputRequired()])  # 1 minutes for testing
+    unit_field = SelectField(default='minutes', validators=[InputRequired()],
                              choices=[('minutes', 'Minuten'), ('hours', 'Stunden'), ('days', 'Tage')])
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form

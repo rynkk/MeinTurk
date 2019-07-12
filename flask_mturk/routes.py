@@ -4,6 +4,7 @@ from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormFie
 from flask_mturk.models import MiniGroup, MiniHIT
 import csv
 import io
+import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from .api_calls import api
 from .helper import is_number, seconds_from_string
@@ -98,17 +99,24 @@ def survey():
 
         # conditional fields #
         is_minibatched = form.minibatch.data
-        # minibatch_qualification_name = form.qualification_name.data
 
-        # TODO
-        # if(form.minibatch.data and form.qualification_name.data == ""):
-        #    now = datetime.datetime.now()
-        #    print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
+        if(is_minibatched):
+            if(form.qualification_name.data == ""):
+                now = datetime.datetime.now()
+                print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
+                qualification_name = 'ParticipatedIn%s%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))            
+            else:
+                qualification_name = form.qualification_name.data
+
+            response = api.create_qualification_type(qualification_name, keywords, "MiniBatch-Qualification for %s" % title)
+            qualification_id = response['QualificationTypeId']
+            obj = create_qualification_object(qualification_id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+            qualifications.append(obj)
 
         if(is_minibatched):
             # TODO create custom minibatch-qualification and add it to the list, make it ActionsGuarded  "DiscoverPreviewAndAccept"
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            minigroup = MiniGroup(active=True, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id)
+            minigroup = MiniGroup(active=True, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
             db.session.flush()
             group_id = minigroup.id
@@ -127,10 +135,10 @@ def survey():
                 print("adding inactive minihit", i + 1, "to DB")
                 empty_minihit = MiniHIT(group_id=group_id, active=False, position=i + 2, workers=9, id=None)
                 db.session.add(empty_minihit)
-
-            print("adding last minihit with", amount_workers_last_hit, "workers")
-            empty_minihit = MiniHIT(group_id=group_id, active=False, position=amount_full_hits + 2, workers=amount_workers_last_hit, id=None)
-            db.session.add(empty_minihit)
+            if(amount_workers_last_hit != 0):
+                print("adding last minihit with", amount_workers_last_hit, "workers")
+                empty_minihit = MiniHIT(group_id=group_id, active=False, position=amount_full_hits + 2, workers=amount_workers_last_hit, id=None)
+                db.session.add(empty_minihit)
             db.session.commit()
 
         else:
@@ -230,6 +238,7 @@ def upload():
             return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
 
         # Creating new DictReader -> going back to starting position of file
+        csvdata.seek(0)
         csvreader = csv.DictReader(csvdata)
         for row in csvreader:
             print(row)
@@ -241,6 +250,9 @@ def upload():
             bonus = row['Bonus']
             reason = row['Reason']
             softblock = row['Softblock']
+            print(assignmentid)
+            api.approve_assignment(assignmentid)
+            print("approve")
 
             unique_token_bonus = assignmentid + workerid
 
@@ -418,6 +430,8 @@ def update_mini_hits():  # TODO make old MiniHIT paused
         print("Checking %s with HITStatus %s, from Group %s " % (active_hit_id, active_hit['HITStatus'], row.MiniGroup.id))
 
         if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
+            print("Assignment done, granting users qualifications")
+            api.grant_qualifications_for_hit(active_hit_id, row.MiniGroup.batch_qualification)
             print("Assignment done, creating new one")
             new_position = row.MiniHIT.position + 1
 
