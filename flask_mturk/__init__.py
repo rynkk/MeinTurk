@@ -1,6 +1,9 @@
 from flask import Flask, json
 from flask_sqlalchemy import SQLAlchemy
 from flask_ckeditor import CKEditor
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
 import boto3
 import os
 from .converters import IDConverter
@@ -59,3 +62,19 @@ if client:
     print(" *** Connected to MTurk-Server *** ")
 
 from flask_mturk import routes
+from flask_mturk.models import MiniHIT, MiniGroup
+
+admin = Admin(app, 'Database')
+
+
+class HITView(ModelView):
+    column_display_pk = True
+    form_columns = ('id', 'active', 'group_id', 'position', 'workers')
+
+
+class GroupView(ModelView):
+    column_display_pk = True
+
+
+admin.add_view(HITView(MiniHIT, db.session, 'MiniHIT'))
+admin.add_view(GroupView(MiniGroup, db.session, 'MiniGroup'))
