@@ -360,12 +360,25 @@
         $('.delete-queued').on( 'click', function (event) {
             // should use row.data() instead of accessing html-data
             // make this implement a fetch to get the remaining lists and refresh the list
-            group_id = $(this).closest('table').data('group-id').substring(5)
-            position = $(this).closest('tr').children("td:first").text()
-            s = "?group_id="+group_id+"&position="+position
-            $.post( "db/delete-queued"+s, function( data ) {
-                console.log(data)
-              });
+            
+            (async () => {
+                slide_table = $(this).closest('table')
+                group_id = slide_table.data('group-id').substring(5)
+                position = $(this).closest('tr').children("td:first").text()
+                slide_table.find('button').attr('disabled', 'true')
+                const rawResponse = await fetch('/db/delete-queued/'+group_id+'/'+position, {
+                  method: 'POST'
+                });
+                
+                const content = await rawResponse.json();
+                slide_table.find('button').removeAttr("disabled")
+                if(content.success){
+                    $(this).closest('tr').remove()
+                    slide_table.children('tr').each(function(index){
+                        $(this).children('td:first').text(index+1)
+                    })
+                }
+              })();
         } );
 
         $('.export-btn').on('click', function (event){
@@ -557,7 +570,7 @@
             for(i in data){
                 hit = data[i]
                 if(hit.hasOwnProperty('CreationTime')){
-                    $tr = $('<tr data-id='+hit.HITId+' active>')
+                    $tr = $('<tr active>')
                     $tr.append($('<td>').addClass('minihittd minihitposition').text(hit.position)) //hit.position should be same as i always
                     $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
                     $tr.append($('<td>').addClass('minihittd').text(hit.NumberOfAssignmentsCompleted+'/'+hit.workers+' ,P: '+hit.NumberOfAssignmentsPending))

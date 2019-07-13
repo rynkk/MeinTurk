@@ -20,6 +20,7 @@ def dashboard():
 
     # Often the API is not quick enough and does not add the created HIT
     # to the list_all_hits, so if it is not there yet we need to add it manually
+    # Alternative: use Waiter:
     createdhit = request.args.get('createdhit')
     if(createdhit is not None):
         new_hit = api.get_hit(createdhit)
@@ -375,11 +376,8 @@ def forcedeleteallhits():
     return "200 OK"
 
 
-@app.route('/db/delete-queued', methods=['POST'])
-def delete_queued_from_db():
-    # TODO: test behaviour if trying to delete hit that was created
-    group_id = request.args.get('group_id')
-    position = request.args.get('position')
+@app.route('/db/delete-queued/<group_id>/<position>', methods=['POST'])
+def delete_queued_from_db(group_id, position):
 
     to_delete = MiniHIT.query\
         .filter(MiniHIT.group_id == group_id)\
@@ -403,6 +401,25 @@ def delete_queued_from_db():
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     # Deleting requested QUEUED HIT, throws exception if HIT was created already
+
+
+@app.route('/delete_hit/<hitid>')
+def delete_route(hitid):
+    return api.delete_hit(hitid)
+
+
+@app.route('/get_hit/<hitid>')
+def get_route(hitid):
+    return jsonify(api.get_hit(hitid))
+
+
+@app.route('/approve_all/<hitid>')
+def approve_route(hitid):
+    assignments = api.list_assignments_for_hit(hitid)
+    for assignment in assignments:
+        if(assignment['AssignmentStatus'] == 'Submitted'):
+            api.approve_assignment(assignment['AssignmentId'])
+    return "200 OK"
 
 
 @app.errorhandler(404)
