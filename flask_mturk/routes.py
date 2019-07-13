@@ -28,7 +28,7 @@ def dashboard():
             hits.append(new_hit)
 
     for group in groups:
-        batch = {'batch_id': group.id, 'hits': []}
+        batch = {'batch_id': group.id, 'batch_status': group.active, 'hits': []}
         for hit in group.minihits:
             batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
@@ -403,6 +403,17 @@ def delete_queued_from_db(group_id, position):
     # Deleting requested QUEUED HIT, throws exception if HIT was created already
 
 
+@app.route('/db/toggle_group_status/<int:group_id>', methods=['GET', 'POST'])
+def toggle_group_status(group_id):
+    group = MiniGroup.query.filter(MiniGroup.id == group_id).one_or_none()
+    if(group is None):
+        return json.dumps({'success': False, 'error': 'Group does not exist.'}), 404, {'ContentType': 'application/json'}
+    group.active = not group.active
+    status = group.active
+    db.session.commit()
+    return json.dumps({'success': True, 'status': status}), 200, {'ContentType': 'application/json'}
+
+
 @app.route('/delete_hit/<hitid>')
 def delete_route(hitid):
     return api.delete_hit(hitid)
@@ -487,9 +498,6 @@ def update_mini_hits():  # TODO make old MiniHIT paused
             question = row.MiniGroup.layout
             lifetime = row.MiniGroup.lifetime
 
-            # Because the current MiniHIT is expired we set it to inactive
-            row.MiniHIT.active = False
-
             # Getting the new MiniHIT-DB-entry
             new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position)\
                                         .filter(MiniHIT.group_id == group_id)\
@@ -500,6 +508,9 @@ def update_mini_hits():  # TODO make old MiniHIT paused
                 print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
                 continue
+            
+            # Because the current MiniHIT is expired we set it to inactive
+            row.MiniHIT.active = False
 
             workers = new_mini_hit.workers
 

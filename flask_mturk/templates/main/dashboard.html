@@ -139,7 +139,7 @@
                 if(hits_order[i].id == null)
                     minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
-            hit_group = summarize_minihits(minihits)
+            hit_group = summarize_minihits(minihits, item.batch_status)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
@@ -155,12 +155,13 @@
         return 0;
       }
 
-    function summarize_minihits(array){ //take array of minihits and returns hitgroup with an informationoverview
+    function summarize_minihits(array, status){ //take array of minihits and returns hitgroup with an informationoverview
         hitgroup = {}
         hitgroup.NumberOfAssignmentsPending = 0
         hitgroup.NumberOfAssignmentsCompleted = 0
         hitgroup.MaxAssignments = 0
         hitgroup.batched = true
+        hitgroup.batch_status = status
         array.sort(compare)
         for (i = 0; i < array.length; i++){
             if(i == 0){ // the first minihit should never be queued -> can savely access attributes
@@ -199,7 +200,6 @@
             delete array[i].Reward
             delete array[i].QualificationRequirements
             delete array[i].Question
-            //delete array[i].RequesterAnnotation
         }
         hitgroup.minihits = array
         return hitgroup
@@ -381,6 +381,21 @@
               })();
         } );
 
+        $('.toggle-groupstatus').on('click', function(event){
+            (async () => {
+                group_id = $(this).closest('table').data('group-id')
+                const rawResponse = await fetch('/db/toggle_group_status/'+group_id, {
+                  method: 'POST'
+                });
+                
+                const content = await rawResponse.json();
+                if (content.success){
+                    btn_text = content.status?"Pause":"Continue"
+                    $(this).text(btn_text)
+                }
+              })();
+        })
+
         $('.export-btn').on('click', function (event){
             event.stopPropagation()
         })
@@ -449,7 +464,6 @@
 
             var form = $('#uploadform')[0]
             var formData = new FormData(form);
-            //$(this).prop("disabled",true);
             //LOADING
 
             $('body').addClass("loading")
@@ -476,7 +490,6 @@
                                .append(col.clone().text(json.data.softblocked))
                         row.clone
                         $("#uploadmodal div.success").append(row_two).append(row_one)
-                        console.log(json)
                     }
                     else{
                         $("#uploadmodal label.error").empty()
@@ -508,8 +521,13 @@
         
         function format_info ( data ) {
             // `d` is the original data object for the row            
-            if(data.batched)
+            toggle_status_btn=""
+            if(data.batched){
+                group_id = data.batch_id
                 query = data.batch_id+'/True'
+                toggle_status_btn = '<button type="button" class="toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
+                                    
+            }
             else
                 query = data.HITId
 
@@ -544,7 +562,7 @@
                     '<td style="width:1rem"></td>'+
                     '<td>HITStatus:</td>'+
                     '<td>'+data['HITStatus']+'</td>'+
-                    '<td><button>Pausieren/Fortsetzen</button></td>'+
+                    '<td>'+toggle_status_btn+'</td>'+
                 '</tr>')
 
             tr_four = $('<tr>'+
@@ -555,17 +573,17 @@
                     '<td>'+data['batched']+(data['batch_id']==undefined?"":":"+data['batch_id'])+'</td>'+
                     '<td><button>Abbrechen</button></td>'+
                 '</tr>')
-
-            return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">')
+            
+            return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">').data('group-id', group_id)
                     .append(tr_one).append(tr_two).append(tr_three).append(tr_four)
         }
 
         function format_slide ( data ) {
             // `d` is the original data object for the row
             
-            //console.log(data)
             group_id = data[0].RequesterAnnotation
-            $table = $(' <table data-group-id='+group_id+' cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+            $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+            $table.data('group-id', group_id)
             
             for(i in data){
                 hit = data[i]
