@@ -95,13 +95,13 @@ def survey():
         adult_content = form.adult_content.data
         if adult_content:
             id = '00000000000000000060'
-            obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
+            obj = create_qualification_object(id, 'EqualTo', 1, "PreviewAndAccept")
             qualifications.append(obj)
 
-        # softblock qualification #
-        id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
-        obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
-        qualifications.append(obj)
+        # softblock qualification # Deactivatec till app done
+        #id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
+        #obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+        #qualifications.append(obj)
 
         # conditional fields #
         is_minibatched = form.minibatch.data
@@ -172,7 +172,13 @@ def cleardb():
     return "200 OK"
 
 
-@app.route("/export/<id>")
+@app.route("/delete_all_qualifications")
+def delete_all_qualifications():
+    api.delete_all_qualification_types()
+    return "200 OK"
+
+
+@app.route("/export/<awsid:id>")
 @app.route("/export/<id>/<batched>")
 def export(id, batched=False):
     batched = (batched == 'True' or batched == 'true')
@@ -316,12 +322,17 @@ def get_assignments(id, batched, status=None):
     return assignments
 
 
-@app.route("/list_assignments/<id>")
-@app.route("/list_assignments/<id>/<batched>")
+@app.route("/list_assignments/<awsid:id>")
+@app.route("/list_assignments/<awsid:id>/<batched>")
 def list_assignments(id, batched=False):
-
     assignments = get_assignments(id, batched)
     return jsonify(assignments)
+
+
+@app.route("/list_payments/<awsid:id>")
+def list_payments(id):
+    payments = api.list_bonus_payments_for_hit(id)
+    return jsonify(payments)
 
 
 @app.route("/deletebatch/<awsid:batchid>")
@@ -376,7 +387,7 @@ def forcedeleteallhits():
     return "200 OK"
 
 
-@app.route('/db/delete-queued/<group_id>/<position>', methods=['POST'])
+@app.route('/db/delete-queued/<int:group_id>/<int:position>', methods=['POST'])
 def delete_queued_from_db(group_id, position):
 
     to_delete = MiniHIT.query\
@@ -414,17 +425,17 @@ def toggle_group_status(group_id):
     return json.dumps({'success': True, 'status': status}), 200, {'ContentType': 'application/json'}
 
 
-@app.route('/delete_hit/<hitid>')
+@app.route('/delete_hit/<awsid:hitid>')
 def delete_route(hitid):
     return api.delete_hit(hitid)
 
 
-@app.route('/get_hit/<hitid>')
+@app.route('/get_hit/<awsid:hitid>')
 def get_route(hitid):
     return jsonify(api.get_hit(hitid))
 
 
-@app.route('/approve_all/<hitid>')
+@app.route('/approve_all/<awsid:hitid>')
 def approve_route(hitid):
     assignments = api.list_assignments_for_hit(hitid)
     for assignment in assignments:
@@ -508,7 +519,7 @@ def update_mini_hits():  # TODO make old MiniHIT paused
                 print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
                 row.MiniGroup.active = False
                 continue
-            
+
             # Because the current MiniHIT is expired we set it to inactive
             row.MiniHIT.active = False
 

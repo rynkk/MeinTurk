@@ -193,3 +193,7 @@ body.loading > .loading-modal{
   .highlight {
       animation: highlight 3s;
   }
+
+table.progress-table td, table.progress-table th{
+    text-align:center; 
+}

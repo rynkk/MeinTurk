@@ -27,6 +27,9 @@ class Api:
     def reject_assignment(self, assignment_id, reason):
         return client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
 
+    def delete_qualification_type(self, qualification_id):
+        return client.delete_qualification_type(QualificationTypeId=qualification_id)
+
     def associate_qualification_with_worker(self, worker_id, qualification_id):
         return client.associate_qualification_with_worker(
             QualificationTypeId=qualification_id,
@@ -112,6 +115,17 @@ class Api:
             result += page['Assignments']
         return result
 
+    def list_bonus_payments_for_hit(self, hitid):
+        result = []
+        paginator = self.client.get_paginator('list_bonus_payments')
+        pages = paginator.paginate(
+            HITId=hitid,
+            PaginationConfig={'PageSize': 100}
+        )
+        for page in pages:
+            result += page['BonusPayments']
+        return result
+
     def list_custom_qualifications(self):
         result = []
         paginator = self.client.get_paginator('list_qualification_types')
@@ -146,6 +160,12 @@ class Api:
         for assignment in assignments:
             print("assigning qualification %s to Worker %s" % (qualification_id, assignment['WorkerId']))
             self.associate_qualification_with_worker(assignment['WorkerId'], qualification_id)
+
+    def delete_all_qualification_types(self):
+        qualifications = self.list_custom_qualifications()
+        for qual in qualifications:
+            self.delete_qualification_type(qual['QualificationTypeId'])
+        return "200 OK"
 
     def forcedelete_all_hits(self, retry=False):
         # TODO: fix, also cap retries at 10 instead of 2 Need to check if there are assignments that are not approved or rejected
