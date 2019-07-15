@@ -194,6 +194,6 @@ body.loading > .loading-modal{
       animation: highlight 3s;
   }
 
-table.progress-table td, table.progress-table th{
+.modal-body td, .modal-body th{
     text-align:center; 
 }

@@ -40,7 +40,7 @@
 </div>
 
 <div class="modal fade" id="progressmodal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered  modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Placeholder</h5>
@@ -73,6 +73,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="qualmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Placeholder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table style="word-break:break-word">
+                    <thead>
+                        <tr class="border-bottom">
+                            <th style="width:5%"></th>
+                            <!--th style="width:20%"><h6>ID</h6></th-->
+                            <th style="width:20%"><h6>Name</h6></th>
+                            <th style="width:15%"><h6>Comparator</h6></th>
+                            <th style="width:10%"><h6>Value</h6></th>
+                            <th style="width:10%"><h6>Actions Guarded</h6></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>             
+                </table>
+                <div id="qual-empty"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid container-big">
     <table id="project_table" class="table striped" style="width:100%">
         <thead>
@@ -93,6 +125,11 @@
         surveys = {{ surveys | tojson }};
         ordering = {{ ordering | tojson }};
         createdhit = {{ createdhit | tojson}};
+        quals = {{ quals | tojson}};
+        
+        master_id_sandbox = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  // Sandbox
+        master_id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH' // Production
+        adult_id = '00000000000000000060'
     });
   
     $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {            
@@ -469,6 +506,59 @@
                 })
             })            
         })
+        $('#qualmodal').on('show.bs.modal', function(event){
+            var modal = $(this)
+            var button = $(event.relatedTarget)
+            tbody = modal.find(".modal-body tbody").empty()
+            modal.find("#qual-empty").empty()
+            row = button.closest('tr.info-row').prev()
+            data = table.row(row).data()
+            modal.find(".modal-title").text("Qualifications for " + data.Title)
+            // Iterate over each Qualification of HIT
+            data.QualificationRequirements.forEach(function(elem, index){
+                table_qual_id = elem.QualificationTypeId
+                value = "-"
+
+                if(elem.hasOwnProperty('IntegerValues')){
+                    value=""
+                    elem.IntegerValues.forEach(function(val){
+                        value+= (val+" ")
+                    })
+                }
+                if(elem.hasOwnProperty('LocaleValues')){
+                    value=""
+                    elem.LocaleValues.forEach(function(val){
+                        value+= (val.Country+" ")
+                    })
+                }
+
+                qual_row = $('<tr>').addClass("border-bottom")
+                .append($('<td>').append($("<div>").text(index+1)))
+                //.append($('<td>').append($("<div>").text(table_qual_id)))
+                .append($('<td>').append($("<div>").addClass("qual-name")))
+                .append($('<td>').append($("<div>").text(elem.Comparator)))
+                .append($('<td>').append($("<div>").text(value)))
+                .append($('<td>').append($("<div>").text(elem.ActionsGuarded)))
+                //Check if Id is of adult or master type
+                if(table_qual_id == master_id){
+                    qual_row.find(".qual-name").text('Masters')
+                }else if(table_qual_id == master_id_sandbox){
+                    qual_row.find(".qual-name").text('Masters Sandbox')
+                }else if(table_qual_id == adult_id){
+                    qual_row.find(".qual-name").text('Adult Content')
+                }else{
+                    //loop over all qualifications to get the name
+                    for(i in quals){
+                        if(quals[i].QualificationTypeId==table_qual_id){
+                            qual_row.find(".qual-name").text(quals[i].Name)
+                        }
+                    }
+                }
+                qual_row.children(".qual-name").removeAttr('class')
+                tbody.append(qual_row)
+            })
+                
+        })
 
         $('#uploadmodal').on('show.bs.modal', function(event){
             var modal = $(this)
@@ -566,6 +656,7 @@
                 query = data.HITId
 
             exportlink = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'" download>ExportCSV</a>'
+            qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
             uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">ImportCSV</button>')
                         .data('batched', data.batched)
                         .data('identifier', data.batched?data.batch_id:data.HITId)
@@ -601,7 +692,8 @@
 
             tr_four = $('<tr>'+
                     '<td>QualificationRequirements:</td>'+
-                    '<td>'+data['QualificationRequirements']+'</td>'+
+                    '<td>'+qualificationbutton+'</td>'+
+                    //'<td>'+data['QualificationRequirements']+'</td>'+
                     '<td style="width:1rem"></td>'+
                     '<td>MiniBatched:</td>'+
                     '<td>'+data['batched']+(data['batch_id']==undefined?"":":"+data['batch_id'])+'</td>'+

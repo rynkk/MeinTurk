@@ -15,6 +15,7 @@ from .helper import is_number, seconds_from_string
 def dashboard():
     balance = api.get_balance()
     hits = api.list_all_hits()
+    all_qualifications = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
     groups = MiniGroup.query.all()
     order = []
 
@@ -36,7 +37,7 @@ def dashboard():
 
     uform = UploadForm()
 
-    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit)
+    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit, quals=all_qualifications)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
