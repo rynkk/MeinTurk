@@ -126,6 +126,7 @@
         ordering = {{ ordering | tojson }};
         createdhit = {{ createdhit | tojson}};
         quals = {{ quals | tojson}};
+        hidden_hits = {{ hidden_hits | tojson}};
         
         master_id_sandbox = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  // Sandbox
         master_id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH' // Production
@@ -136,6 +137,7 @@
         percentage = data.substring(data.indexOf("(")+1, data.indexOf(")")) // isolate percentage
         return percentage
     };
+
     /* https://datatables.net/plug-ins/api/row().show() */
     $.fn.dataTable.Api.register('row().show()', function() {
         
@@ -166,6 +168,11 @@
             if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batch'))
                 continue
             hit.batched = false
+
+            for (i in hidden_hits){
+                if (hidden_hits[i][0]==hit.HITId)
+                    hit.hidden=true
+            }
             render_surveys.push(hit)
         }
         
@@ -191,7 +198,7 @@
                 if(hits_order[i].id == null)
                     minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
-            hit_group = summarize_minihits(minihits, item.batch_status)
+            hit_group = summarize_minihits(minihits, item.batch_status, item.hidden)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
@@ -207,12 +214,13 @@
         return 0;
       }
 
-    function summarize_minihits(array, status){ //take array of minihits and returns hitgroup with an informationoverview
+    function summarize_minihits(array, status, hidden){ //take array of minihits and returns hitgroup with an informationoverview
         hitgroup = {}
         hitgroup.NumberOfAssignmentsPending = 0
         hitgroup.NumberOfAssignmentsCompleted = 0
         hitgroup.MaxAssignments = 0
         hitgroup.batched = true
+        hitgroup.hidden = hidden
         hitgroup.batch_status = status
         array.sort(compare)
         for (i = 0; i < array.length; i++){
@@ -365,6 +373,73 @@
                 }
             })
         }
+        
+
+        $("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
+        $("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
+        check_div = $("<div>").addClass("col-sm-12 col-md-6")
+            .append('<div class="form-check form-check-inline">'+
+                        '<label for="hide_hidden" class="form-check-label">Show hidden</label>'+
+                        '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+                    '</div>')
+            .append('<div class="pl-3 form-check form-check-inline">'+
+                    '<label for="hide_nonbatched" class="form-check-label">Show nonbatched</label>'+
+                    '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+                '</div>')
+        $("#project_table_length").parent("div").after(check_div)
+
+        function getIndexOfFunc(array, funcname){
+            for (i in array){
+                if(array[i].name==funcname){
+                    return i
+                }
+            }
+            return -1
+        }
+        
+        //TODO: need parameter for hide/unhide
+        $("#hide_hidden").on("click",function() {
+            if(!$(this).prop("checked")){
+                $.fn.dataTable.ext.search.push(
+                function hidden(settings, data, dataIndex) {
+                    row_data = table.row(dataIndex).data()
+                    if(row_data.hidden)
+                        return false
+                    else
+                        return true
+                    }
+                );
+            }else{
+                index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
+                if(index==-1) return
+                $.fn.dataTable.ext.search.splice(index, 1);
+            }               
+            table.draw();
+        });
+
+        $("#hide_hidden").click().click()
+
+        $("#hide_nonbatched").on("click",function() {
+            if(!$(this).prop("checked")){
+                $.fn.dataTable.ext.search.push(
+                function batched(settings, data, dataIndex) {
+                    row_data = table.row(dataIndex).data()
+                    if(row_data.batched)
+                        return true
+                    else
+                        return false
+                    }
+                );
+            }else{
+
+                index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
+                if(index==-1) return
+                $.fn.dataTable.ext.search.splice(index, 1);
+            }     
+            table.draw();
+        });
+
+        $("#hide_nonbatched").click()
 
         $('#project_table tr:has(".info")').on('click', function(event){ // if click on info row trigger click on DataTables-ParentRow
             if($(event.target).is(":button"))
@@ -448,6 +523,32 @@
               })();
         })
 
+        $('.hide_hit').on('click', function(event){
+            (async () => {
+                parent_row = $(this).closest("tr.info-row").prev()
+                hit_data = table.row(parent_row).data()
+                query=""
+                if(hit_data.batched)
+                    query = hit_data.batch_id+"/True"
+                else
+                    query = hit_data.HITId
+                
+                console.log(hit_data)
+                console.log("asd")
+                
+                const rawResponse = await fetch('/db/toggle_hit_visibility/'+query, {
+                    method: 'POST'
+                });
+                const content = await rawResponse.json();
+                if (content.success){
+                    hit_data.hidden = content.hidden
+                    btn_text = content.hidden?"Show":"Hide"
+                    $(this).text(btn_text)
+                }
+                console.log(content)
+                table.draw()
+              })();
+        })
         $('.export-btn').on('click', function (event){
             event.stopPropagation()
         })
@@ -662,6 +763,7 @@
                         .data('identifier', data.batched?data.batch_id:data.HITId)
             uploadmodalbtntd = $('<td>')
             uploadmodalbtntd.append(uploadmodalbtn)
+            hidebtn = '<button type="button" class="hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'
 
             
             tr_one = $('<tr>'+
@@ -697,7 +799,7 @@
                     '<td style="width:1rem"></td>'+
                     '<td>MiniBatched:</td>'+
                     '<td>'+data['batched']+(data['batch_id']==undefined?"":":"+data['batch_id'])+'</td>'+
-                    '<td><button>Abbrechen</button></td>'+
+                    '<td>'+hidebtn+'</td>'+
                 '</tr>')
             
             return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">').data('group-id', group_id)

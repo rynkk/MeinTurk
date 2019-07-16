@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
 from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
-from flask_mturk.models import MiniGroup, MiniHIT
+from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT
 import csv
 import io
 import datetime
@@ -28,8 +28,10 @@ def dashboard():
         if new_hit not in hits:
             hits.append(new_hit)
 
+    hidden_hits = db.session.query(HiddenHIT.id).all()
+
     for group in groups:
-        batch = {'batch_id': group.id, 'batch_status': group.active, 'hits': []}
+        batch = {'batch_id': group.id, 'batch_status': group.active, 'hidden': group.hidden, 'hits': []}
         for hit in group.minihits:
             batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
@@ -37,7 +39,7 @@ def dashboard():
 
     uform = UploadForm()
 
-    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit, quals=all_qualifications)
+    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit, quals=all_qualifications, hidden_hits=hidden_hits)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
@@ -124,7 +126,7 @@ def survey():
 
         if(is_minibatched):
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            minigroup = MiniGroup(active=True, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
+            minigroup = MiniGroup(active=True, hidden=False, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
             db.session.flush()
             group_id = minigroup.id
@@ -182,7 +184,7 @@ def delete_all_qualifications():
 
 
 @app.route("/export/<awsid:id>")
-@app.route("/export/<id>/<batched>")
+@app.route("/export/<int:id>/<batched>")
 def export(id, batched=False):
     batched = (batched == 'True' or batched == 'true')
     fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
@@ -196,6 +198,31 @@ def export(id, batched=False):
         csv_writer.writerow({'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Answer': a['Answer']})
 
     return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=results.csv"})
+
+
+@app.route("/db/toggle_hit_visibility/<awsid:id>", methods=['POST'])
+@app.route("/db/toggle_hit_visibility/<int:id>/<batched>", methods=['POST'])
+def toggle_hit_visibility(id, batched=False):
+    batched = (batched == 'True' or batched == 'true')
+    if batched:
+        group = MiniGroup.query.filter(MiniGroup.id == id).one_or_none()
+        if group:
+            group.hidden = not group.hidden
+            hidden = group.hidden
+        else:
+            return json.dumps({'success': False, 'error': 'No such group.'}), 404, {'ContentType': 'application/json'}
+    else:
+        hit = HiddenHIT.query.filter(HiddenHIT.id == id).one_or_none()
+        if hit is None:
+            hit = HiddenHIT(id=id)
+            db.session.add(hit)
+            hidden = True
+        else:
+            db.session.delete(hit)
+            hidden = False
+
+    db.session.commit()
+    return json.dumps({'success': True, 'hidden': hidden}), 200, {'ContentType': 'application/json'}
 
 
 @app.route("/upload", methods=['POST'])

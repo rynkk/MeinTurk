@@ -1,10 +1,16 @@
 from flask_mturk import db
 
 
+class HiddenHIT(db.Model):
+    __tablename__ = 'hidden_hit'
+    id = db.Column(db.String, primary_key=True)
+
+
 class MiniGroup(db.Model):
     __tablename__ = 'mini_group'
     id = db.Column(db.Integer, primary_key=True)
     active = db.Column(db.Boolean, nullable=False)
+    hidden = db.Column(db.Boolean, nullable=False)
     layout = db.Column(db.String, nullable=False)
     lifetime = db.Column(db.Integer, nullable=False)
     type_id = db.Column(db.String(80), nullable=False)
