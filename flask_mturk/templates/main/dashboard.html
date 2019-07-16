@@ -83,7 +83,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table style="word-break:break-word">
+                <table>
                     <thead>
                         <tr class="border-bottom">
                             <th style="width:5%"></th>
@@ -474,7 +474,7 @@
                         timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma
 
                         row = $('<tr>').addClass("border-bottom")
-                        row.append($('<td>').text(index+1))
+                        row.append($('<td>').text(index+1+"."))
                             .append($('<td>').addClass("worker").text(elem.WorkerId))
                             .append($('<td>').text(elem.Answer))
                             .append($('<td>').text(elem.AssignmentStatus))
@@ -533,12 +533,12 @@
                 }
 
                 qual_row = $('<tr>').addClass("border-bottom")
-                .append($('<td>').append($("<div>").text(index+1)))
+                .append($('<td>').append($("<div>").text(index+1+".")))
                 //.append($('<td>').append($("<div>").text(table_qual_id)))
-                .append($('<td>').append($("<div>").addClass("qual-name")))
-                .append($('<td>').append($("<div>").text(elem.Comparator)))
-                .append($('<td>').append($("<div>").text(value)))
-                .append($('<td>').append($("<div>").text(elem.ActionsGuarded)))
+                .append($('<td>').addClass("qual-name"))
+                .append($('<td>').text(elem.Comparator))
+                .append($('<td>').text(value))
+                .append($('<td>').text(elem.ActionsGuarded))
                 //Check if Id is of adult or master type
                 if(table_qual_id == master_id){
                     qual_row.find(".qual-name").text('Masters')

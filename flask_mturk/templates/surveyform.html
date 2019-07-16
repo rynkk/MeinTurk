@@ -138,20 +138,9 @@
 
         $("#sform").validate({
             ignore: "",
-            rules:{
-                starting_date: { // Maybe add rule for ---Select--- to be an invalid option and not allowing the same qual twice and ckeditor must not be empty
-                    required: "#starting_date_set:unchecked"
-                }
-            },
             invalidHandler: function(e, validator){
                 if(validator.errorList.length)
                     $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
-            },     
-            errorPlacement: function(error, element) {
-                if (element.prop("name") == "starting_date" )
-                    error.insertAfter("#datetimepicker")
-                else
-                    error.insertAfter(element)
             },
             submitHandler: function(form, event){
                 $('body').addClass("loading")
@@ -224,26 +213,6 @@
         $(".nav .nav-item[href='" + prev_id + "']").trigger("click")
     });
 
-
-    (function($) {
-        $.fn.inputFilter = function(inputFilter) {
-        return this.on("input keydown keyup mousedown mouseup select contextmenu drop", function() {
-            if (inputFilter(this.value)) {
-            this.oldValue = this.value;
-            this.oldSelectionStart = this.selectionStart;
-            this.oldSelectionEnd = this.selectionEnd;
-            } else if (this.hasOwnProperty("oldValue")) {
-            this.value = this.oldValue;
-            this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
-            }
-        });
-        };
-    }(jQuery));
-
-    // Payment for assignment < 10
-    $(".currency").inputFilter(function(value){ return /^-?\d*[.,]?\d{0,2}$/.test(value) && (value === "" || parseFloat(value) <= 10)});
-    $(".integer").inputFilter(function(value){ return /^\d*$/.test(value)});    
-    
     $('#datetimepicker').datetimepicker({
         icons: {
             time: "far fa-clock",
@@ -269,6 +238,7 @@
     var percentage_interval = {{ qualification_percentage_interval }}
     var integer_list = {{ qualification_integer_list }}
     var countrycodes = {{ cc_list | tojson}}
+    var max_payment = {{ max_payment }}
     var sys_group = $("<optgroup label='System'></optgroup>")
     var custom_group =$("<optgroup label='Eigene'></optgroup>")
     
@@ -290,6 +260,7 @@
             else
          custom_group.append(option)
     })
+    $("#payment_per_worker").attr('max',max_payment)
     initDOMs()    
     
     function initDOMs(){

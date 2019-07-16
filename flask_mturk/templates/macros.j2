@@ -33,7 +33,7 @@
             {{ field.label(class=css_class, **kwargs) }}    
         </div>
         <div class="col-1">
-            {% set css_class = 'integer form-control' + kwargs.pop('class', '') %}
+            {% set css_class = 'form-control' + kwargs.pop('class', '') %}
             {{ field.int_field(class=css_class, **kwargs) }}    
         </div>
         <div class="col-2">
@@ -57,7 +57,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">$</span>
                 </div>
-            {% set css_class = 'form-control currency pl-1 pr-0'  + kwargs.pop('class', '')%}
+            {% set css_class = 'form-control pl-1 pr-0'  + kwargs.pop('class', '')%}
             {{ field(class=css_class, **kwargs) }}
             </div> 
         </div>

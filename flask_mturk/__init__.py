@@ -45,6 +45,10 @@ if(MAX_BONUS is None):
     print("*** WARNING: MAX_BONUS in config not set, defaulting to $5.0")
     MAX_BONUS = 5.0
 
+MAX_PAYMENT = app.config.get('MAX_PAYMENT')
+if(MAX_PAYMENT is None):
+    print("*** WARNING: MAX_PAYMENT in config not set, defaulting to $10.0")
+    MAX_PAYMENT = 10.0
 
 # Connect to MTurk-Server
 

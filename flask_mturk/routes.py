@@ -1,5 +1,5 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
-from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS
+from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
 from flask_mturk.models import MiniGroup, MiniHIT
 import csv
@@ -54,6 +54,8 @@ def survey():
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
     if request.method == "POST":
+        if form.payment_per_worker.data > MAX_PAYMENT:
+            return
         for select in form.qualifications_select.selects:
             select.selector.choices = selector_choices
 
@@ -157,7 +159,7 @@ def survey():
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
-    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166,)
+    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment = MAX_PAYMENT)
 
 
 @app.route("/createsoftblock")

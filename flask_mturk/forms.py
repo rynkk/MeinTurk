@@ -5,7 +5,7 @@ from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, Field
 from flask_ckeditor import CKEditorField
 from wtforms.validators import Optional, InputRequired, DataRequired, Length, ValidationError, Regexp
 from wtforms.widgets import HiddenInput
-
+from wtforms.widgets.html5 import NumberInput
 
 default_value = """<!-- For help on using this template, see the blog post: https://blog.mturk.com/editing-the-survey-link-project-template-in-the-ui-7c75285105fb#.py7towsdx --><!-- HIT template: SurveyLink-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
 <meta content="width=device-width,initial-scale=1" name="viewport" />
@@ -98,7 +98,7 @@ class NonValidatingSelectField(SelectField):
 
 
 class IntUnitForm(FlaskForm):
-    int_field = IntegerField(default=1, validators=[InputRequired()])  # 1 minutes for testing
+    int_field = IntegerField(default=1, validators=[InputRequired()], widget=NumberInput(min=1))  # 1 minutes for testing
     unit_field = SelectField(default='minutes', validators=[InputRequired()],
                              choices=[('minutes', 'Minuten'), ('hours', 'Stunden'), ('days', 'Tage')])
 
@@ -140,11 +140,11 @@ class SurveyForm(FlaskForm):
     time_till_expiration = FormField(IntUnitForm, 'Dauer bis Ablauf', description='Zeit bis die Survey ungültig und abgebrochen wird (optional)')
 
     # Worker allgemein #
-    amount_workers = IntegerField('Anzahl Bearbeiter', default=20, validators=[InputRequired()])
+    amount_workers = IntegerField('Anzahl Bearbeiter', default=20, validators=[InputRequired()], widget=NumberInput(min=1))
     minibatch = BooleanField('MiniBatching', description='Durch MiniBatching wird die Survey in mehrere Kleinsurveys a 9 Bearbeiter gegliedert.')
     qualification_name = StringField('MiniBatching-Qualifikationsname', validators=[Optional()],
                                      description='Gibt an, unter welchem Namen die Qualifikation gespeichert wird, die verhindert, dass Worker an mehreren Mini-HITs des gleiches Batches teilnehmen können.')
-    payment_per_worker = DecimalField('Bezahlung pro Bearbeiter', description='Summe in Dollar($) die dem Bearbeiter nach erfolgreichem Abschluss ausgezahlt wird', default=0.50, validators=[InputRequired()])
+    payment_per_worker = DecimalField('Bezahlung pro Bearbeiter', description='Summe in Dollar($) die dem Bearbeiter nach erfolgreichem Abschluss ausgezahlt wird', default=0.50, validators=[InputRequired()], widget=NumberInput(min=0.00, max=10, step=0.01))
     allotted_time_per_worker = FormField(IntUnitForm, 'Maximale Bearbeitungszeit')
     accept_pay_worker_after = FormField(IntUnitForm, 'Bearbeiter automatisch annehmen und bezahlen nach', description='Titel der für den Bearbeiter angezeigt wird')
 
