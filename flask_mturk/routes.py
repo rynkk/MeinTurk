@@ -31,7 +31,7 @@ def dashboard():
     hidden_hits = db.session.query(HiddenHIT.id).all()
 
     for group in groups:
-        batch = {'batch_id': group.id, 'batch_status': group.active, 'hidden': group.hidden, 'hits': []}
+        batch = {'batch_id': group.id, 'batch_goal': group.assignments_goal, 'batch_status': group.active, 'hidden': group.hidden, 'hits': []}
         for hit in group.minihits:
             batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
@@ -126,31 +126,16 @@ def survey():
 
         if(is_minibatched):
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            minigroup = MiniGroup(active=True, hidden=False, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
+            minigroup = MiniGroup(active=True, hidden=False, assignments_submitted=0, assignments_goal=amount_workers, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
             db.session.flush()
             group_id = minigroup.id
             hit_id = api.create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batch%s' % group_id)['HITId']
             minihit = MiniHIT(group_id=group_id, active=True, position=1, workers=9, id=hit_id)
             db.session.add(minihit)
-            amount_workers_last_hit = amount_workers % 9
-            amount_workers_hits = amount_workers - amount_workers_last_hit - 9  # - 9 because we already created one HIT with 9 workers
-            # print("GroupId=", group_id)
-            # print("Workers total", amount_workers)
-            # print("Workers minus the last hit", amount_workers_hits + 9)
-            # print("Workers last hit", amount_workers_last_hit)
-            # print("adding active minihit to DB")
-            amount_full_hits = int(amount_workers_hits / 9)
-            for i in range(amount_full_hits):
-                print("adding inactive minihit", i + 1, "to DB")
-                empty_minihit = MiniHIT(group_id=group_id, active=False, position=i + 2, workers=9, id=None)
-                db.session.add(empty_minihit)
-            if(amount_workers_last_hit != 0):
-                print("adding last minihit with", amount_workers_last_hit, "workers")
-                empty_minihit = MiniHIT(group_id=group_id, active=False, position=amount_full_hits + 2, workers=amount_workers_last_hit, id=None)
-                db.session.add(empty_minihit)
+            db.session.flush()
+            add_hits_to_db(group_id, amount_workers - 9)  # -9 because we already created one HIT with 9 workers
             db.session.commit()
-
         else:
             hit = api.create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
             hit_type_id = hit['HITTypeId']
@@ -460,6 +445,11 @@ def delete_route(hitid):
     return api.delete_hit(hitid)
 
 
+@app.route('/expire_hit/<awsid:hitid>')
+def expire_route(hitid):
+    return jsonify(api.expire_hit(hitid))
+
+
 @app.route('/get_hit/<awsid:hitid>')
 def get_route(hitid):
     return jsonify(api.get_hit(hitid))
@@ -476,6 +466,7 @@ def approve_route(hitid):
 
 @app.errorhandler(404)
 def page_not_found(error):
+    add_hits_to_db()
     return render_template('404.html'), 404
 
 
@@ -516,21 +507,55 @@ def flash_errors(form):
             ))
 
 
-def update_mini_hits():  # TODO make old MiniHIT paused
+# Doesnt commit
+def add_hits_to_db(groupid, assignments):
+    max_pos = db.session.query(db.func.max(MiniHIT.position)).filter(MiniHIT.group_id == groupid).scalar()
+    max_pos += 1
+    print(max_pos)
+    if max_pos is None:
+        return "Error"
+
+    part = assignments % 9
+    full = int((assignments - part) / 9)
+    for i in range(full):
+        print("Adding new queued HITs to DB a 9 Workers")
+        minihit = MiniHIT(group_id=groupid, active=False, position=max_pos + i, workers=9, id=None)
+        db.session.add(minihit)
+    if part > 0:
+        print("Adding new queued HITs to DB with %s Workers" % part)
+        minihit = MiniHIT(group_id=groupid, active=False, position=max_pos + full, workers=part, id=None)
+        db.session.add(minihit)
+
+
+def update_mini_hits():
     query = db.session.query(MiniGroup, MiniHIT)\
         .filter(MiniGroup.id == MiniHIT.group_id)\
         .filter(MiniHIT.active)\
         .filter(MiniGroup.active).all()
 
     for row in query:
-        active_hit_id = row.MiniHIT.id  # MiniHIT.uid == HITTypeId
+        active_hit_id = row.MiniHIT.id
         active_hit = api.get_hit(active_hit_id)
         print("Checking %s with HITStatus %s, from Group %s " % (active_hit_id, active_hit['HITStatus'], row.MiniGroup.id))
 
-        if(active_hit['HITStatus'] == 'Unassignable' or active_hit['HITStatus'] == 'Reviewable'):
-            print("Assignment done, granting users qualifications")
+        # Reviewable: if (expired AND pending==0) or (maxassignments-available+pending == 0)
+        if(active_hit['HITStatus'] == 'Reviewable'):
+
+            # Need to get Done HIT to check how many Assignments were submitted
+            hit = api.get_hit(active_hit_id)
+            max_ass = hit['MaxAssignments']
+            pending_ass = hit['NumberOfAssignmentsPending']  # Should always be 0 due to Reviewable Status (adding just in case)
+            available_ass = hit['NumberOfAssignmentsAvailable']
+            submitted = max_ass - (available_ass + pending_ass)
+            if available_ass + pending_ass == 0:
+                print("*** All Assignments were submitted ***")
+            else:
+                print("*** HIT expired ***")
+            print("*** Adding #submittedAssignments to MiniGroup: %s***" % submitted)
+            row.MiniGroup.assignments_submitted += submitted
+            print("*** Granting users qualifications ***")
             api.grant_qualifications_for_hit(active_hit_id, row.MiniGroup.batch_qualification)
-            print("Assignment done, creating new one")
+            print("*** Creating new MiniHIT ***")
             new_position = row.MiniHIT.position + 1
 
             # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
@@ -542,13 +567,27 @@ def update_mini_hits():  # TODO make old MiniHIT paused
             # Getting the new MiniHIT-DB-entry
             new_mini_hit = MiniHIT.query.filter(MiniHIT.position == new_position)\
                                         .filter(MiniHIT.group_id == group_id)\
-                                        .first()
+                                        .one_or_none()
 
             # Checking if there is a following MiniHIT
             if(new_mini_hit is None):
-                print("Actually not creating a new one because we reached the end, setting HITGroup to inactive")
-                row.MiniGroup.active = False
-                continue
+                print("No queued HIT left. Checking if we reached the submission goal...")
+                submissions = row.MiniGroup.assignments_submitted
+                goal = row.MiniGroup.assignments_goal
+                if submissions >= goal:
+                    print("Goal reached: Submitted: %s, Goal: %s. Making Group inactive" % (submissions, goal))
+                    row.MiniGroup.active = False
+                    continue
+                else:
+                    needed = goal - submissions
+                    print("Goal not reached: Submitted: %s, Goal: %s, Needed: %s." % (submissions, goal, needed))
+                    add_hits_to_db(group_id, needed)
+                    db.session.flush()
+                    # Getting the new MiniHIT-DB-entry
+                    new_mini_hit = \
+                        MiniHIT.query.filter(MiniHIT.position == new_position)\
+                        .filter(MiniHIT.group_id == group_id)\
+                        .one()
 
             # Because the current MiniHIT is expired we set it to inactive
             row.MiniHIT.active = False

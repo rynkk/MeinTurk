@@ -198,7 +198,7 @@
                 if(hits_order[i].id == null)
                     minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
-            hit_group = summarize_minihits(minihits, item.batch_status, item.hidden)
+            hit_group = summarize_minihits(minihits, item.batch_status, item.hidden, item.batch_goal)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
@@ -214,8 +214,10 @@
         return 0;
       }
 
-    function summarize_minihits(array, status, hidden){ //take array of minihits and returns hitgroup with an informationoverview
+    function summarize_minihits(array, status, hidden, goal){ //take array of minihits and returns hitgroup with an informationoverview
         hitgroup = {}
+        hitgroup.assignment_goal = goal
+        hitgroup.NumberOfAssignmentsAvailable = 0
         hitgroup.NumberOfAssignmentsPending = 0
         hitgroup.NumberOfAssignmentsCompleted = 0
         hitgroup.MaxAssignments = 0
@@ -244,9 +246,10 @@
             }
             if(!array[i].hasOwnProperty('CreationTime')){ // unpublished hits only have 2 attributes, workers, position
                 hitgroup.MaxAssignments +=array[i].workers
+                hitgroup.NumberOfAssignmentsAvailable +=array[i].workers
                 continue
             }
-
+            hitgroup.NumberOfAssignmentsAvailable += array[i].NumberOfAssignmentsAvailable
             hitgroup.NumberOfAssignmentsPending += array[i].NumberOfAssignmentsPending
             hitgroup.NumberOfAssignmentsCompleted += array[i].NumberOfAssignmentsCompleted
             hitgroup.MaxAssignments += array[i].workers
@@ -307,9 +310,11 @@
                     "render": function(data, type, row){
                         noAssComplete = row.NumberOfAssignmentsCompleted
                         noAssMax = row.MaxAssignments
-                        noAssPending = row.NumberOfAssignmentsPending
-                        percentComplete = noAssComplete/noAssMax*100
-                        return noAssComplete+"/"+noAssMax+" ("+percentComplete+"%)P:"+noAssPending
+                        noAssGoal = row.assignment_goal
+                        noAssPending = row.NumberOfAssignmentsPending                        
+                        noAssSubmitted = noAssMax - (row.NumberOfAssignmentsAvailable + noAssPending)
+                        percentSubmitted = noAssSubmitted/noAssMax*100
+                        return noAssSubmitted+"/"+noAssGoal+"("+noAssMax+")"+" ("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
                     },
                     "type": "amount-complete"
                 },
@@ -399,7 +404,7 @@
         
         //TODO: need parameter for hide/unhide
         $("#hide_hidden").on("click",function() {
-            if(!$(this).prop("checked")){
+            if(!$(this).prop("checked")){ // If not checked add filter function
                 $.fn.dataTable.ext.search.push(
                 function hidden(settings, data, dataIndex) {
                     row_data = table.row(dataIndex).data()
@@ -409,7 +414,7 @@
                         return true
                     }
                 );
-            }else{
+            }else{ // If checked get filter function and remove it
                 index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
                 if(index==-1) return
                 $.fn.dataTable.ext.search.splice(index, 1);
@@ -417,10 +422,10 @@
             table.draw();
         });
 
-        $("#hide_hidden").click().click()
+        $("#hide_hidden").click().click() // check and uncheck to initialize filter above
 
         $("#hide_nonbatched").on("click",function() {
-            if(!$(this).prop("checked")){
+            if(!$(this).prop("checked")){ // If not checked add filter function
                 $.fn.dataTable.ext.search.push(
                 function batched(settings, data, dataIndex) {
                     row_data = table.row(dataIndex).data()
@@ -430,8 +435,7 @@
                         return false
                     }
                 );
-            }else{
-
+            }else{ // If checked get filter function and remove it
                 index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
                 if(index==-1) return
                 $.fn.dataTable.ext.search.splice(index, 1);
@@ -439,7 +443,7 @@
             table.draw();
         });
 
-        $("#hide_nonbatched").click()
+        $("#hide_nonbatched").click() // Default: show nonbatched
 
         $('#project_table tr:has(".info")').on('click', function(event){ // if click on info row trigger click on DataTables-ParentRow
             if($(event.target).is(":button"))
@@ -533,9 +537,6 @@
                 else
                     query = hit_data.HITId
                 
-                console.log(hit_data)
-                console.log("asd")
-                
                 const rawResponse = await fetch('/db/toggle_hit_visibility/'+query, {
                     method: 'POST'
                 });
@@ -545,10 +546,11 @@
                     btn_text = content.hidden?"Show":"Hide"
                     $(this).text(btn_text)
                 }
-                console.log(content)
                 table.draw()
               })();
         })
+
+        // links bubble, stopping that
         $('.export-btn').on('click', function (event){
             event.stopPropagation()
         })
@@ -579,7 +581,7 @@
                             .append($('<td>').addClass("worker").text(elem.WorkerId))
                             .append($('<td>').text(elem.Answer))
                             .append($('<td>').text(elem.AssignmentStatus))
-                            .append($('<td>').addClass("bonus").text('Loading...'))
+                            .append($('<td>').addClass("bonus").text('-'))
                             .append($('<td>').text(timeTakenRounded + 'min'))
                             .append($('<td>').text(elem.AcceptTime))
                             .append($('<td>').text(elem.SubmitTime))
@@ -816,10 +818,12 @@
             for(i in data){
                 hit = data[i]
                 if(hit.hasOwnProperty('CreationTime')){
+                    ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
+
                     $tr = $('<tr active>')
                     $tr.append($('<td>').addClass('minihittd minihitposition').text(hit.position)) //hit.position should be same as i always
                     $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
-                    $tr.append($('<td>').addClass('minihittd').text(hit.NumberOfAssignmentsCompleted+'/'+hit.workers+' ,P: '+hit.NumberOfAssignmentsPending))
+                    $tr.append($('<td>').addClass('minihittd').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
                     $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
                     $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
                     $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
