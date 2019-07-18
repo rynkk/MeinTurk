@@ -37,17 +37,17 @@ with open(filename, encoding='utf-8') as f:
 
 if(app.config.get('SOFTBLOCK_QUALIFICATION_ID') is None):
     print("*** ERROR: SOFTBLOCK_QUALIFICATION_ID in config not set, unable to softblock workers using the CSV import. ***")
-    print("*** ABORTING***")
+    print("*** ABORTING ***")
     exit()
 
 MAX_BONUS = app.config.get('MAX_BONUS')
 if(MAX_BONUS is None):
-    print("*** WARNING: MAX_BONUS in config not set, defaulting to $5.0")
+    print("*** WARNING: MAX_BONUS in config not set, defaulting to $5.0 ***")
     MAX_BONUS = 5.0
 
 MAX_PAYMENT = app.config.get('MAX_PAYMENT')
 if(MAX_PAYMENT is None):
-    print("*** WARNING: MAX_PAYMENT in config not set, defaulting to $10.0")
+    print("*** WARNING: MAX_PAYMENT in config not set, defaulting to $10.0 ***")
     MAX_PAYMENT = 10.0
 
 # Connect to MTurk-Server

@@ -10,6 +10,7 @@ from .api_calls import api
 from .helper import is_number, seconds_from_string
 
 
+# Use APPconfig instead of constants like MAX_BONUS
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
@@ -168,46 +169,51 @@ def delete_all_qualifications():
     return "200 OK"
 
 
-@app.route("/export/<awsid:id>")
-@app.route("/export/<int:id>/<batched>")
-def export(id, batched=False):
+@app.route("/export/<awsid:id>/<type_>")
+@app.route("/export/<int:id>/<batched>/<type_>")
+def export(id, type_, batched=False):
+    print(type_)
     batched = (batched == 'True' or batched == 'true')
-    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
 
-    assignments = get_assignments(id, batched, ['Submitted'])  # Add only submitted (non-rejected/-approved) Assignments to export
+    if type_ == 'all':
+        assignments = get_assignments(id, batched)  # Add submitted, rejected and approved Assignments to export
+        #probably add payments for every id here
+        softblocked_workers = api.list_workers_with_qualification_type(app.config.get('SOFTBLOCK_QUALIFICATION_ID'))
+        filename = "results_all.csv"
+
+    elif type_ == 'submitted':
+        assignments = get_assignments(id, batched, ['Submitted'])  # Add only submitted Assignments to export
+        filename = "results_new.csv"
 
     si = io.StringIO()
     csv_writer = csv.DictWriter(si, fieldnames)
     csv_writer.writeheader()
+
     for a in assignments:
-        csv_writer.writerow({'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Answer': a['Answer']})
-
-    return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=results.csv"})
-
-
-@app.route("/db/toggle_hit_visibility/<awsid:id>", methods=['POST'])
-@app.route("/db/toggle_hit_visibility/<int:id>/<batched>", methods=['POST'])
-def toggle_hit_visibility(id, batched=False):
-    batched = (batched == 'True' or batched == 'true')
-    if batched:
-        group = MiniGroup.query.filter(MiniGroup.id == id).one_or_none()
-        if group:
-            group.hidden = not group.hidden
-            hidden = group.hidden
+        row = {'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
+        if a['AssignmentStatus'] == 'Submitted':
+            csv_writer.writerow(row)
         else:
-            return json.dumps({'success': False, 'error': 'No such group.'}), 404, {'ContentType': 'application/json'}
-    else:
-        hit = HiddenHIT.query.filter(HiddenHIT.id == id).one_or_none()
-        if hit is None:
-            hit = HiddenHIT(id=id)
-            db.session.add(hit)
-            hidden = True
-        else:
-            db.session.delete(hit)
-            hidden = False
+            # Might be faster to list payments for entire HIT/entire MiniGroup
+            # TODO: Add softblock
+            bonus = api.list_bonus_payments_for_assignment(a['AssignmentId'])
 
-    db.session.commit()
-    return json.dumps({'success': True, 'hidden': hidden}), 200, {'ContentType': 'application/json'}
+            if len(bonus) == 1:
+                bonus = bonus[0]
+                row['Bonus'] = bonus['BonusAmount']
+                row['Reason'] = bonus['Reason']
+
+            if a['AssignmentStatus'] == 'Approved':
+                row['Approve'] = 'x'
+            else:
+                row['Reject'] = 'x'
+
+            if any(worker['WorkerId'] == a['WorkerId'] for worker in softblocked_workers):
+                row['Softblock'] = 'x'
+            csv_writer.writerow(row)
+
+    return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=%s" % filename})
 
 
 @app.route("/upload", methods=['POST'])
@@ -215,7 +221,7 @@ def upload():
     form = UploadForm()
 
     if form.validate_on_submit():
-
+        print("OK")
         csvfile = form.file.data
         csvdata = io.StringIO(csvfile.read().decode('utf-8'))
 
@@ -230,6 +236,7 @@ def upload():
                 hitid = row['HITId']
                 assignmentid = row['AssignmentId']
                 workerid = row['WorkerId']
+                assignmentstatus = row['Status']
                 approve = row['Approve']
                 reject = row['Reject']
                 bonus = row['Bonus']
@@ -256,7 +263,8 @@ def upload():
                         errors.setdefault(index, []).append('Duplicate HIT/Assignment/Worker combination.')
                     else:
                         assignment['DuplicateCheck'] = True
-
+            if assignmentstatus not in ['Approved', 'Submitted', 'Rejected']:
+                errors.setdefault(index, []).append('Non-valid Assignment status: "%s".' % assignmentstatus)
             if not valid_hit_assignment_worker:
                 errors.setdefault(index, []).append('Non-valid HIT/Assignment/Worker combination.')
             if bonus and not is_number(bonus):
@@ -275,10 +283,13 @@ def upload():
         total_bonus = 0.0
 
         # Going back to beginning of CSV if data appeared valid
+        warnings = {}
         csvdata.seek(0)
         csvreader = csv.DictReader(csvdata)
-        for row in csvreader:
-            print(row)
+        for index, row in enumerate(csvreader, 1):
+            if row['Status'] != 'Submitted':
+                # Skipping line if already approved/rejected
+                continue
             hitid = row['HITId']
             assignmentid = row['AssignmentId']
             workerid = row['WorkerId']
@@ -290,16 +301,26 @@ def upload():
             unique_token_bonus = assignmentid + workerid
 
             if approve:
-                api.approve_assignment(assignmentid)
-                total_approved += 1
+                error = api.approve_assignment(assignmentid)
+                if error is None:
+                    total_approved += 1
+                else:
+                    warnings.setdefault(index, []).append('Could not approve assignment, maybe it was auto-approved already?')
             if reject:  # Maybe add custom reason slot to csv
-                api.reject_assignment(assignmentid, "We are sorry to inform you that your answer did not match our quality standards.")
-                total_rejected += 1
+                error = api.reject_assignment(assignmentid, "We are sorry to inform you that your answer did not match our quality standards.")
+                if error is None:
+                    total_rejected += 1
+                else:
+                    warnings.setdefault(index, []).append('Could not reject assignment, maybe it was auto-approved already?')
             if bonus:
-                api.send_bonus(workerid, assignmentid, bonus, reason, unique_token_bonus)
-                total_bonus += float(bonus)
+                error = api.send_bonus(workerid, assignmentid, bonus, reason, unique_token_bonus)
+                if error is None:
+                    total_bonus += float(bonus)
+                else:
+                    warnings.setdefault(index, []).append('Could not send bonus. You can only send one bonus per Assignment!')                
 
             if softblock:
+                #errorhandling for softblock
                 softblock_id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
                 api.associate_qualification_with_worker(workerid, softblock_id)
                 total_softblocked += 1
@@ -310,9 +331,34 @@ def upload():
         data['softblocked'] = total_softblocked
         data['bonus'] = total_bonus
 
-        return json.dumps({'success': True, 'data': data}), 200, {'ContentType': 'application/json'}
+        return json.dumps({'success': True, 'data': data, 'warnings': warnings}), 200, {'ContentType': 'application/json'}
 
     return json.dumps({'success': False, 'errortype': 'form', 'errors': form.errors}), 400, {'ContentType': 'application/json'}
+
+
+@app.route("/db/toggle_hit_visibility/<awsid:id>", methods=['POST'])
+@app.route("/db/toggle_hit_visibility/<int:id>/<batched>", methods=['POST'])
+def toggle_hit_visibility(id, batched=False):
+    batched = (batched == 'True' or batched == 'true')
+    if batched:
+        group = MiniGroup.query.filter(MiniGroup.id == id).one_or_none()
+        if group:
+            group.hidden = not group.hidden
+            hidden = group.hidden
+        else:
+            return json.dumps({'success': False, 'error': 'No such group.'}), 404, {'ContentType': 'application/json'}
+    else:
+        hit = HiddenHIT.query.filter(HiddenHIT.id == id).one_or_none()
+        if hit is None:
+            hit = HiddenHIT(id=id)
+            db.session.add(hit)
+            hidden = True
+        else:
+            db.session.delete(hit)
+            hidden = False
+
+    db.session.commit()
+    return json.dumps({'success': True, 'hidden': hidden}), 200, {'ContentType': 'application/json'}
 
 
 def get_assignments(id, batched, status=None):
@@ -407,11 +453,23 @@ def delete_queued_from_db(group_id, position):
 
     to_delete = MiniHIT.query\
         .filter(MiniHIT.group_id == group_id)\
-        .filter(MiniHIT.position == position)\
-        .filter(MiniHIT.id.is_(None)).one_or_none()
+        .filter(MiniHIT.position == position).one_or_none()
+        # .filter(MiniHIT.id.is_(None)).one_or_none()
+    if to_delete is None:
+        return json.dumps({'success': False, 'type': 'not_found', 'error': 'No MiniHIT at position %s of Group %s found!' % (position, group_id)}), 404, {'ContentType': 'application/json'}
 
-    if(to_delete is None):
-        return json.dumps({'success': False, 'error': 'ERROR'}), 423, {'ContentType': 'application/json'}
+    unnecessary_keys = ['AssignmentDurationInSeconds', 'AutoApprovalDelayInSeconds', 'Description', 'HITGroupId',
+                        'Keywords', 'QualificationRequirements', 'Question', 'Reward', 'Title']
+
+    if to_delete.id is not None:
+        # try catch if id not valid blub
+        hit = api.get_hit(to_delete.id)
+        hit['workers'] = to_delete.workers
+        hit['position'] = to_delete.position
+        for key in unnecessary_keys:
+            if key in hit:
+                del hit[key]
+        return json.dumps({'success': False, 'type': 'locked', 'hit': hit, 'error': 'MiniHIT at position %s of Group %s was already published!' % (position, group_id)}), 423, {'ContentType': 'application/json'}
 
     db.session.delete(to_delete)
 
@@ -466,7 +524,6 @@ def approve_route(hitid):
 
 @app.errorhandler(404)
 def page_not_found(error):
-    add_hits_to_db()
     return render_template('404.html'), 404
 
 

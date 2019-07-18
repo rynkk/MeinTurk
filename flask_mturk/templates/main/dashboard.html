@@ -13,6 +13,24 @@
 
 {% block body %}
 
+<div class="modal fade" id="exportmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Placeholder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:2rem 1rem">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="uploadmodal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -26,9 +44,9 @@
                 <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
                     {{ uploadform.hidden_tag() }}
                     {{ uploadform.file(class="form-control-file") }}
-                    <label class="error"></label>
-                    <div class="error"></div>                    
+                    <label class="error"></label>             
                     <div class="success"></div>
+                    <div class="error"></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -87,7 +105,6 @@
                     <thead>
                         <tr class="border-bottom">
                             <th style="width:5%"></th>
-                            <!--th style="width:20%"><h6>ID</h6></th-->
                             <th style="width:20%"><h6>Name</h6></th>
                             <th style="width:15%"><h6>Comparator</h6></th>
                             <th style="width:10%"><h6>Value</h6></th>
@@ -127,7 +144,8 @@
         createdhit = {{ createdhit | tojson}};
         quals = {{ quals | tojson}};
         hidden_hits = {{ hidden_hits | tojson}};
-        
+        console.log(surveys)
+        console.log(ordering)
         master_id_sandbox = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  // Sandbox
         master_id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH' // Production
         adult_id = '00000000000000000060'
@@ -345,7 +363,7 @@
                 this.child(
                         [
                             format_info(this.data()), // maybe change so that not added into td
-                            format_slide(this.data().minihits)
+                            format_slide(this.data())
                         ]             
                     ).show()
                 this.child().first().addClass("info-row")
@@ -494,7 +512,7 @@
             
             (async () => {
                 slide_table = $(this).closest('table')
-                group_id = slide_table.data('group-id').substring(5)
+                group_id = slide_table.data('group-id')
                 position = $(this).closest('tr').children("td:first").text()
                 slide_table.find('button').attr('disabled', 'true')
                 const rawResponse = await fetch('/db/delete-queued/'+group_id+'/'+position, {
@@ -508,9 +526,39 @@
                     slide_table.children('tr').each(function(index){
                         $(this).children('td:first').text(index+1)
                     })
+                    show_alert("SUCCESS!", "Successfully deleted queued HIT from Database.", "success")
+                }else{
+                    errormsg = ""
+
+                    if(content.type == 'locked'){
+                        tr = format_slide_row(content.hit)
+                        $(this).closest('tr').replaceWith(tr)
+                        errormsg = content.error
+                    }else if(content.type == 'not_found'){
+                        errormsg = content.error
+                    }
+                    show_alert("ERROR!", errormsg, "danger")
+                    
                 }
               })();
         } );
+
+        function show_alert(heading, message, type){
+            alert_class="alert-"+type
+
+            $('#alert').addClass(alert_class)
+            $('#alert .alert-heading').text(heading)
+            $('#alert .alert-message').text(message)
+            $('#alert').slideDown(function() {
+                setTimeout(function() {
+                    $('#alert').slideUp(function(){
+                        $('#alert').removeClass(alert_class)
+                        $('#alert .alert-heading').text("")
+                        $('#alert .alert-message').text("")
+                    });
+                }, 5000);
+            });
+        }
 
         $('.toggle-groupstatus').on('click', function(event){
             (async () => {
@@ -668,6 +716,7 @@
             var button = $(event.relatedTarget)
             // Setting hidden fields that are used to identify the HIT in the backend            
             $("#hit_batched").val(button.data('batched'))
+            console.log(button.data())
             $("#hit_identifier").val(button.data('identifier'))
 
             var row = button.closest("tr.info-row").prev()
@@ -681,8 +730,10 @@
         });
 
         $("#uploadbtn").on("click", function(){
+            $("#uploadmodal label.error").empty()
+            $("#uploadmodal div.error").empty()
+            $("#uploadmodal div.success").empty()
             if(!$("#uploadmodal #file").val()){
-                $("#uploadmodal label.error").empty()
                 $("#uploadmodal label.error").append("This field is required.")                
                 $("#uploadmodal #file").addClass("error")
                 return
@@ -700,7 +751,9 @@
               }).then( response => response.json())
                 .then(json => {
                     $('body').removeClass("loading")
-                    if(json.success){                        
+                    if(json.success){
+                        console.log(json)
+                        // Adding Approved/Rejected, BonusPaid/softblocked                       
                         row = $("<div>").addClass("row")
                         col = $("<div>").addClass("col-3")
                         row_one = row.clone()
@@ -714,8 +767,24 @@
                                .append(col.clone().text("$"+json.data.bonus))
                                .append(col.clone().text("Softblocked"))
                                .append(col.clone().text(json.data.softblocked))
-                        row.clone
+                        
                         $("#uploadmodal div.success").append(row_two).append(row_one)
+                        
+                        // Adding warnings if any
+                        // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
+                        if(Object.keys(json.warnings).length){
+                            $("#uploadmodal div.error").append('<h4>Warnings:<h4>')
+                            for (i in json.warnings){
+                                console.log(i)
+                                li = $('<li>').text("Row "+i)
+                                ul = $('<ul>')
+                                for (j in json.warnings[i]){
+                                    row_li = $('<li>').text(json.warnings[i][j])
+                                    ul.append(row_li)
+                                }
+                                $("#uploadmodal div.error").append($('<ul>').append(li.append(ul)))                                
+                            }
+                        }
                     }
                     else{
                         $("#uploadmodal label.error").empty()
@@ -758,7 +827,8 @@
             else
                 query = data.HITId
 
-            exportlink = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'" download>ExportCSV</a>'
+            exportlink_all = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/all" download>Export All</a>'
+            exportlink_submitted = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/submitted" download>Export Submitted</a>'
             qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
             uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">ImportCSV</button>')
                         .data('batched', data.batched)
@@ -774,7 +844,7 @@
                         '<td style="width:1rem"></td>'+
                         '<td>HITId:</td>'+
                         '<td>'+data['HITId']+'</td>'+
-                        '<td>'+exportlink+'</td>'+
+                        '<td>'+exportlink_all+exportlink_submitted+'</td>'+
                     '</tr>')
 
             tr_two = $('<tr>'+
@@ -808,40 +878,45 @@
                     .append(tr_one).append(tr_two).append(tr_three).append(tr_four)
         }
 
+        function format_slide_row(hit){
+            if(hit.hasOwnProperty('CreationTime')){
+                ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
+
+                $tr = $('<tr active>')
+                $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
+                $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
+                $tr.append($('<td>').addClass('minihittd').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
+                $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
+                $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
+                $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
+                    .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
+                $tr.append($('<td>').addClass('minihittd').append($progressbtn))
+            }else{
+                $tr = $('<tr inactive>')
+                $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
+                $tr.append($('<td>').addClass('minihittd').text('Queued'))
+                $tr.append($('<td>').addClass('minihittd').text('0/'+hit.workers))
+                $tr.append($('<td>').addClass('minihittd'))
+                $tr.append($('<td>').addClass('minihittd'))
+                $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
+
+                $tr.append($('<td>').addClass('minihittd').append($delbtn))                
+            }
+            return $tr
+        }
+
         function format_slide ( data ) {
             // `d` is the original data object for the row
-            
-            group_id = data[0].RequesterAnnotation
+            group_id = data.batch_id
+            data = data.minihits
             $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
             $table.data('group-id', group_id)
+            console.log(data)
             
             for(i in data){
                 hit = data[i]
-                if(hit.hasOwnProperty('CreationTime')){
-                    ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
-
-                    $tr = $('<tr active>')
-                    $tr.append($('<td>').addClass('minihittd minihitposition').text(hit.position)) //hit.position should be same as i always
-                    $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
-                    $tr.append($('<td>').addClass('minihittd').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
-                    $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
-                    $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
-                    $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
-                        .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
-                    $tr.append($('<td>').addClass('minihittd').append($progressbtn))
-                    $table.append($tr)
-                }else{
-                    $tr = $('<tr inactive>')
-                    $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
-                    $tr.append($('<td>').addClass('minihittd').text('Queued'))
-                    $tr.append($('<td>').addClass('minihittd').text('0/'+hit.workers))
-                    $tr.append($('<td>').addClass('minihittd'))
-                    $tr.append($('<td>').addClass('minihittd'))
-                    $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
-
-                    $tr.append($('<td>').addClass('minihittd').append($delbtn))
-                    $table.append($tr)
-                }
+                $row = format_slide_row(hit)
+                $table.append($row)
             }
             $slider = $('<div>').addClass('slider').append( $table)
             return $slider

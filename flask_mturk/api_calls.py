@@ -1,6 +1,7 @@
 from flask_mturk import client
 from datetime import datetime
 import time
+import json
 from botocore.exceptions import ClientError
 
 
@@ -22,10 +23,18 @@ class Api:
         return self.client.delete_hit(HITId=hit_id)
 
     def approve_assignment(self, assignment_id):
-        return client.approve_assignment(AssignmentId=assignment_id)
+        try:
+            client.approve_assignment(AssignmentId=assignment_id)
+            return None
+        except ClientError as ce:
+            return ce.response['Error']['Message']
 
-    def reject_assignment(self, assignment_id, reason):
-        return client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
+    def reject_assignment(self, assignment_id, reason):        
+        try:
+            client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
+            return None
+        except ClientError as ce:
+            return ce.response['Error']['Message']
 
     def delete_qualification_type(self, qualification_id):
         return client.delete_qualification_type(QualificationTypeId=qualification_id)
@@ -38,13 +47,17 @@ class Api:
         )
 
     def send_bonus(self, worker_id, assignment_id, bonus_amount, reason, token):
-        return client.send_bonus(
-            WorkerId=worker_id,
-            BonusAmount=bonus_amount,
-            AssignmentId=assignment_id,
-            Reason=reason,
-            UniqueRequestToken=token
-        )
+        try:
+            client.send_bonus(
+                WorkerId=worker_id,
+                BonusAmount=bonus_amount,
+                AssignmentId=assignment_id,
+                Reason=reason,
+                UniqueRequestToken=token
+            )
+            return None
+        except ClientError as ce:
+            return ce.response['Error']['Message']
 
     def create_hit(self, max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):
         response = self.client.create_hit(
@@ -93,6 +106,8 @@ class Api:
         return response
 
     # Paginated functions #
+
+    # major bottleneck if more than 100 HITs
     def list_all_hits(self):
         result = []
         paginator = self.client.get_paginator('list_hits')
@@ -126,6 +141,9 @@ class Api:
             result += page['BonusPayments']
         return result
 
+    def list_bonus_payments_for_assignment(self, assignmentid):
+        return self.client.list_bonus_payments(AssignmentId=assignmentid)['BonusPayments']
+
     def list_custom_qualifications(self):
         result = []
         paginator = self.client.get_paginator('list_qualification_types')
@@ -138,6 +156,17 @@ class Api:
             result += page['QualificationTypes']
         return result
 
+    def list_workers_with_qualification_type(self, qualification_id):
+        result = []
+        paginator = self.client.get_paginator('list_workers_with_qualification_type')
+        pages = paginator.paginate(
+            QualificationTypeId=qualification_id,
+            PaginationConfig={'PageSize': 100}
+        )
+        for page in pages:
+            result += page['Qualifications']
+        return result
+
     # Combined Functions #
     def forcedelete_hit(self, hit_id):
         self.expire_hit(hit_id)
@@ -147,6 +176,12 @@ class Api:
     def delete_hits(self, hit_ids):
         for id in hit_ids:
             self.delete_hit(id)
+
+    def list_bonus_payments_for_hits(self, hit_ids):
+        result = []
+        for id in hit_ids:
+            result += self.list_bonus_payments_for_hit(id)
+        return result
 
     def list_assignments_for_hits(self, hit_ids, status=None):
         result = []
@@ -170,35 +205,39 @@ class Api:
     def forcedelete_all_hits(self, retry=False):
         # TODO: fix, also cap retries at 10 instead of 2 Need to check if there are assignments that are not approved or rejected
         all_hits = self.list_all_hits()
-        missed_one = False
+
         if(not all_hits):
             return "nothing to delete"
 
         print("**********EXPIRING HITS**********")
         for obj in all_hits:
-            print("EXPIRING HIT with ID:", obj['HITId'])
-            self.expire_hit(obj['HITId'])
-            # Maybe add time.sleep(1)here
+            print(obj['HITStatus'])
+            if obj['HITStatus'] not in ['Reviewable', 'Disposed', 'Unassignable']:
+                print("EXPIRING HIT with ID:", obj['HITId'])
+                obj['HITStatus'] = 'Reviewable'
+                # logic to check if assignments left
+                self.expire_hit(obj['HITId'])
 
         print("**********DELETING HITS**********")
         for obj in all_hits:
             print(obj['HITStatus'])
-            if(obj['HITStatus'] == 'Reviewable' or obj['HITStatus'] == 'Reviewing'):
+            if obj['HITStatus'] == 'Reviewable':
                 print("Deleteing HIT with ID:", obj['HITId'])
                 try:
                     self.delete_hit(obj['HITId'])
-                except ClientError:
+                except ClientError as e:
+                    print(e)
                     print("HIT has unsubmitted or unapproved Assignments --- Skipping")
                 continue
 
-            if(retry):
-                print("ERROR: HIT %s IS NOT EXPIRED --- ABORTING AFTER THIS TRY)" % (obj['HITId']))
-                continue
+            #if(retry):
+             #   print("ERROR: HIT %s IS NOT EXPIRED --- ABORTING AFTER THIS TRY)" % (obj['HITId']))
+             #   continue
 
-            print("ERROR: HIT %s IS NOT EXPIRED --- RETRYING AFTER PROCESS IS FINISHED" % (obj['HITId']))
-            missed_one = True
-        if(missed_one):
-            return self.forcedelete_all_hits(True)
+            # print("ERROR: HIT %s IS NOT EXPIRED --- RETRYING AFTER PROCESS IS FINISHED" % (obj['HITId']))
+        #    missed_one = True
+        #if(missed_one):
+        #    return self.forcedelete_all_hits(True)
         return "Done"
 
 
