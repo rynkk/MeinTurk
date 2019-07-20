@@ -66,17 +66,18 @@ if client:
     print(" *** Connected to MTurk-Server *** ")
 
 from flask_mturk import routes
-from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT
+from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT, CachedAnswer
 
 admin = Admin(app, 'Database')
 
 
 class HITView(ModelView):
     column_display_pk = True
-    form_columns = ('id', 'active', 'group_id', 'position', 'workers')
+    form_columns = ('id', 'status', 'group_id', 'position', 'workers')
 
 
 class GroupView(ModelView):
+    column_exclude_list = ('layout')
     column_display_pk = True
 
 
@@ -85,6 +86,10 @@ class HiddenView(ModelView):
     form_columns = ('id',)
 
 
+class AnswerView(ModelView):
+    column_display_pl = True
+
 admin.add_view(HITView(MiniHIT, db.session, 'MiniHIT'))
 admin.add_view(GroupView(MiniGroup, db.session, 'MiniGroup'))
 admin.add_view(HiddenView(HiddenHIT, db.session, 'HiddenHIT'))
+admin.add_view(AnswerView(CachedAnswer, db.session, 'CachedAnswer'))

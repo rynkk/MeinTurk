@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
 from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
 from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
-from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT
+from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer
 import csv
 import io
 import datetime
@@ -17,7 +17,7 @@ def dashboard():
     balance = api.get_balance()
     hits = api.list_all_hits()
     all_qualifications = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
-    groups = MiniGroup.query.all()
+    groups = MiniGroup.query.filter(MiniGroup.status != 'cached').all()
     order = []
 
     # Often the API is not quick enough and does not add the created HIT
@@ -32,7 +32,7 @@ def dashboard():
     hidden_hits = db.session.query(HiddenHIT.id).all()
 
     for group in groups:
-        batch = {'batch_id': group.id, 'batch_goal': group.assignments_goal, 'batch_status': group.active, 'hidden': group.hidden, 'hits': []}
+        batch = {'batch_id': group.id, 'batch_goal': group.assignments_goal, 'batch_status': group.status, 'hidden': group.hidden, 'hits': []}
         for hit in group.minihits:
             batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
@@ -127,12 +127,12 @@ def survey():
 
         if(is_minibatched):
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            minigroup = MiniGroup(active=True, hidden=False, assignments_submitted=0, assignments_goal=amount_workers, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
+            minigroup = MiniGroup(status='active', hidden=False, assignments_submitted=0, assignments_goal=amount_workers, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
             db.session.flush()
             group_id = minigroup.id
             hit_id = api.create_hit_with_type(hit_type_id, html_question_value, time_till_expiration, 9, 'batch%s' % group_id)['HITId']
-            minihit = MiniHIT(group_id=group_id, active=True, position=1, workers=9, id=hit_id)
+            minihit = MiniHIT(group_id=group_id, status='active', position=1, workers=9, id=hit_id)
             db.session.add(minihit)
             db.session.flush()
             add_hits_to_db(group_id, amount_workers - 9)  # -9 because we already created one HIT with 9 workers
@@ -169,11 +169,61 @@ def delete_all_qualifications():
     return "200 OK"
 
 
+@app.route("/cache_batch/<int:batchid>")
+def cache_route(batchid):
+    group = MiniGroup.query\
+        .filter(MiniGroup.id == batchid)\
+        .filter(MiniGroup.status != 'cached')\
+        .one_or_none()
+    if group is None:
+        return json.dumps({'success': False}), 404, {'ContentType': 'application/json'}
+
+    hits = MiniHIT.query.filter(MiniHIT.group_id == group.id).all()
+    ids = []
+    for hit in hits:
+        # Check if there are still pending or non approved/rejected Answers
+        if hit.id is None:
+            # if hit is queued but not published, delete them
+            db.session.delete(hit)
+            continue
+        response = api.get_hit(hit.id)        
+        ids.append(hit.id)
+
+        if response['NumberOfAssignmentsPending'] > 0:
+            return json.dumps({'success': False, 'error': 'Batch still has pending assignments.'}), 423, {'ContentType': 'application/json'}
+        if response['MaxAssignments'] != response['NumberOfAssignmentsCompleted'] + response['NumberOfAssignmentsAvailable']:
+            return json.dumps({'success': False, 'error': 'Batch still has non-completed assignments.'}), 423, {'ContentType': 'application/json'}
+        if response['HITStatus'] != 'Reviewable':
+            return json.dumps({'success': False, 'error': 'Cannot cache Batch with active HITs.'}), 423, {'ContentType': 'application/json'}
+        assignments = get_assignments(hit.id, False)
+        bonus_payments = api.list_bonus_payments_for_hit(hit.id)
+        for a in assignments:
+            print(a)
+            approved = True if a['AssignmentStatus'] == 'Approved' else False
+            bonus = next((payment['BonusAmount'] for payment in bonus_payments if payment['WorkerId'] == a['WorkerId'] and payment['AssignmentId'] == a['AssignmentId']), None)
+            # Convert bonus to Cents to prepare it for the DB
+            if(bonus):
+                bonus = int(float(bonus) * 100)
+            time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
+
+            ca = CachedAnswer(hit_id=hit.id, assignment_id=a['AssignmentId'],
+                              worker_id=a['WorkerId'], answer=a['Answer'],
+                              approved=approved, bonus=bonus, accept_date=a['AcceptTime'],
+                              time_taken=time_taken)
+            db.session.add(ca)
+
+        hit.status = 'cached'
+    group.status = 'cached'
+    db.session.commit()
+    api.delete_hits(ids)
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+
 @app.route("/export/<awsid:id>/<type_>")
 @app.route("/export/<int:id>/<batched>/<type_>")
 def export(id, type_, batched=False):
     print(type_)
-    batched = (batched == 'True' or batched == 'true')
+    batched = (batched == 'True' or batched == 'true' or batched == 'batched')
     fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
 
     if type_ == 'all':
@@ -452,6 +502,7 @@ def forcedeleteallhits():
 def delete_queued_from_db(group_id, position):
 
     to_delete = MiniHIT.query\
+        .filter(MiniHIT.status != 'cached')\
         .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position).one_or_none()
         # .filter(MiniHIT.id.is_(None)).one_or_none()
@@ -489,11 +540,15 @@ def delete_queued_from_db(group_id, position):
 
 @app.route('/db/toggle_group_status/<int:group_id>', methods=['GET', 'POST'])
 def toggle_group_status(group_id):
-    group = MiniGroup.query.filter(MiniGroup.id == group_id).one_or_none()
+    group = MiniGroup.query.filter(MiniGroup.id == group_id)\
+                           .filter(MiniGroup.status != 'cached').one_or_none()
     if(group is None):
         return json.dumps({'success': False, 'error': 'Group does not exist.'}), 404, {'ContentType': 'application/json'}
-    group.active = not group.active
-    status = group.active
+    if group.status == 'active':
+        group.status = 'inactive'
+    else:
+        group.status = 'active'
+    status = group.status
     db.session.commit()
     return json.dumps({'success': True, 'status': status}), 200, {'ContentType': 'application/json'}
 
@@ -566,29 +621,30 @@ def flash_errors(form):
 
 # Doesnt commit
 def add_hits_to_db(groupid, assignments):
-    max_pos = db.session.query(db.func.max(MiniHIT.position)).filter(MiniHIT.group_id == groupid).scalar()
-    max_pos += 1
-    print(max_pos)
+    max_pos = db.session.query(db.func.max(MiniHIT.position))\
+        .filter(MiniHIT.group_id == groupid)\
+        .filter(MiniHIT.status != 'cached').scalar()
     if max_pos is None:
         return "Error"
+    max_pos += 1
 
     part = assignments % 9
     full = int((assignments - part) / 9)
     for i in range(full):
         print("Adding new queued HITs to DB a 9 Workers")
-        minihit = MiniHIT(group_id=groupid, active=False, position=max_pos + i, workers=9, id=None)
+        minihit = MiniHIT(group_id=groupid, status='inactive', position=max_pos + i, workers=9, id=None)
         db.session.add(minihit)
     if part > 0:
         print("Adding new queued HITs to DB with %s Workers" % part)
-        minihit = MiniHIT(group_id=groupid, active=False, position=max_pos + full, workers=part, id=None)
+        minihit = MiniHIT(group_id=groupid, status='inactive', position=max_pos + full, workers=part, id=None)
         db.session.add(minihit)
 
 
 def update_mini_hits():
     query = db.session.query(MiniGroup, MiniHIT)\
         .filter(MiniGroup.id == MiniHIT.group_id)\
-        .filter(MiniHIT.active)\
-        .filter(MiniGroup.active).all()
+        .filter(MiniHIT.status == 'active')\
+        .filter(MiniGroup.status == 'active').all()
 
     for row in query:
         active_hit_id = row.MiniHIT.id
@@ -633,7 +689,7 @@ def update_mini_hits():
                 goal = row.MiniGroup.assignments_goal
                 if submissions >= goal:
                     print("Goal reached: Submitted: %s, Goal: %s. Making Group inactive" % (submissions, goal))
-                    row.MiniGroup.active = False
+                    row.MiniGroup.status = 'inactive'
                     continue
                 else:
                     needed = goal - submissions
@@ -647,7 +703,7 @@ def update_mini_hits():
                         .one()
 
             # Because the current MiniHIT is expired we set it to inactive
-            row.MiniHIT.active = False
+            row.MiniHIT.status = 'inactive'
 
             workers = new_mini_hit.workers
 
@@ -656,7 +712,7 @@ def update_mini_hits():
             print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.id = new_hit_id
-            new_mini_hit.active = True
+            new_mini_hit.status = 'active'
     db.session.commit()
 
 
