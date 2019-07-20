@@ -16,6 +16,7 @@
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tagsinput.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/show_alert.js') }}"></script>
 
         <title>CUSTOM MTURK API</title>
         {% block head %}
@@ -34,23 +35,23 @@
             </button>
             <div class="collapse navbar-collapse" id="stickynav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard')}}">Dashboard<span class="sr-only">(current)</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('survey')}}">Studie erstellen</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard')}}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('survey')}}">Creaty Study</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="dropdown-btn" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Worker managen 
+                            Lists
                         </a>
                         <div class="dropdown-menu bg-dark" aria-labelledby="dropdown-btn">
-                            <a class="dropdown-item"  href="#">Action</a>
-                            <a class="dropdown-item"  href="#">Another action</a>
-                            <a class="dropdown-item"  href="#">Something else here</a>
+                            <a class="dropdown-item"  href="{{ url_for('qualifications_route')}}">Qualifications</a>
+                            <a class="dropdown-item"  href="{{ url_for('worker_route')}}">Workers</a>
+                            <a class="dropdown-item"  href="{{ url_for('cached_route')}}">Cached Batches</a>
                         </div>
                     </li>
                 </ul>
             </div>
         </nav>
         
-        <div style="position:fixed;width: 100%;z-index: 10000;">
+        <div style="position:fixed;width: 100%;z-index: 10000;height:0">
             <div class="container mt-3">
                 <div id="alert" class="alert" style="display:none" role="alert">    
                     <h4 class="alert-heading"></h4>
@@ -63,7 +64,7 @@
         <div class="container-fluid container-small bg-light border-bottom">
             <div class="row ">
                 <div class="col-sm-4">
-                    <p>Aktuelles Guthaben: {{ balance }}</p>
+                    <p>Current balance: {{ balance }}</p>
                 </div>
             </div>            
         </div>

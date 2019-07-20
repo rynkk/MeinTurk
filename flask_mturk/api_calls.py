@@ -1,4 +1,5 @@
-from flask_mturk import client
+from flask import jsonify
+from flask_mturk import client, app
 from datetime import datetime
 import time
 import json
@@ -156,6 +157,7 @@ class Api:
             result += page['QualificationTypes']
         return result
 
+
     def list_workers_with_qualification_type(self, qualification_id):
         result = []
         paginator = self.client.get_paginator('list_workers_with_qualification_type')
@@ -242,3 +244,13 @@ class Api:
 
 
 api = Api(client)
+
+
+@app.route('/api/list_workers_with_qualification_type/<awsid:qualification_id>')
+def list_workers_with_qualification_route(qualification_id):
+    return jsonify(api.list_workers_with_qualification_type(qualification_id))
+
+
+@app.route('/api/delete_qualification_type/<awsid:qualification_id>')
+def delete_qualification_route(qualification_id):
+    return jsonify(api.delete_qualification_type(qualification_id))

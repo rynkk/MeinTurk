@@ -23,6 +23,8 @@
                 </button>
             </div>
             <div class="modal-body" style="padding:2rem 1rem">
+                <a id="export-all" class="btn btn-primary export-btn" role="button" download>Export All</a>
+                <a id="export-submitted" class="btn btn-primary export-btn" role="button" download>Export All</a>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -241,7 +243,7 @@
         hitgroup.MaxAssignments = 0
         hitgroup.batched = true
         hitgroup.hidden = hidden
-        hitgroup.batch_status = status
+        hitgroup.batch_status = (status == 'active') ? true : false
         array.sort(compare)
         for (i = 0; i < array.length; i++){
             if(i == 0){ // the first minihit should never be queued -> can savely access attributes
@@ -332,7 +334,11 @@
                         noAssPending = row.NumberOfAssignmentsPending                        
                         noAssSubmitted = noAssMax - (row.NumberOfAssignmentsAvailable + noAssPending)
                         percentSubmitted = noAssSubmitted/noAssMax*100
-                        return noAssSubmitted+"/"+noAssGoal+"("+noAssMax+")"+" ("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
+                        console.log(row)
+                        if (row.batched)
+                            return noAssSubmitted+"/"+noAssGoal+"("+noAssMax+")"+" ("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
+                        else
+                            return noAssSubmitted+"/"+noAssMax+"("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
                     },
                     "type": "amount-complete"
                 },
@@ -392,6 +398,7 @@
                     }, 2000, 'swing', function(){
                         $row.addClass("highlight")
                         $row.next().addClass("highlight")
+                        setTimeout(function(){$(".highlight").removeClass("highlight")}, 3000)
                     })
                 }
             })
@@ -543,23 +550,6 @@
               })();
         } );
 
-        function show_alert(heading, message, type){
-            alert_class="alert-"+type
-
-            $('#alert').addClass(alert_class)
-            $('#alert .alert-heading').text(heading)
-            $('#alert .alert-message').text(message)
-            $('#alert').slideDown(function() {
-                setTimeout(function() {
-                    $('#alert').slideUp(function(){
-                        $('#alert').removeClass(alert_class)
-                        $('#alert .alert-heading').text("")
-                        $('#alert .alert-message').text("")
-                    });
-                }, 5000);
-            });
-        }
-
         $('.toggle-groupstatus').on('click', function(event){
             (async () => {
                 group_id = $(this).closest('table').data('group-id')
@@ -569,7 +559,7 @@
                 
                 const content = await rawResponse.json();
                 if (content.success){
-                    btn_text = content.status?"Pause":"Continue"
+                    btn_text = content.status=='active'?"Pause":"Continue"
                     $(this).text(btn_text)
                 }
               })();
@@ -596,11 +586,6 @@
                 }
                 table.draw()
               })();
-        })
-
-        // links bubble, stopping that
-        $('.export-btn').on('click', function (event){
-            event.stopPropagation()
         })
 
         //TODO: TEST WITH MULTIPLE WORKER SUBMISSIONS FOR EACH MINIHIT
@@ -656,7 +641,24 @@
                     })
                 })
             })            
+        }) 
+        $('#exportmodal').on('show.bs.modal', function(event){
+            var modal = $(this)
+            var button = $(event.relatedTarget)
+            tbody = modal.find(".modal-body tbody").empty()
+            modal.find("#qual-empty").empty()
+            row = button.closest('tr.info-row').prev()
+            data = table.row(row).data()
+            modal.find(".modal-title").text("CSV Export of " + data.Title)
+            if (data.batched)
+                href = "/export/"+data.batch_id
+            else
+                href = "/export/"+data.HITId
+            
+            $("#export-all").attr("href", href+"/all")
+            $("#export-submitted").attr("href", href+"/submitted")
         })
+
         $('#qualmodal').on('show.bs.modal', function(event){
             var modal = $(this)
             var button = $(event.relatedTarget)
@@ -827,10 +829,10 @@
             else
                 query = data.HITId
 
-            exportlink_all = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/all" download>Export All</a>'
-            exportlink_submitted = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/submitted" download>Export Submitted</a>'
+            //exportlink_all = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/all" download>Export All</a>'
+            //exportlink_submitted = '<a class="btn btn-primary export-btn" role="button" href="/export/'+query+'/submitted" download>Export Submitted</a>'
             qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-            uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">ImportCSV</button>')
+            uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">Import CSV</button>')
                         .data('batched', data.batched)
                         .data('identifier', data.batched?data.batch_id:data.HITId)
             uploadmodalbtntd = $('<td>')
@@ -844,7 +846,7 @@
                         '<td style="width:1rem"></td>'+
                         '<td>HITId:</td>'+
                         '<td>'+data['HITId']+'</td>'+
-                        '<td>'+exportlink_all+exportlink_submitted+'</td>'+
+                        '<td>'+'<button type="button" data-toggle="modal" data-target="#exportmodal">Export CSV</button>'+'</td>'+
                     '</tr>')
 
             tr_two = $('<tr>'+

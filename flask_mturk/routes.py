@@ -147,7 +147,26 @@ def survey():
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
-    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment = MAX_PAYMENT)
+    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT)
+
+
+@app.route("/qualifications")
+def qualifications_route():
+    balance = api.get_balance()
+    qualifications = api.list_custom_qualifications()
+    return render_template('main/qualification_list.html', title='Qualifications', balance=balance, qualifications=qualifications)
+
+
+@app.route("/worker")
+def worker_route():
+    balance = api.get_balance()
+    return render_template('main/worker_list.html', title='Qualifications', balance=balance)
+
+
+@app.route("/cached_batches")
+def cached_route():
+    balance = api.get_balance()
+    return render_template('main/cached_list.html', title='Qualifications', balance=balance)
 
 
 @app.route("/createsoftblock")
@@ -219,11 +238,26 @@ def cache_route(batchid):
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
+@app.route("/assignment_goal/<int:batchid>", methods=['GET'])
+@app.route("/assignment_goal/<int:batchid>/<int:goal>", methods=['POST'])
+def goal_route(batchid, goal=None):
+    group = MiniGroup.query.filter(MiniGroup.id == batchid).one_or_none()
+    if not group:
+        return json.dumps({'success': False, 'error': 'Could not find Batch with id %s.' % batchid}), 200, {'ContentType': 'application/json'}
+
+    if request.method == 'GET':
+        return json.dumps({'success': True, 'goal': group.assignments_goal}), 200, {'ContentType': 'application/json'}
+    elif request.method == 'POST':
+        group.assignments_goal = goal
+        db.session.commit()
+        return json.dumps({'success': True, 'goal': goal}), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/export/<int:id>/<type_>")
 @app.route("/export/<awsid:id>/<type_>")
-@app.route("/export/<int:id>/<batched>/<type_>")
-def export(id, type_, batched=False):
+def export(id, type_):
     print(type_)
-    batched = (batched == 'True' or batched == 'true' or batched == 'batched')
+    batched = is_number(id)
     fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
 
     if type_ == 'all':

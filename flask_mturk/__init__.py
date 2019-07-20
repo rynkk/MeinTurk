@@ -89,6 +89,7 @@ class HiddenView(ModelView):
 class AnswerView(ModelView):
     column_display_pl = True
 
+
 admin.add_view(HITView(MiniHIT, db.session, 'MiniHIT'))
 admin.add_view(GroupView(MiniGroup, db.session, 'MiniGroup'))
 admin.add_view(HiddenView(HiddenHIT, db.session, 'HiddenHIT'))
