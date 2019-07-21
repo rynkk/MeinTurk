@@ -269,7 +269,7 @@ def export(id, type_):
 
     for a in assignments:
         row = {'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
-        time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
+        time_taken = int((a['SubmitTime'] - a['AcceptTime']).total_seconds())
         row['TimeTaken'] = time_taken
 
         if a['AssignmentStatus'] == 'Submitted':
@@ -310,7 +310,7 @@ def export_cached(id):
         for answer in hit.answers:
             a = {'HITId': answer.hit_id, 'AssignmentId': answer.assignment_id,
                  'WorkerId': answer.worker_id, 'Answer': answer.answer,
-                 'TimeTaken': answer.time_taken, 'Bonus': '', 'Reason': answer.reason}
+                 'TimeTaken': answer.time_taken, 'Reason': answer.reason}
 
             if answer.bonus != "" and answer.bonus:
                 a['Bonus'] = answer.bonus / 100,
@@ -318,10 +318,8 @@ def export_cached(id):
             if answer.approved:
                 a['Status'] = 'Approved'
                 a['Approve'] = 'x'
-                a['Reject'] = ''
             else:
                 a['Status'] = 'Rejected'
-                a['Approve'] = ''
                 a['Reject'] = 'x'
 
             if any(worker['WorkerId'] == answer.worker_id for worker in softblocked_workers):
