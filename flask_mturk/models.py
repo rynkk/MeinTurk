@@ -9,6 +9,7 @@ class HiddenHIT(db.Model):
 class MiniGroup(db.Model):
     __tablename__ = 'mini_group'
     id = db.Column(db.Integer, primary_key=True)
+    project_name = db.Column(db.String, nullable=False)
     status = db.Column(db.String, nullable=False)
     hidden = db.Column(db.Boolean, nullable=False)
     assignments_goal = db.Column(db.Integer, nullable=False)
@@ -28,7 +29,7 @@ class MiniHIT(db.Model):
     __tablename__ = 'mini_hit'
     id = db.Column(db.String)
     status = db.Column(db.String, nullable=False)
-    group_id = db.Column(db.String, db.ForeignKey('mini_group.id'), primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('mini_group.id'), primary_key=True)
     position = db.Column(db.Integer, primary_key=True)
     workers = db.Column(db.Integer, nullable=False)
     # answers are only set if HIT got cached
@@ -47,8 +48,10 @@ class CachedAnswer(db.Model):
     answer = db.Column(db.String, nullable=False)
     approved = db.Column(db.Boolean, nullable=False)
     bonus = db.Column(db.Integer)
-    accept_date = db.Column(db.DATETIME, nullable=False)
+    reason = db.Column(db.String)
+    # TODO: REMOVE accept_date?
+    accept_date = db.Column(db.DateTime, nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return '<CachedAnswer %r, %r, %r, %r, %r>' % (self.hit_id, self.assignment_id, self.worker_id, self.answer, self.approved, self.bonus)
+        return '<CachedAnswer %r, %r, %r, %r, %r, %r>' % (self.hit_id, self.assignment_id, self.worker_id, self.answer, self.approved, self.bonus)

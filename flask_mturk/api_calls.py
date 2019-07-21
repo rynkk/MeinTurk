@@ -10,7 +10,8 @@ class Api:
     def __init__(self, c):
         self.client = c
 
-    # Elementary functions #
+    # ## ### Elementary functions ### ## #
+
     def get_hit(self, hitid):
         return self.client.get_hit(HITId=hitid)['HIT']
 
@@ -30,7 +31,7 @@ class Api:
         except ClientError as ce:
             return ce.response['Error']['Message']
 
-    def reject_assignment(self, assignment_id, reason):        
+    def reject_assignment(self, assignment_id, reason):
         try:
             client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
             return None
@@ -44,6 +45,7 @@ class Api:
         return client.associate_qualification_with_worker(
             QualificationTypeId=qualification_id,
             WorkerId=worker_id,
+            IntegerValue=1,
             SendNotification=False,
         )
 
@@ -106,7 +108,7 @@ class Api:
         )['QualificationType']
         return response
 
-    # Paginated functions #
+    # ## ### Paginated functions ### ## #
 
     # major bottleneck if more than 100 HITs
     def list_all_hits(self):
@@ -157,7 +159,6 @@ class Api:
             result += page['QualificationTypes']
         return result
 
-
     def list_workers_with_qualification_type(self, qualification_id):
         result = []
         paginator = self.client.get_paginator('list_workers_with_qualification_type')
@@ -169,7 +170,8 @@ class Api:
             result += page['Qualifications']
         return result
 
-    # Combined Functions #
+    # ## ### Combined functions ### ## #
+
     def forcedelete_hit(self, hit_id):
         self.expire_hit(hit_id)
         time.sleep(5)
@@ -231,15 +233,6 @@ class Api:
                     print(e)
                     print("HIT has unsubmitted or unapproved Assignments --- Skipping")
                 continue
-
-            #if(retry):
-             #   print("ERROR: HIT %s IS NOT EXPIRED --- ABORTING AFTER THIS TRY)" % (obj['HITId']))
-             #   continue
-
-            # print("ERROR: HIT %s IS NOT EXPIRED --- RETRYING AFTER PROCESS IS FINISHED" % (obj['HITId']))
-        #    missed_one = True
-        #if(missed_one):
-        #    return self.forcedelete_all_hits(True)
         return "Done"
 
 
@@ -251,6 +244,6 @@ def list_workers_with_qualification_route(qualification_id):
     return jsonify(api.list_workers_with_qualification_type(qualification_id))
 
 
-@app.route('/api/delete_qualification_type/<awsid:qualification_id>')
+@app.route('/api/delete_qualification_type/<awsid:qualification_id>', methods=['DELETE'])
 def delete_qualification_route(qualification_id):
     return jsonify(api.delete_qualification_type(qualification_id))

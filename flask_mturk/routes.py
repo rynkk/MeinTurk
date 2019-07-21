@@ -65,7 +65,7 @@ def survey():
     if form.validate_on_submit():
 
         # standard fields #
-        # project_name = form.project_name.data
+        project_name = form.project_name.data
         title = form.title.data
         description = form.description.data
         keywords = form.keywords.data
@@ -104,10 +104,10 @@ def survey():
             obj = create_qualification_object(id, 'EqualTo', 1, "PreviewAndAccept")
             qualifications.append(obj)
 
-        # softblock qualification # Deactivatec till app done
-        #id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
-        #obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
-        #qualifications.append(obj)
+        # softblock qualification # Deactivated till app done
+        # id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
+        # obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+        # qualifications.append(obj)
 
         # conditional fields #
         is_minibatched = form.minibatch.data
@@ -127,7 +127,7 @@ def survey():
 
         if(is_minibatched):
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
-            minigroup = MiniGroup(status='active', hidden=False, assignments_submitted=0, assignments_goal=amount_workers, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
+            minigroup = MiniGroup(status='active', project_name=project_name, hidden=False, assignments_submitted=0, assignments_goal=amount_workers, layout=html_question_value, lifetime=time_till_expiration, type_id=hit_type_id, batch_qualification=qualification_id)
             db.session.add(minigroup)
             db.session.flush()
             group_id = minigroup.id
@@ -151,45 +151,32 @@ def survey():
 
 
 @app.route("/qualifications")
-def qualifications_route():
+def qualifications_page():
     balance = api.get_balance()
     qualifications = api.list_custom_qualifications()
     return render_template('main/qualification_list.html', title='Qualifications', balance=balance, qualifications=qualifications)
 
 
 @app.route("/worker")
-def worker_route():
+def worker_page():
     balance = api.get_balance()
-    return render_template('main/worker_list.html', title='Qualifications', balance=balance)
+    return render_template('main/worker_list.html', title='Workers', balance=balance)
 
 
-@app.route("/cached_batches")
-def cached_route():
+@app.route("/cached")
+def cached_page():
     balance = api.get_balance()
-    return render_template('main/cached_list.html', title='Qualifications', balance=balance)
+    groups = MiniGroup.query.filter(MiniGroup.status == 'cached').all()
+    cached_batches = []
+    for group in groups:
+        batch = {'name': group.project_name, 'id': group.id, 'goal': group.assignments_goal, 'submitted': group.assignments_submitted}
+        cached_batches.append(batch)
+
+    return render_template('main/cached_list.html', title='Cached Batches', balance=balance, batches=cached_batches)
 
 
-@app.route("/createsoftblock")
-def softblock():
-    qualification = api.create_qualification_type("Thank you!", "thanks", "For you splendid performance we award you this special qualification. Thank you again!")
-    return jsonify(qualification)
-
-
-@app.route("/cleardb")
-def cleardb():
-    db.drop_all()
-    db.create_all()
-    return "200 OK"
-
-
-@app.route("/delete_all_qualifications")
-def delete_all_qualifications():
-    api.delete_all_qualification_types()
-    return "200 OK"
-
-
-@app.route("/cache_batch/<int:batchid>")
-def cache_route(batchid):
+@app.route("/cache_batch/<int:batchid>")  # , methods=['PATCH'])
+def cache_batch(batchid):
     group = MiniGroup.query\
         .filter(MiniGroup.id == batchid)\
         .filter(MiniGroup.status != 'cached')\
@@ -205,7 +192,7 @@ def cache_route(batchid):
             # if hit is queued but not published, delete them
             db.session.delete(hit)
             continue
-        response = api.get_hit(hit.id)        
+        response = api.get_hit(hit.id)
         ids.append(hit.id)
 
         if response['NumberOfAssignmentsPending'] > 0:
@@ -219,16 +206,21 @@ def cache_route(batchid):
         for a in assignments:
             print(a)
             approved = True if a['AssignmentStatus'] == 'Approved' else False
-            bonus = next((payment['BonusAmount'] for payment in bonus_payments if payment['WorkerId'] == a['WorkerId'] and payment['AssignmentId'] == a['AssignmentId']), None)
+            bonus_obj = next((payment for payment in bonus_payments if payment['WorkerId'] == a['WorkerId'] and payment['AssignmentId'] == a['AssignmentId']), None)
+
             # Convert bonus to Cents to prepare it for the DB
-            if(bonus):
-                bonus = int(float(bonus) * 100)
+            if(bonus_obj):
+                bonus = int(float(bonus_obj['BonusAmount']) * 100)
+                reason = bonus_obj['Reason']
+            else:
+                bonus = ""
+                reason = ""
             time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
 
             ca = CachedAnswer(hit_id=hit.id, assignment_id=a['AssignmentId'],
                               worker_id=a['WorkerId'], answer=a['Answer'],
-                              approved=approved, bonus=bonus, accept_date=a['AcceptTime'],
-                              time_taken=time_taken)
+                              approved=approved, bonus=bonus, reason=reason,
+                              accept_date=a['AcceptTime'], time_taken=time_taken)
             db.session.add(ca)
 
         hit.status = 'cached'
@@ -238,9 +230,9 @@ def cache_route(batchid):
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
-@app.route("/assignment_goal/<int:batchid>", methods=['GET'])
-@app.route("/assignment_goal/<int:batchid>/<int:goal>", methods=['POST'])
-def goal_route(batchid, goal=None):
+@app.route("/assignment_goal/<int:batchid>")
+@app.route("/assignment_goal/<int:batchid>/<int:goal>", methods=['PATCH'])
+def update_goal(batchid, goal=None):
     group = MiniGroup.query.filter(MiniGroup.id == batchid).one_or_none()
     if not group:
         return json.dumps({'success': False, 'error': 'Could not find Batch with id %s.' % batchid}), 200, {'ContentType': 'application/json'}
@@ -256,13 +248,14 @@ def goal_route(batchid, goal=None):
 @app.route("/export/<int:id>/<type_>")
 @app.route("/export/<awsid:id>/<type_>")
 def export(id, type_):
+    #             time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
     print(type_)
     batched = is_number(id)
-    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
 
     if type_ == 'all':
         assignments = get_assignments(id, batched)  # Add submitted, rejected and approved Assignments to export
-        #probably add payments for every id here
+        # probably add payments for every id here
         softblocked_workers = api.list_workers_with_qualification_type(app.config.get('SOFTBLOCK_QUALIFICATION_ID'))
         filename = "results_all.csv"
 
@@ -276,11 +269,13 @@ def export(id, type_):
 
     for a in assignments:
         row = {'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
+        time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
+        row['TimeTaken'] = time_taken
+
         if a['AssignmentStatus'] == 'Submitted':
             csv_writer.writerow(row)
         else:
             # Might be faster to list payments for entire HIT/entire MiniGroup
-            # TODO: Add softblock
             bonus = api.list_bonus_payments_for_assignment(a['AssignmentId'])
 
             if len(bonus) == 1:
@@ -296,8 +291,53 @@ def export(id, type_):
             if any(worker['WorkerId'] == a['WorkerId'] for worker in softblocked_workers):
                 row['Softblock'] = 'x'
             csv_writer.writerow(row)
-
     return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=%s" % filename})
+
+
+@app.route("/export_cached/<int:id>")
+def export_cached(id):
+    group = MiniGroup.query\
+                     .filter(MiniGroup.id == id)\
+                     .filter(MiniGroup.status == 'cached')\
+                     .one_or_none()
+    if(group is None):
+        return json.dumps({'success': False}), 200, {'ContentType': 'application/json'}
+
+    softblocked_workers = api.list_workers_with_qualification_type(app.config.get('SOFTBLOCK_QUALIFICATION_ID'))
+    assignments = []
+
+    for hit in group.minihits:
+        for answer in hit.answers:
+            a = {'HITId': answer.hit_id, 'AssignmentId': answer.assignment_id,
+                 'WorkerId': answer.worker_id, 'Answer': answer.answer,
+                 'TimeTaken': answer.time_taken, 'Bonus': '', 'Reason': answer.reason}
+
+            if answer.bonus != "" and answer.bonus:
+                a['Bonus'] = answer.bonus / 100,
+
+            if answer.approved:
+                a['Status'] = 'Approved'
+                a['Approve'] = 'x'
+                a['Reject'] = ''
+            else:
+                a['Status'] = 'Rejected'
+                a['Approve'] = ''
+                a['Reject'] = 'x'
+
+            if any(worker['WorkerId'] == answer.worker_id for worker in softblocked_workers):
+                a['Softblock'] = 'x'
+            assignments.append(a)
+
+    si = io.StringIO()
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
+
+    csv_writer = csv.DictWriter(si, fieldnames)
+    csv_writer.writeheader()
+
+    for row in assignments:
+        csv_writer.writerow(row)
+
+    return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=result_cached.csv"})
 
 
 @app.route("/upload", methods=['POST'])
@@ -401,10 +441,10 @@ def upload():
                 if error is None:
                     total_bonus += float(bonus)
                 else:
-                    warnings.setdefault(index, []).append('Could not send bonus. You can only send one bonus per Assignment!')                
+                    warnings.setdefault(index, []).append('Could not send bonus. You can only send one bonus per Assignment!')
 
             if softblock:
-                #errorhandling for softblock
+                # errorhandling for softblock
                 softblock_id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
                 api.associate_qualification_with_worker(workerid, softblock_id)
                 total_softblocked += 1
@@ -420,8 +460,8 @@ def upload():
     return json.dumps({'success': False, 'errortype': 'form', 'errors': form.errors}), 400, {'ContentType': 'application/json'}
 
 
-@app.route("/db/toggle_hit_visibility/<awsid:id>", methods=['POST'])
-@app.route("/db/toggle_hit_visibility/<int:id>/<batched>", methods=['POST'])
+@app.route("/db/toggle_hit_visibility/<awsid:id>", methods=['PATCH'])
+@app.route("/db/toggle_hit_visibility/<int:id>/<batched>", methods=['PATCH'])
 def toggle_hit_visibility(id, batched=False):
     batched = (batched == 'True' or batched == 'true')
     if batched:
@@ -468,7 +508,7 @@ def get_assignments(id, batched, status=None):
 
 
 @app.route("/list_assignments/<awsid:id>")
-@app.route("/list_assignments/<awsid:id>/<batched>")
+@app.route("/list_assignments/<int:id>/<batched>")
 def list_assignments(id, batched=False):
     assignments = get_assignments(id, batched)
     return jsonify(assignments)
@@ -480,7 +520,7 @@ def list_payments(id):
     return jsonify(payments)
 
 
-@app.route("/deletebatch/<awsid:batchid>")
+@app.route("/deletebatch/<awsid:batchid>", methods=['DELETE'])
 def deletebatch(batchid):
     query = db.session.query(MiniGroup, MiniHIT).filter(MiniGroup.gid == batchid and MiniHIT.group_id == batchid).all()
     if not query:
@@ -511,9 +551,9 @@ def deletebatch(batchid):
     return "200 OK"
 
 
-@app.route('/dashboard/deletehit/<awsid:id>')
+@app.route('/dashboard/deletehit/<awsid:id>', methods=['DELETE'])
 def deletehit(id):
-    query = db.session.query(MiniHIT).filter(MiniHIT.id == id).one()
+    query = db.session.query(MiniHIT).filter(MiniHIT.id == id).one_or_none()
 
     if(query is not None):
         print("Deleting MiniHit")
@@ -526,20 +566,14 @@ def deletehit(id):
         return '<h3>' + str(err) + '</h3>'
 
 
-@app.route('/forcedeleteallhits')
-def forcedeleteallhits():
-    api.forcedelete_all_hits()
-    return "200 OK"
-
-
-@app.route('/db/delete-queued/<int:group_id>/<int:position>', methods=['POST'])
+@app.route('/db/delete-queued/<int:group_id>/<int:position>', methods=['DELETE'])
 def delete_queued_from_db(group_id, position):
 
     to_delete = MiniHIT.query\
         .filter(MiniHIT.status != 'cached')\
         .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position).one_or_none()
-        # .filter(MiniHIT.id.is_(None)).one_or_none()
+    #   .filter(MiniHIT.id.is_(None)).one_or_none()
     if to_delete is None:
         return json.dumps({'success': False, 'type': 'not_found', 'error': 'No MiniHIT at position %s of Group %s found!' % (position, group_id)}), 404, {'ContentType': 'application/json'}
 
@@ -572,7 +606,7 @@ def delete_queued_from_db(group_id, position):
     # Deleting requested QUEUED HIT, throws exception if HIT was created already
 
 
-@app.route('/db/toggle_group_status/<int:group_id>', methods=['GET', 'POST'])
+@app.route('/db/toggle_group_status/<int:group_id>', methods=['PATCH'])
 def toggle_group_status(group_id):
     group = MiniGroup.query.filter(MiniGroup.id == group_id)\
                            .filter(MiniGroup.status != 'cached').one_or_none()
@@ -585,30 +619,6 @@ def toggle_group_status(group_id):
     status = group.status
     db.session.commit()
     return json.dumps({'success': True, 'status': status}), 200, {'ContentType': 'application/json'}
-
-
-@app.route('/delete_hit/<awsid:hitid>')
-def delete_route(hitid):
-    return api.delete_hit(hitid)
-
-
-@app.route('/expire_hit/<awsid:hitid>')
-def expire_route(hitid):
-    return jsonify(api.expire_hit(hitid))
-
-
-@app.route('/get_hit/<awsid:hitid>')
-def get_route(hitid):
-    return jsonify(api.get_hit(hitid))
-
-
-@app.route('/approve_all/<awsid:hitid>')
-def approve_route(hitid):
-    assignments = api.list_assignments_for_hit(hitid)
-    for assignment in assignments:
-        if(assignment['AssignmentStatus'] == 'Submitted'):
-            api.approve_assignment(assignment['AssignmentId'])
-    return "200 OK"
 
 
 @app.errorhandler(404)
@@ -683,7 +693,7 @@ def update_mini_hits():
     for row in query:
         active_hit_id = row.MiniHIT.id
         active_hit = api.get_hit(active_hit_id)
-        print("Checking %s with HITStatus %s, from Group %s " % (active_hit_id, active_hit['HITStatus'], row.MiniGroup.id))
+        # print("Checking %s with HITStatus %s, from Group %s " % (active_hit_id, active_hit['HITStatus'], row.MiniGroup.id))
 
         # Reviewable: if (expired AND pending==0) or (maxassignments-available+pending == 0)
         if(active_hit['HITStatus'] == 'Reviewable'):
@@ -694,15 +704,15 @@ def update_mini_hits():
             pending_ass = hit['NumberOfAssignmentsPending']  # Should always be 0 due to Reviewable Status (adding just in case)
             available_ass = hit['NumberOfAssignmentsAvailable']
             submitted = max_ass - (available_ass + pending_ass)
-            if available_ass + pending_ass == 0:
-                print("*** All Assignments were submitted ***")
-            else:
-                print("*** HIT expired ***")
-            print("*** Adding #submittedAssignments to MiniGroup: %s***" % submitted)
+            # if available_ass + pending_ass == 0:
+            #     print("*** All Assignments were submitted ***")
+            # else:
+            #     print("*** HIT expired ***")
+            # print("*** Adding #submittedAssignments to MiniGroup: %s***" % submitted)
             row.MiniGroup.assignments_submitted += submitted
-            print("*** Granting users qualifications ***")
+            # print("*** Granting users qualifications ***")
             api.grant_qualifications_for_hit(active_hit_id, row.MiniGroup.batch_qualification)
-            print("*** Creating new MiniHIT ***")
+            # print("*** Creating new MiniHIT ***")
             new_position = row.MiniHIT.position + 1
 
             # Fetching Group-specific data that is shared between MiniHITs and is needed for the new MiniHIT
@@ -718,16 +728,16 @@ def update_mini_hits():
 
             # Checking if there is a following MiniHIT
             if(new_mini_hit is None):
-                print("No queued HIT left. Checking if we reached the submission goal...")
+                # print("No queued HIT left. Checking if we reached the submission goal...")
                 submissions = row.MiniGroup.assignments_submitted
                 goal = row.MiniGroup.assignments_goal
                 if submissions >= goal:
-                    print("Goal reached: Submitted: %s, Goal: %s. Making Group inactive" % (submissions, goal))
+                    # print("Goal reached: Submitted: %s, Goal: %s. Making Group inactive" % (submissions, goal))
                     row.MiniGroup.status = 'inactive'
                     continue
                 else:
                     needed = goal - submissions
-                    print("Goal not reached: Submitted: %s, Goal: %s, Needed: %s." % (submissions, goal, needed))
+                    # print("Goal not reached: Submitted: %s, Goal: %s, Needed: %s." % (submissions, goal, needed))
                     add_hits_to_db(group_id, needed)
                     db.session.flush()
                     # Getting the new MiniHIT-DB-entry
@@ -743,7 +753,7 @@ def update_mini_hits():
 
             # Creating a new HIT with the assigned attributes and saving its ID
             new_hit_id = api.create_hit_with_type(hittypeid, question, lifetime, workers, 'batch%r' % group_id)['HITId']
-            print("Creating hit with id", new_hit_id)
+            # print("Creating hit with id", new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.id = new_hit_id
             new_mini_hit.status = 'active'
@@ -757,3 +767,58 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created o
     scheduler = BackgroundScheduler()
     scheduler.add_job(update_mini_hits, 'interval', seconds=15)
     scheduler.start()
+
+
+######################################################################
+#                          DEBUGGING ROUTES                          #
+######################################################################
+
+@app.route('/delete_hit/<awsid:hitid>')
+def delete_route(hitid):
+    return api.delete_hit(hitid)
+
+
+@app.route('/expire_hit/<awsid:hitid>')
+def expire_route(hitid):
+    return jsonify(api.expire_hit(hitid))
+
+
+@app.route('/get_hit/<awsid:hitid>')
+def get_route(hitid):
+    return jsonify(api.get_hit(hitid))
+
+
+@app.route('/approve_all/<awsid:hitid>')
+def approve_route(hitid):
+    assignments = api.list_assignments_for_hit(hitid)
+    for assignment in assignments:
+        if(assignment['AssignmentStatus'] == 'Submitted'):
+            api.approve_assignment(assignment['AssignmentId'])
+    return "200 OK"
+
+
+@app.route('/forcedeleteallhits')
+def forcedeleteallhits():
+    api.forcedelete_all_hits()
+    return "200 OK"
+
+
+@app.route("/createsoftblock")
+def softblock():
+    qualification = api.create_qualification_type("Thank you!", "thanks", "For you splendid performance we award you this special qualification. Thank you again!")
+    return jsonify(qualification)
+
+
+@app.route("/cleardb/<secretkey>")
+def cleardb(secretkey):
+    if secretkey != app.config.get('SECRET_KEY'):
+        return "403 Forbidden"
+    db.drop_all()
+    db.create_all()
+    return "200 OK"
+
+
+@app.route("/delete_all_qualifications")
+def delete_all_qualifications():
+    api.delete_all_qualification_types()
+    return "200 OK"
