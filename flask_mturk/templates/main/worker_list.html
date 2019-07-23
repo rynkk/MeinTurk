@@ -3,14 +3,17 @@
 <h1>Home</h1>
 
 {% block head %}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/rg-1.1.0/datatables.min.css"/> 
-<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/rg-1.1.0/datatables.min.js"></script>
-<!--link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.18/b-1.5.6/rg-1.1.0/sl-1.3.0/datatables.min.css"/>
- 
-<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.18/b-1.5.6/rg-1.1.0/sl-1.3.0/datatables.min.js"></script-->
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 {% endblock head %}
 
 {% block body %}
 
+<!-- TODO -->
+
 {% endblock body %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
+{% endblock scripts%}

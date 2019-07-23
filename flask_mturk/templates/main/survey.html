@@ -1,15 +1,140 @@
 {% extends 'base.html' %}
-<h1>Home</h1>
 
 {% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tagsinput.css') }}">
 {% endblock head %}
 
 {% block body %}
-
 <div class="container-fluid container-big">
-    {% include 'surveyform.html' %}
+    {% import 'macros.j2' as macros %}
+    <!-- StudyNavs -->
+    <nav>
+        <div id="tabs" class="nav nav-tabs" role="tablist">
+            {{ macros.render_nav_tabs(form) }}
+        </div>
+    </nav>
+    <form id="sform" method="POST" action="">
+            {{ form.hidden_tag() }}
+        <div class="tab-content container-small">
+            <!--Allgemein-->
+            <div id="p1" class="tab-pane active">
+                {{ macros.render_long_text(form.project_name) }}
+                {{ macros.render_long_text(form.title) }}
+                {{ macros.render_long_text(form.description) }}
+                {{ macros.render_long_text(form.keywords) }}
+                {#{ macros.render_date_bool(form.starting_date, form.starting_date_set)}#}
+                {{ macros.render_int_unit(form.time_till_expiration) }}
+                {{ macros.render_next_prev(1) }}
+            </div>
+            <div id="p2" class="tab-pane">
+                {{ macros.render_int_bool(form.amount_workers, form.minibatch) }}
+                {{ macros.render_decimal(form.payment_per_worker, form.qualification_name)}}
+                {{ macros.render_int_unit(form.allotted_time_per_worker, 3) }}
+                {{ macros.render_int_unit(form.accept_pay_worker_after, 3) }}
+                {{ macros.render_next_prev(2) }}
+            </div>
+            <div id="p3" class="tab-pane">
+                {{ macros.render_radio(form.must_be_master) }}
+    
+                <div id="qualifications" class="form-group">
+                    <div class="row">
+                        <div class="col-8">
+                            <label class='col-form-label'>Lege alle Qualifikationen fest (maximal 5)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-auto">
+                            <button type="button" id="add-select" class="btn btn-primary btn-sm">Qualifikation hinzufügen</button>
+                            <button type="button" id="add-system" class="btn btn-success btn-sm">Standardqualifikationen hinzufügen</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="form-group row">
+                    <div class="col-3">{{ form.adult_content.label}}</div>
+                    <div class="col">{{ form.adult_content}}</div>
+                </div>
+                {{ macros.render_radio(form.project_visibility, inline=false) }}
+    
+                {{ macros.render_next_prev(3) }}
+            </div>
+            <div id="p4" class="tab-pane">
+                {{ form.editor_field}}
+                {{ macros.render_next_prev(4) }}
+            </div>
+            <div id="p5" class="tab-pane">
+                <h2>HIT Overview</h2>
+                <div class="container pt-3 mb-5 ml-1">
+                    <div class="row">
+                            <div class="col-5">Title</div>
+                            <div id="overview_title" class="col-auto">We eat donuts (~10 min)</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">MiniBatched</div>
+                            <div id="overview_minibatch" class="col-auto">MiniBatching is enabled</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Amount of HITs</div>
+                            <div id="overview_hits" class="col-auto">14 HITs</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Amount of Workers</div>
+                            <div id="overview_workers" class="col-auto">121 Workers</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Amount of Workers for each HIT</div>
+                            <div id="overview_workers_per_hit" class="col-auto">23 Workers for each HIT, 5 for the last HIT</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Lifetime of each HIT</div>
+                            <div id="overview_workers_per_hit" class="col-auto">1 Day</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Allotted Time per Worker</div>
+                            <div id="overview_workers_per_hit" class="col-auto">1 Hour</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Time until approval</div>
+                            <div id="overview_workers_per_hit" class="col-auto">1 Day</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Masters Qualification</div>
+                            <div id="overview_masters" class="col-auto">Masters not necessary</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5">Requirements set</div>
+                            <div id="overview_requirements" class="col-auto">TEST,ENTE,GUT</div>
+                    </div>
+                    <div class="row">
+                            <div class="col-5"><h6>Calculated Max. Cost</h6></div>
+                            <div id="overview_cost" class="col-auto">$12.05</div>
+                    </div>
+                </div>
+                <button type="button" id="previewButton">Preview</button>
+                {{ form.submitform }}
+                {{ macros.render_next_prev(5) }}
+            </div>
+        </div>
+    </form>
+    {{ ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js')) }}
+    {{ ckeditor.config(name='editor_field')}}  
 </div>
-
 {% endblock body %}
 
+
+{% block scripts %}
+<script>    
+        var qualifications = {{qualifications | tojson}}
+        var percentage_interval = {{ qualification_percentage_interval }}
+        var integer_list = {{ qualification_integer_list }}
+        var countrycodes = {{ cc_list | tojson}}
+        var max_payment = {{ max_payment }}
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/validate_localization/messages_de.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/validate-additional-methods.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/moment-with-locales.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/tagsinput.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/survey.js') }}"></script>
+{% endblock scripts %}
         
