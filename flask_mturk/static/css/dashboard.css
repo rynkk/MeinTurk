@@ -1,0 +1,53 @@
+div.slider {
+    display: none;
+}
+
+tbody tr.batched[role="row"], tbody tr.batched[role="row"]+tr{
+    cursor: pointer;
+}
+
+tbody tr[role="row"] + tr{
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Because DataTables+Bootstrap4 table-triped+childtables is bonkers*/
+.striped tbody .odd{
+    background-color:rgba(0, 0, 0, 0.3);
+}
+
+.striped tbody .even{
+    background-color:rgba(0, 0, 0, 0.3);
+}
+
+table.dataTable tr.batched td:last-child i{
+    transform: none;
+}
+
+table.dataTable tr.batched td:last-child{
+    transition: all 0.5s;
+    text-align: center;
+}
+
+table.dataTable tr.batched.shown td:last-child{
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+
+@keyframes highlight {
+    0% {
+        background-color: rgba(135,206,250, 1.0);
+    }
+    100% {
+        background-color: none
+    }
+}
+  
+.highlight {
+    animation: highlight 3s;
+}
+
+/*  */
+tbody td{
+    border:0 !important;
+}

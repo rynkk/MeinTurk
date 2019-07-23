@@ -46,6 +46,7 @@
             "createdRow": function( row, data, dataIndex ) {
                 if (data.batched) {
                     $(row).addClass( 'batched' ) //TODO: work more with jquery data()
+
                 }else{
                     $(row).addClass( 'standard' )
                 }
@@ -88,9 +89,15 @@
                 },
                 {
                     "data": null,
-                    defaultContent: "N/A",
+                    defaultContent: "",
                     "orderable": false,
-                    "searchable": false
+                    "searchable": false,
+                    "render": function(data,type,row){
+                        console.log(data)
+                        if(data.batched){
+                            return '<i class="fas fa-chevron-down"></i>'
+                        }
+                    }
                 } 
             ],
             "order": [[ 1, 'asc' ]]
@@ -223,12 +230,12 @@
             var row = table.row(tr);
             var slider_child = row.child().last()
 
-            if ( tr.hasClass("shown") ) {                
+            if ( tr.hasClass("shown") ) {          
+                tr.removeClass('shown');      
                 // This row is already open - close it
                 $('div.slider', slider_child).slideUp( function () {
                     
                         slider_child.hide();
-                        tr.removeClass('shown');
                         animation_running-=0.5
 
                 } );
@@ -237,9 +244,9 @@
                 });
             }
             else {
-                slider_child.show();            
+                slider_child.show();   
+                tr.addClass('shown');         
                 $('div.slider', slider_child).slideDown(function(){
-                    tr.addClass('shown');
                     animation_running-=0.5
                 });
                 $('div.slider', slider_child).parent('td').animate({padding: '0.75rem'}, 300, function(){                    
@@ -680,7 +687,6 @@
         data = data.minihits
         $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
         $table.data('group-id', group_id)
-        console.log(data)
         
         for(i in data){
             hit = data[i]

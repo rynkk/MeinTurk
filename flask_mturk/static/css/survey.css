@@ -1,0 +1,33 @@
+div#tabs a[data-toggle="tab"]{
+    font-size: 1.3em !important;
+}
+
+.tab-content{
+    border-left:1px solid;
+    border-right:1px solid;
+    border-bottom:1px solid;
+    border-color:#dee2e6;
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+input.error{
+    -moz-box-shadow: 0 0 3px 0 red!important;
+    -webkit-box-shadow: 0 0 3px 0 red!important;
+    box-shadow: 0 0 3px 0 red!important;
+    border-color: red!important;
+    background-color: #fce4e4!important;
+}
+
+label.error{    
+  color: #cc0033;
+  display: inline-block;
+  font-size: 12px;
+  line-height: 15px;
+  margin: 5px 0 0;
+}
+
+.remove-row{
+    padding-left:5px;
+    cursor: pointer;
+}

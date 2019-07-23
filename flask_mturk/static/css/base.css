@@ -1,0 +1,116 @@
+.navbar {
+    padding-top: 25px !important;
+    padding-bottom:  25px !important;
+}
+
+
+.navbar a {
+    color: #f8f9fa !important;
+    font-size: 1.8em !important;
+}
+
+.navbar li {
+    padding-right:5px;
+    padding-left:25px;
+}
+
+.navbar div {
+    justify-content: center;
+}
+
+/* Remove annoying dropdown disappering on slow hover */
+.dropdown-menu{
+    margin-top: initial;
+}
+
+/* Show dropdown on hover*/
+.dropdown:hover > .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu > a:hover,
+.dropdown-menu > a:focus {
+    background-color: #6c757d !important;
+}
+
+.container-small{
+    padding-top:15px;
+    padding-left:20px;
+    padding-right:20px;
+    padding-bottom:15px;
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+.relative{
+    position:relative!important;
+}
+
+.block{
+    display:block;
+}
+
+.container-big{
+    padding-top:30px;
+    padding-left:30px;
+    padding-bottom:15px;
+}
+
+.fa, .fas{
+    transform: translateY(-10%);
+}
+
+.loading-modal {
+    display: none;
+    position: fixed;    
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url("loading-circle.gif")
+                50% 50% 
+                no-repeat;
+}
+
+.loading-modal > p {
+    top: 10%;
+    position: relative;
+
+}
+
+body.loading {
+    overflow: hidden;   
+}
+
+body.loading > .loading-modal{
+    display: flex;
+}
+
+.modal-body td, .modal-body th{
+    text-align:center; 
+}
+
+.modal-body td:first-child{
+    font-weight: bold;
+}
+
+.modal-body td:not(:first-child) {
+    padding-top:5px;
+    padding-bottom:5px; 
+}
+
+.modal-body table{
+    word-break:break-word
+}
