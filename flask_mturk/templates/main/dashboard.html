@@ -8,7 +8,7 @@
 {% endblock head %}
 
 {% block body %}
-<div class="modal fade" id="exportmodal" tabindex="-1" role="dialog">
+<div class="modal fade" id="csvmodal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -18,37 +18,26 @@
                 </button>
             </div>
             <div class="modal-body" style="padding:2rem 1rem">
-                <a id="export-all" class="btn btn-primary export-btn" role="button" download>Export All</a>
-                <a id="export-submitted" class="btn btn-primary export-btn" role="button" download>Export Submitted</a>
+                <h5>Export</h5>
+                <div class="container-small">
+                    <a id="export-all" class="btn btn-primary export-btn" role="button" download>Export All</a>
+                    <a id="export-submitted" class="btn btn-primary export-btn ml-4" role="button" download>Export Submitted</a>
+                </div>
+                <hr>
+                <h5>Import</h5>
+                <div class="container-small">
+                    <form method="POST" class="" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
+                        {{ uploadform.hidden_tag() }}
+                        {{ uploadform.file(class="form-control-file") }}
+                        <label class="error"></label>             
+                        <div class="success"></div>
+                        <div class="error"></div>
+                    </form>
+                    <button id="uploadbtn" type="button" class="btn btn-primary">Upload CSV</button>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="uploadmodal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Placeholder</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" style="padding:2rem 1rem">
-                <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
-                    {{ uploadform.hidden_tag() }}
-                    {{ uploadform.file(class="form-control-file") }}
-                    <label class="error"></label>             
-                    <div class="success"></div>
-                    <div class="error"></div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="uploadbtn" type="button" class="btn btn-primary">Upload CSV</button>
             </div>
         </div>
     </div>

@@ -56,7 +56,6 @@ def survey():
     all_qualifications_w_sys = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
     # remove softblock-qualification
     all_qualifications = [q for q in all_qualifications_w_sys if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
-    print(all_qualifications)
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate

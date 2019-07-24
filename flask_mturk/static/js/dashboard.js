@@ -93,7 +93,6 @@
                     "orderable": false,
                     "searchable": false,
                     "render": function(data,type,row){
-                        console.log(data)
                         if(data.batched){
                             return '<i class="fas fa-chevron-down"></i>'
                         }
@@ -385,14 +384,22 @@
             })            
         })
 
-        $('#exportmodal').on('show.bs.modal', function(event){
+        $('#csvmodal').on('show.bs.modal', function(event){
+            $("#uploadform #file").val('').removeClass("error")
+            $("#uploadform label.error").empty()
+            $("#uploadform div.error").empty()
+            $("#uploadform div.success").empty()             
+
             var modal = $(this)
             var button = $(event.relatedTarget)
             tbody = modal.find(".modal-body tbody").empty()
             modal.find("#qual-empty").empty()
             row = button.closest('tr.info-row').prev()
             data = table.row(row).data()
-            modal.find(".modal-title").text("CSV Export of " + data.Title)
+            $("#hit_batched").val(data.batched)
+            console.log(data)
+            $("#hit_identifier").val(data.batched?data.batch_id:data.HITId)
+            modal.find(".modal-title").text("CSV Actions for " + data.Title)
             if (data.batched)
                 href = "/export/"+data.batch_id
             else
@@ -462,31 +469,13 @@
             }   
         })
 
-        $('#uploadmodal').on('show.bs.modal', function(event){
-            var modal = $(this)
-            var button = $(event.relatedTarget)
-            // Setting hidden fields that are used to identify the HIT in the backend            
-            $("#hit_batched").val(button.data('batched'))
-            console.log(button.data())
-            $("#hit_identifier").val(button.data('identifier'))
-
-            var row = button.closest("tr.info-row").prev()
-            var data = table.row(row).data()
-            var title = data.Title
-            modal.find(".modal-title").text("CSV-Import for\n"+data.Title).css("white-space", "pre")
-            $("#uploadmodal #file").removeClass("error")
-            $("#uploadmodal label.error").empty()
-            $("#uploadmodal div.error").empty()
-            $("#uploadmodal div.success").empty()
-        });
-
         $("#uploadbtn").on("click", function(){
-            $("#uploadmodal label.error").empty()
-            $("#uploadmodal div.error").empty()
-            $("#uploadmodal div.success").empty()
-            if(!$("#uploadmodal #file").val()){
-                $("#uploadmodal label.error").append("This field is required.")                
-                $("#uploadmodal #file").addClass("error")
+            $("#uploadform label.error").empty()
+            $("#uploadform div.error").empty()
+            $("#uploadform div.success").empty()
+            if(!$("#uploadform #file").val()){
+                $("#uploadform label.error").append("This field is required.")                
+                $("#uploadform #file").addClass("error")
                 return
             }
 
@@ -519,12 +508,12 @@
                                .append(col.clone().text("Softblocked"))
                                .append(col.clone().text(json.data.softblocked))
                         
-                        $("#uploadmodal div.success").append(row_two).append(row_one)
+                        $("#uploadform div.success").append(row_two).append(row_one)
                         
                         // Adding warnings if any
                         // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
                         if(Object.keys(json.warnings).length){
-                            $("#uploadmodal div.error").append('<h4>Warnings:<h4>')
+                            $("#uploadform div.error").append('<h4>Warnings:<h4>')
                             for (i in json.warnings){
                                 console.log(i)
                                 li = $('<li>').text("Row "+i)
@@ -533,19 +522,19 @@
                                     row_li = $('<li>').text(json.warnings[i][j])
                                     ul.append(row_li)
                                 }
-                                $("#uploadmodal div.error").append($('<ul>').append(li.append(ul)))                                
+                                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))                                
                             }
                         }
                     }
                     else{
-                        $("#uploadmodal label.error").empty()
-                        $("#uploadmodal div.error").empty()
+                        $("#uploadform label.error").empty()
+                        $("#uploadform div.error").empty()
                         //$(this).prop("disabled",false);
-                        $("#uploadmodal #file").addClass("error")
+                        $("#uploadform #file").addClass("error")
                         if(json.errortype == 'main'){
-                            $("#uploadmodal div.error").append('<h4>'+json.errors.main+'</h4>')
+                            $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
                         }else if(json.errortype == 'document'){
-                            $("#uploadmodal div.error").append('<h4>Logic-error in CSV<h4>')
+                            $("#uploadform div.error").append('<h4>Logic-error in CSV<h4>')
                             for (i in json.errors){
                                 li = $('<li>').text("Row "+i)
                                 ul = $('<ul>')
@@ -553,12 +542,12 @@
                                     row_li = $('<li>').text(json.errors[i][j])
                                     ul.append(row_li)
                                 }
-                                $("#uploadmodal div.error").append($('<ul>').append(li.append(ul)))
+                                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))
                                 
                             }
                         }else if(json.errortype == 'form'){
                             for(i in json.errors)
-                                $("#uploadmodal label.error").append(json.errors[i]+'<br/>')
+                                $("#uploadform label.error").append(json.errors[i]+'<br/>')
                         }
                         
                     }
@@ -606,11 +595,8 @@
             query = data.HITId
 
         qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        uploadmodalbtn = $('<button type="button" data-toggle="modal" data-target="#uploadmodal">Import CSV</button>')
-                    .data('batched', data.batched)
-                    .data('identifier', data.batched?data.batch_id:data.HITId)
         uploadmodalbtntd = $('<td>')
-        uploadmodalbtntd.append(uploadmodalbtn)
+        uploadmodalbtntd
         hidebtn = '<button type="button" class="hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'
 
         
@@ -620,7 +606,7 @@
                     '<td style="width:1rem"></td>'+
                     '<td>HITId:</td>'+
                     '<td>'+data['HITId']+'</td>'+
-                    '<td>'+'<button type="button" data-toggle="modal" data-target="#exportmodal">Export CSV</button>'+'</td>'+
+                    '<td>'+'<button type="button" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'+'</td>'+
                 '</tr>')
 
         tr_two = $('<tr>'+
@@ -654,6 +640,22 @@
                 .append(tr_one).append(tr_two).append(tr_three).append(tr_four)
     }
 
+    function format_slide ( data ) {
+        // `d` is the original data object for the row
+        group_id = data.batch_id
+        data = data.minihits
+        $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+        $table.data('group-id', group_id)
+        
+        for(i in data){
+            hit = data[i]
+            $row = format_slide_row(hit)
+            $table.append($row)
+        }
+        $slider = $('<div>').addClass('slider').append( $table)
+        return $slider
+    }
+
     function format_slide_row(hit){
         if(hit.hasOwnProperty('CreationTime')){
             ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
@@ -679,22 +681,6 @@
             $tr.append($('<td>').addClass('minihittd').append($delbtn))                
         }
         return $tr
-    }
-
-    function format_slide ( data ) {
-        // `d` is the original data object for the row
-        group_id = data.batch_id
-        data = data.minihits
-        $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
-        $table.data('group-id', group_id)
-        
-        for(i in data){
-            hit = data[i]
-            $row = format_slide_row(hit)
-            $table.append($row)
-        }
-        $slider = $('<div>').addClass('slider').append( $table)
-        return $slider
     }
 
     

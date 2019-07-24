@@ -11,22 +11,6 @@ div#tabs a[data-toggle="tab"]{
     border-bottom-right-radius: 0.25rem;
 }
 
-input.error{
-    -moz-box-shadow: 0 0 3px 0 red!important;
-    -webkit-box-shadow: 0 0 3px 0 red!important;
-    box-shadow: 0 0 3px 0 red!important;
-    border-color: red!important;
-    background-color: #fce4e4!important;
-}
-
-label.error{    
-  color: #cc0033;
-  display: inline-block;
-  font-size: 12px;
-  line-height: 15px;
-  margin: 5px 0 0;
-}
-
 .remove-row{
     padding-left:5px;
     cursor: pointer;
