@@ -36,7 +36,7 @@
                 if(hits_order[i].id == null)
                     minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
             }
-            hit_group = summarize_minihits(minihits, item.batch_status, item.hidden, item.batch_goal)
+            hit_group = summarize_minihits(minihits, item.batch_status, item.hidden, item.batch_goal, item.batch_name)
             if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
                 render_surveys.push(hit_group)
         })
@@ -291,6 +291,53 @@
               })();
         } );
 
+        $('.cache-btn').on('click', function(event){
+            row = $(this).closest("tr.info-row").prev("tr")
+            data = table.row(row).data()
+            $.alert({
+                title: 'Batch Caching!',
+                content: 'Are you sure you want to cache the Batch "'+data.name+'"?<br>This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!',
+                buttons: {
+                    confirm:{
+                        btnClass: 'btn-blue',
+                        action: function(){
+                            $.alert({
+                                title: 'Really?',
+                                content: 'Are you sure?',
+                                buttons:{
+                                    yes:{
+                                        btnClass: 'btn-blue',
+                                        action: async function () {
+                                            const rawResponse = await fetch('/cache_batch/'+data.batch_id, {
+                                                method: 'DELETE'
+                                            });
+                                              
+                                            const content = await rawResponse.json();
+                                            if(content.success){
+                                                table.row(row).remove()
+                                                table.draw()
+                                                show_alert("Success", 'Successfully cached Batch "'+data.Name+'"', "success")
+                                            }else{
+                                                show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                            }
+                                        }
+                                    },
+                                    no:{
+                                        btnClass: 'btn-green'
+                                        // Do nothing
+                                    }
+                                }
+                            });
+                        }
+                        /**/
+                    },
+                    cancel: function () {
+                        // close
+                    }
+                }
+            });
+        })
+
         $('.toggle-groupstatus').on('click', function(event){
             (async () => {
                 group_id = $(this).closest('table').data('group-id')
@@ -330,7 +377,7 @@
         })
 
         //TODO: TEST WITH MULTIPLE WORKER SUBMISSIONS FOR EACH MINIHIT
-        $('#progressmodal').on('show.bs.modal', function(event){
+        $('#progressmodal').on('show.bs.modal',async function(event){
             var modal = $(this)
             var button = $(event.relatedTarget)
             var position = button.data("position")
@@ -338,50 +385,49 @@
             modal.find(".modal-title").text("Progress for "+position+". HIT")
             modal.find("#progress-empty").empty()
             tbody = modal.find(".modal-body tbody").empty()
-            fetch("/list_assignments/"+id)
-                .then(function(response){
-                    return response.json()
-                }).then(function(data){
-                    data.forEach(function(elem, index){
-                        //could use date to show GMT+2 time
-                        acceptTime = new Date(elem.AcceptTime)                        
-                        submitTime = new Date(elem.SubmitTime)
-
-                        timeTakenMin = (submitTime - acceptTime) / 1000 / 60  //1000: milli to seconds; 60: seconds to minutes
-                        timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma
-
-                        row = $('<tr>').addClass("border-bottom")
-                        row.append($('<td>').text(index+1+"."))
-                            .append($('<td>').addClass("worker").text(elem.WorkerId))
-                            .append($('<td>').text(elem.Answer))
-                            .append($('<td>').text(elem.AssignmentStatus))
-                            .append($('<td>').addClass("bonus").text('-'))
-                            .append($('<td>').text(timeTakenRounded + 'min'))
-                            .append($('<td>').text(elem.AcceptTime))
-                            .append($('<td>').text(elem.SubmitTime))
-                        tbody.append(row)
-                })
-                if(!data.length){
-                    row = $('<div class="row p-5">')
-                    row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
-                    modal.find("#progress-empty").append(row)
-                }else
-                    fetch("/list_payments/"+id).then(function(response){
-                        return response.json()
-                }).then(function(data){
-                    data.forEach(function(elem){
-                        // Get WorkerId of BonusPayment-data
-                        workerid = elem.WorkerId
-                        bonus = elem.BonusAmount
+            const rawResponse = await fetch("/list_assignments/"+id);
+            const data = await rawResponse.json()
+            
+            if(data.length == 0){
+                row = $('<div class="row p-5">')
+                row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
+                modal.find("#progress-empty").append(row)
+            }else{
+                data.forEach(function(elem, index){
+                    //could use date to show GMT+2 time
+                    acceptTime = new Date(elem.AcceptTime)                        
+                    submitTime = new Date(elem.SubmitTime)
     
-                        //look through progressmodaltables rows and change bonus-td if workerIds match
-                        $("table.progress-table tbody tr").each(function(){
-                            if($(this).find(".worker").text() == workerid)
-                                $(this).find(".bonus").text(bonus)
-                        })
+                    timeTakenMin = (submitTime - acceptTime) / 1000 / 60  //1000: milli to seconds; 60: seconds to minutes
+                    timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma
+    
+                    row = $('<tr>').addClass("border-bottom")
+                    row.append($('<td>').text(index+1+"."))
+                        .append($('<td>').addClass("worker").text(elem.WorkerId))
+                        .append($('<td>').text(elem.Answer))
+                        .append($('<td>').text(elem.AssignmentStatus))
+                        .append($('<td>').addClass("bonus").text('-'))
+                        .append($('<td>').text(timeTakenRounded + 'min'))
+                        .append($('<td>').text(elem.AcceptTime))
+                        .append($('<td>').text(elem.SubmitTime))
+                    tbody.append(row)
+                })
+
+                const rawResponse2 = await fetch("/list_payments/"+id)
+                const data2 = await rawResponse2.json()
+                data2.forEach(function(elem){
+                    // Get WorkerId of BonusPayment-data
+                    workerid = elem.WorkerId
+                    bonus = elem.BonusAmount
+
+                    //look through progressmodaltables rows and change bonus-td if workerIds match
+                    $("table.progress-table tbody tr").each(function(){
+                        if($(this).find(".worker").text() == workerid)
+                            $(this).find(".bonus").text(bonus)
                     })
                 })
-            })            
+
+            }        
         })
 
         $('#csvmodal').on('show.bs.modal', function(event){
@@ -397,7 +443,6 @@
             row = button.closest('tr.info-row').prev()
             data = table.row(row).data()
             $("#hit_batched").val(data.batched)
-            console.log(data)
             $("#hit_identifier").val(data.batched?data.batch_id:data.HITId)
             modal.find(".modal-title").text("CSV Actions for " + data.Title)
             if (data.batched)
@@ -469,10 +514,11 @@
             }   
         })
 
-        $("#uploadbtn").on("click", function(){
+        $("#uploadbtn").on("click", async function(){
             $("#uploadform label.error").empty()
             $("#uploadform div.error").empty()
             $("#uploadform div.success").empty()
+            $("#uploadform #file").removeClass("error")
             if(!$("#uploadform #file").val()){
                 $("#uploadform label.error").append("This field is required.")                
                 $("#uploadform #file").addClass("error")
@@ -481,78 +527,74 @@
 
             var form = $('#uploadform')[0]
             var formData = new FormData(form);
-            //LOADING
 
             $('body').addClass("loading")
 
-            fetch('/upload', { // Your POST endpoint
+            const rawResponse = await fetch('/upload', { 
                 method: 'POST',
                 body: formData
-              }).then( response => response.json())
-                .then(json => {
-                    $('body').removeClass("loading")
-                    if(json.success){
-                        console.log(json)
-                        // Adding Approved/Rejected, BonusPaid/softblocked                       
-                        row = $("<div>").addClass("row")
-                        col = $("<div>").addClass("col-3")
-                        row_one = row.clone()
-                        row_one.append(col.clone().text("Approved"))
-                               .append(col.clone().text(json.data.approved))
-                               .append(col.clone().text("Rejected"))
-                               .append(col.clone().text(json.data.rejected))
+              })
+            const json = await rawResponse.json()
+            $('body').removeClass("loading")
+            if(json.success){
+                console.log(json)
+                // Adding Approved/Rejected, BonusPaid/softblocked                       
+                row = $("<div>").addClass("row")
+                col = $("<div>").addClass("col-3")
+                row_one = row.clone()
+                row_one.append(col.clone().text("Approved"))
+                        .append(col.clone().text(json.data.approved))
+                        .append(col.clone().text("Rejected"))
+                        .append(col.clone().text(json.data.rejected))
 
-                        row_two = row.clone()                        
-                        row_two.append(col.clone().text("Bonus paid"))
-                               .append(col.clone().text("$"+json.data.bonus))
-                               .append(col.clone().text("Softblocked"))
-                               .append(col.clone().text(json.data.softblocked))
-                        
-                        $("#uploadform div.success").append(row_two).append(row_one)
-                        
-                        // Adding warnings if any
-                        // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
-                        if(Object.keys(json.warnings).length){
-                            $("#uploadform div.error").append('<h4>Warnings:<h4>')
-                            for (i in json.warnings){
-                                console.log(i)
-                                li = $('<li>').text("Row "+i)
-                                ul = $('<ul>')
-                                for (j in json.warnings[i]){
-                                    row_li = $('<li>').text(json.warnings[i][j])
-                                    ul.append(row_li)
-                                }
-                                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))                                
-                            }
+                row_two = row.clone()                        
+                row_two.append(col.clone().text("Bonus paid"))
+                        .append(col.clone().text("$"+json.data.bonus))
+                        .append(col.clone().text("Softblocked"))
+                        .append(col.clone().text(json.data.softblocked))
+                
+                $("#uploadform div.success").append(row_two).append(row_one)
+                
+                // Adding warnings if any
+                // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
+                if(Object.keys(json.warnings).length > 0){
+                    $("#uploadform div.error").append('<h4>Warnings:<h4>')
+                    for (i in json.warnings){
+                        console.log(i)
+                        li = $('<li>').text("Row "+i)
+                        ul = $('<ul>')
+                        for (j in json.warnings[i]){
+                            row_li = $('<li>').text(json.warnings[i][j])
+                            ul.append(row_li)
                         }
+                        $("#uploadform div.error").append($('<ul>').append(li.append(ul)))                                
                     }
-                    else{
-                        $("#uploadform label.error").empty()
-                        $("#uploadform div.error").empty()
-                        //$(this).prop("disabled",false);
-                        $("#uploadform #file").addClass("error")
-                        if(json.errortype == 'main'){
-                            $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
-                        }else if(json.errortype == 'document'){
-                            $("#uploadform div.error").append('<h4>Logic-error in CSV<h4>')
-                            for (i in json.errors){
-                                li = $('<li>').text("Row "+i)
-                                ul = $('<ul>')
-                                for (j in json.errors[i]){
-                                    row_li = $('<li>').text(json.errors[i][j])
-                                    ul.append(row_li)
-                                }
-                                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))
-                                
-                            }
-                        }else if(json.errortype == 'form'){
-                            for(i in json.errors)
-                                $("#uploadform label.error").append(json.errors[i]+'<br/>')
+                }
+            }else{
+                $("#uploadform label.error").empty()
+                $("#uploadform div.error").empty()
+                //$(this).prop("disabled",false);
+                $("#uploadform #file").addClass("error")
+                if(json.errortype == 'main'){
+                    $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
+                }else if(json.errortype == 'document'){
+                    $("#uploadform div.error").append('<h4>Logic-error in CSV<h4>')
+                    for (i in json.errors){
+                        li = $('<li>').text("Row "+i)
+                        ul = $('<ul>')
+                        for (j in json.errors[i]){
+                            row_li = $('<li>').text(json.errors[i][j])
+                            ul.append(row_li)
                         }
+                        $("#uploadform div.error").append($('<ul>').append(li.append(ul)))
                         
                     }
-                })
-        })              
+                }else if(json.errortype == 'form'){
+                    for(i in json.errors)
+                        $("#uploadform label.error").append(json.errors[i]+'<br/>')
+                }
+            }
+        })             
         
 
     $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {
@@ -584,19 +626,18 @@
     function format_info ( data ) {
         // `d` is the original data object for the row            
         toggle_status_btn=""
+        cache_btn=""
         group_id=-1
         if(data.batched){
             group_id = data.batch_id
             query = data.batch_id+'/True'
             toggle_status_btn = '<button type="button" class="toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
-                                
+            cache_btn = '<button type="button" class="cache-btn">Cache</button>'
         }
         else
             query = data.HITId
 
         qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        uploadmodalbtntd = $('<td>')
-        uploadmodalbtntd
         hidebtn = '<button type="button" class="hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'
 
         
@@ -615,7 +656,8 @@
                 '<td style="width:1rem"></td>'+
                 '<td>HITTypeId:</td>'+
                 '<td>'+data['HITTypeId']+'</td>'+
-            '</tr>').append(uploadmodalbtntd)
+                '<td>'+cache_btn+'</td>'+
+            '</tr>')
         
         tr_three = $('<tr>'+
                 '<td>Reward:</td>'+
@@ -694,8 +736,9 @@
         return 0;
       }
 
-    function summarize_minihits(array, status, hidden, goal){ //take array of minihits and returns hitgroup with an informationoverview
+    function summarize_minihits(array, status, hidden, goal, name){ //take array of minihits and returns hitgroup with an informationoverview
         hitgroup = {}
+        hitgroup.name = name
         hitgroup.assignment_goal = goal
         hitgroup.NumberOfAssignmentsAvailable = 0
         hitgroup.NumberOfAssignmentsPending = 0

@@ -58,11 +58,17 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
                             yes:{
                                 btnClass: 'btn-red',
                                 action: async function () {
-                                    const rawResponse = await fetch('/api/delete_qualification_type/'+data.QualificationTypeId);
+                                    const rawResponse = await fetch('/db/delete_cached/'+data.id, {
+                                        method: 'DELETE'
+                                    })
                                     const content = await rawResponse.json();
-                                    table.row(row).remove()
-                                    table.draw()
-                                    show_alert("Success", 'Successfully deleted Qualification "'+data.Name+'" ('+data.QualificationTypeId+')', "success")
+                                    if (content.success){
+                                        table.row(row).remove()
+                                        table.draw()
+                                        show_alert("Success", 'Successfully deleted Cached Batch "'+data.Name+'"', "success")
+                                    }else{
+                                        show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                    }
                                 }
                             },
                             no:{

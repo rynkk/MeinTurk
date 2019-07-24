@@ -33,7 +33,7 @@ def dashboard():
     hidden_hits = db.session.query(HiddenHIT.id).all()
 
     for group in groups:
-        batch = {'batch_id': group.id, 'batch_goal': group.assignments_goal, 'batch_status': group.status, 'hidden': group.hidden, 'hits': []}
+        batch = {'batch_id': group.id, 'batch_name': group.project_name, 'batch_goal': group.assignments_goal, 'batch_status': group.status, 'hidden': group.hidden, 'hits': []}
         for hit in group.minihits:
             batch['hits'].append({'id': hit.id, 'workers': hit.workers, 'position': hit.position})
         order.append(batch)
@@ -178,14 +178,14 @@ def cached_page():
     return render_template('main/cached_list.html', title='Cached Batches', balance=balance, batches=cached_batches)
 
 
-@app.route("/cache_batch/<int:batchid>")  # , methods=['PATCH'])
+@app.route("/cache_batch/<int:batchid>", methods=['DELETE'])
 def cache_batch(batchid):
     group = MiniGroup.query\
         .filter(MiniGroup.id == batchid)\
         .filter(MiniGroup.status != 'cached')\
         .one_or_none()
     if group is None:
-        return json.dumps({'success': False}), 404, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': 'Not found'}), 404, {'ContentType': 'application/json'}
 
     hits = MiniHIT.query.filter(MiniHIT.group_id == group.id).all()
     ids = []
@@ -604,6 +604,17 @@ def delete_queued_from_db(group_id, position):
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     # Deleting requested QUEUED HIT, throws exception if HIT was created already
+
+
+@app.route('/db/delete_cached/<int:group_id>', methods=['DELETE'])
+def delete_cached(group_id):
+    batch = MiniGroup.query.filter(MiniGroup.id == group_id).one_or_none()
+    if(batch is None):
+        return json.dumps({'success': False, 'error': 'No such batch.'}), 404, {'ContentType': 'application/json'}
+    if(batch.status != 'cached'):
+        return json.dumps({'success': False, 'error': 'Batch is not cached..'}), 423, {'ContentType': 'application/json'}
+    db.session.commit()
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 @app.route('/db/toggle_group_status/<int:group_id>', methods=['PATCH'])

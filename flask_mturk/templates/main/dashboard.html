@@ -3,6 +3,7 @@
 <h1>Home</h1>
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" >
 {% endblock head %}
@@ -26,7 +27,7 @@
                 <hr>
                 <h5>Import</h5>
                 <div class="container-small">
-                    <form method="POST" class="" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
+                    <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
                         {{ uploadform.hidden_tag() }}
                         {{ uploadform.file(class="form-control-file") }}
                         <label class="error"></label>             
@@ -136,6 +137,7 @@
     master_id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH' // Production
     adult_id = '00000000000000000060'
 </script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock scripts %}
