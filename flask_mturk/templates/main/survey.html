@@ -23,7 +23,6 @@
                 {{ macros.render_long_text(form.title) }}
                 {{ macros.render_long_text(form.description) }}
                 {{ macros.render_long_text(form.keywords) }}
-                {#{ macros.render_date_bool(form.starting_date, form.starting_date_set)}#}
                 {{ macros.render_int_unit(form.time_till_expiration) }}
                 {{ macros.render_next_prev(1) }}
             </div>
@@ -40,13 +39,13 @@
                 <div id="qualifications" class="form-group">
                     <div class="row">
                         <div class="col-8">
-                            <label class='col-form-label'>Lege alle Qualifikationen fest (maximal 5)</label>
+                            <label class='col-form-label'>Choose required Qualifications</label>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-auto">
-                            <button type="button" id="add-select" class="btn btn-primary btn-sm">Qualifikation hinzufügen</button>
-                            <button type="button" id="add-system" class="btn btn-success btn-sm">Standardqualifikationen hinzufügen</button>
+                            <button type="button" id="add-select" class="btn btn-primary btn-sm">Add Qualification</button>
+                            <button type="button" id="add-system" class="btn btn-success btn-sm">Add Default-Qualifications</button>
                         </div>
                     </div>
                 </div>
@@ -132,7 +131,6 @@
         var max_payment = {{ max_payment }}
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/validate_localization/messages_de.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/validate-additional-methods.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/moment-with-locales.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/tagsinput.js') }}"></script>

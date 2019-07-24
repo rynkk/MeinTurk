@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
-from wtforms import FormField, StringField, BooleanField, DecimalField, RadioField, TextAreaField
-from wtforms import SelectField, IntegerField, DateTimeField, SubmitField, FieldList, FileField
 from flask_ckeditor import CKEditorField
-from wtforms.validators import Optional, InputRequired, DataRequired, Length, ValidationError, Regexp
+from wtforms import FormField, StringField, BooleanField, DecimalField, RadioField
+from wtforms import SelectField, IntegerField, SubmitField, FieldList, FileField
+from wtforms.validators import Optional, InputRequired, ValidationError, Regexp
 from wtforms.widgets import HiddenInput
 from wtforms.widgets.html5 import NumberInput
 
@@ -100,7 +100,7 @@ class NonValidatingSelectField(SelectField):
 class IntUnitForm(FlaskForm):
     int_field = IntegerField(default=1, validators=[InputRequired()], widget=NumberInput(min=1))  # 1 minutes for testing
     unit_field = SelectField(default='minutes', validators=[InputRequired()],
-                             choices=[('minutes', 'Minuten'), ('hours', 'Stunden'), ('days', 'Tage')])
+                             choices=[('minutes', 'Minutes'), ('hours', 'Hours'), ('days', 'Days')])
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
@@ -131,40 +131,38 @@ class QualificationsForm(FlaskForm):
 
 class SurveyForm(FlaskForm):
     # Allgemein #
-    project_name = StringField('Projektname', description='Name des Projekts (Nicht für Bearbeiter einsehbar)', validators=[InputRequired()])
-    title = StringField('Titel', description='Titel der Survey der dem Bearbeiter angezeigt wird', validators=[InputRequired()])
-    description = StringField('Beschreibung', description='Aussagekräftige Beschreibung der Survey', validators=[InputRequired()])
-    keywords = StringField('Schlagwörter', description='Tags, nach denen der Bearbeiter und der Ersteller filtern kann (optional)', validators=[Optional()])
-    # starting_date = DateTimeField('Startdatum (GMT+1)', description='Verzögerter Surveybeginn (optional)', validators=[Optional()])
-    # starting_date_set = BooleanField('Survey ohne Verzögerung starten', default=True)
-    time_till_expiration = FormField(IntUnitForm, 'Dauer bis Ablauf', description='Zeit bis die Survey ungültig und abgebrochen wird (optional)')
+    project_name = StringField('Project name', description='Name of the project. (Not visible to workers)', validators=[InputRequired()])
+    title = StringField('Title', description='Survey title being displayed to workers.', validators=[InputRequired()])
+    description = StringField('Description', description='Comprehensive description of your survey.', validators=[InputRequired()])
+    keywords = StringField('Keywords', description='Keywords which either you or the workers can search for. (optional)', validators=[Optional()])
+    time_till_expiration = FormField(IntUnitForm, 'Time till expiration', description='Time until the survey expires and becomes unavailable to workers. MINIBATCHING: This will be assigned to each MiniHIT of the batch!')
 
     # Worker allgemein #
-    amount_workers = IntegerField('Anzahl Bearbeiter', default=20, validators=[InputRequired()], widget=NumberInput(min=1))
-    minibatch = BooleanField('MiniBatching', description='Durch MiniBatching wird die Survey in mehrere Kleinsurveys a 9 Bearbeiter gegliedert.')
-    qualification_name = StringField('MiniBatching-Qualifikationsname', validators=[Optional()],
-                                     description='Gibt an, unter welchem Namen die Qualifikation gespeichert wird, die verhindert, dass Worker an mehreren Mini-HITs des gleiches Batches teilnehmen können.')
-    payment_per_worker = DecimalField('Bezahlung pro Bearbeiter', description='Summe in Dollar($) die dem Bearbeiter nach erfolgreichem Abschluss ausgezahlt wird', default=0.50, validators=[InputRequired()], widget=NumberInput(min=0.00, max=10, step=0.01))
-    allotted_time_per_worker = FormField(IntUnitForm, 'Maximale Bearbeitungszeit')
-    accept_pay_worker_after = FormField(IntUnitForm, 'Bearbeiter automatisch annehmen und bezahlen nach', description='Titel der für den Bearbeiter angezeigt wird')
+    amount_workers = IntegerField('Amount workers', description='The amount of workers that can work on your survey. MINIBATCHING: MiniHIT will automatically be generated to reach this amount of submissions!', default=20, validators=[InputRequired()], widget=NumberInput(min=1))
+    minibatch = BooleanField('MiniBatching', description='MiniBatching will divide your survey into multiple smaller surveys with max. 9 workers each to save fees.')
+    qualification_name = StringField('MiniBatching-Qualification name', validators=[Optional()],
+                                     description='This will be the name under which the qualification for this batch will be saved. This qualification will prevent multiple submissions from the same worker within this batch.')
+    payment_per_worker = DecimalField('Payment per worker', description='Sum of Dollars($) that will be paid to workers on approval.', default=0.50, validators=[InputRequired()], widget=NumberInput(min=0.00, max=10, step=0.01))
+    allotted_time_per_worker = FormField(IntUnitForm, 'Allotted time', description='Amount of time each worker has to submit his results.')
+    accept_pay_worker_after = FormField(IntUnitForm, 'Pay and accept worker after', description='Amount of time until submissions are auto-approved and paid.')
 
     # Worker speziell #
-    must_be_master = RadioField('Bearbeiter müssen Master sein', description='Master sind Bearbeiter mit herausragender Bearbeitungsqualität', choices=[('yes', 'Ja'), ('no', 'Nein')],
+    must_be_master = RadioField('Workers must be Master', description='Master are workers with disinguished submission-quality. This will create additional fees.', choices=[('yes', 'Yes'), ('no', 'No')],
                                 default='no', validators=[InputRequired()])
-    qualifications_select = FormField(QualificationsForm, 'Lege alle zusätzlichen Qualifikationen fest', description='Legt Qualifikationen fest, die ein Bearbeiter vorweisen muss, um diese Survey bearbeiten zu dürfen')
-    adult_content = BooleanField('Projekt enthält nicht jugendfreie Inhalte', default=False,
+    qualifications_select = FormField(QualificationsForm, 'Choose all necessary qualifications for this survey.', description='Workers that do not have the chosen qualifications will be unable to participate in the survey.')
+    adult_content = BooleanField('Project contains adult content', description='Workers unwilling or not allowed to see adult content will be excluded from the survey if this is checked.', default=False,
                                  validators=[Optional()])
-    project_visibility = RadioField('Sichtbarkeit', description='Sichtbar: Man kann die Survey ohne Qualifikation nicht annehmen; Privat: Weder annehmen noch Vorschau ansehen; Versteckt: Weder annehmen, noch Vorschau, noch überhaupt Sehen', default='Accept', validators=[InputRequired()],
-                                    choices=[('Accept', 'Öffentlich'), ('PreviewAndAccept ', 'Privat'), ('DiscoverPreviewAndAccept ', 'Versteckt')])
+    project_visibility = RadioField('Visibility', description='Public: Cannot accept the Survey without the right qualifications.; Private: Cannot accept nor preview without the right qualifications.; Hidden: Cannot accept, preview nor see the survey without the right qualifications.', default='Accept', validators=[InputRequired()],
+                                    choices=[('Accept', 'Public'), ('PreviewAndAccept ', 'Private'), ('DiscoverPreviewAndAccept ', 'Hidden')])
 
     # SurveyLayout #
 
     editor_field = CKEditorField('editor_field', default=default_value)
 
     # Finish #
-    submitform = SubmitField('Survey erstellen')
+    submitform = SubmitField('Create Survey')
 
-    pages = ['Allgemein', 'Worker allg.', 'Worker speziell', 'SurveyLayout', 'Finish']
+    pages = ['General', 'Worker', 'Qualifications', 'Layout', 'Finish']
 
     def validate_minibatch(form, field):
         if field.data and form.amount_workers.data < 10:

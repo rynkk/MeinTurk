@@ -66,6 +66,9 @@ if client:
     print(" *** Connected to MTurk-Server *** ")
 
 from flask_mturk import routes
+
+__all__ = ['routes', ]
+
 from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT, CachedAnswer
 
 admin = Admin(app, 'Database')

@@ -1,14 +1,15 @@
-from flask import render_template, url_for, flash, redirect, jsonify, json, request, abort, Response
-from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
-from flask_mturk.forms import SurveyForm, QualificationsForm, FieldList, FormField, SelectField, QualificationsSubForm, FlaskForm, UploadForm
-from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer
 import csv
+from datetime import datetime
 import io
-import datetime
+
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
+from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
+from flask_mturk.forms import SurveyForm, UploadForm
+from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer
+
 from .api_calls import api
 from .helper import is_number, seconds_from_string
-
 
 # Use APPconfig instead of constants like MAX_BONUS
 @app.route("/")
@@ -52,7 +53,10 @@ def survey():
     balance = api.get_balance()
 
     # we need to dynamically change the allowed options for the qual_select
-    all_qualifications = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
+    all_qualifications_w_sys = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
+    # remove softblock-qualification
+    all_qualifications = [q for q in all_qualifications_w_sys if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
+    print(all_qualifications)
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
@@ -114,7 +118,7 @@ def survey():
 
         if(is_minibatched):
             if(form.qualification_name.data == ""):
-                now = datetime.datetime.now()
+                now = datetime.now()
                 print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
                 qualification_name = 'ParticipatedIn%s%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))
             else:
@@ -571,7 +575,6 @@ def delete_queued_from_db(group_id, position):
         .filter(MiniHIT.status != 'cached')\
         .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position).one_or_none()
-    #   .filter(MiniHIT.id.is_(None)).one_or_none()
     if to_delete is None:
         return json.dumps({'success': False, 'type': 'not_found', 'error': 'No MiniHIT at position %s of Group %s found!' % (position, group_id)}), 404, {'ContentType': 'application/json'}
 

@@ -1,8 +1,8 @@
+import time
+from datetime import datetime
+
 from flask import jsonify
 from flask_mturk import client, app
-from datetime import datetime
-import time
-import json
 from botocore.exceptions import ClientError
 
 

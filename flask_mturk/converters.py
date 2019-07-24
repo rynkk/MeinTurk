@@ -1,4 +1,4 @@
-from werkzeug.routing import BaseConverter, ValidationError
+from werkzeug.routing import BaseConverter
 
 
 class IDConverter(BaseConverter):

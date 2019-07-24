@@ -3,8 +3,8 @@
         "Type": "system",
         "Name": "Worker_NumberHITsApproved",
         "QualificationTypeId": "00000000000000000040",
-        "Comparators": [{"value": "GreaterThan", "name": "größer als"}, {"value": "GreaterThanOrEqualTo", "name": "größer als oder gleich"}, {"value": "LessThan", "name": "kleiner als"},
-                        {"value": "LessThanOrEqualTo", "name": "kleiner als oder gleich"}, {"value": "EqualTo", "name": "gleich"}, {"value": "NotEqualTo", "name": "nicht gleich"}],
+        "Comparators": [{"value": "GreaterThan", "name": "greater than"}, {"value": "GreaterThanOrEqualTo", "name": "greater than or equal to"}, {"value": "LessThan", "name": "less than"},
+                        {"value": "LessThanOrEqualTo", "name": "less than or equal zo"}, {"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
         "Value": "IntegerValue",
         "Default": {"comparator": "GreaterThan", "val": 100}
     },
@@ -12,7 +12,7 @@
         "Type": "system",
         "Name": "Worker_Locale",
         "QualificationTypeId": "00000000000000000071",
-        "Comparators": [{"value": "EqualTo", "name": "gleich"}, {"value": "NotEqualTo", "name": "nicht gleich"}, {"value": "In", "name": "aus"}, {"value": "NotIn", "name": "nicht aus"}],
+        "Comparators": [{"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
         "Value": "LocaleValue",
         "Default": {"comparator": "EqualTo", "val": "US"}
     },
@@ -20,8 +20,8 @@
         "Type": "system",
         "Name": "Worker_PercentAssignmentsApproved",
         "QualificationTypeId": "000000000000000000L0",
-        "Comparators": [{"value": "GreaterThan", "name": "größer als"}, {"value": "GreaterThanOrEqualTo", "name": "größer als oder gleich"}, {"value": "LessThan", "name": "kleiner als"},
-                        {"value": "LessThanOrEqualTo", "name": "kleiner als oder gleich"}, {"value": "EqualTo", "name": "gleich"}, {"value": "NotEqualTo", "name": "nicht gleich"}],
+        "Comparators": [{"value": "GreaterThan", "name": "greater than"}, {"value": "GreaterThanOrEqualTo", "name": "greater than or equal to"}, {"value": "LessThan", "name": "less than"},
+                        {"value": "LessThanOrEqualTo", "name": "less than or equal to"}, {"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
         "Value": "PercentValue",
         "Default": {"comparator": "GreaterThanOrEqualTo", "val": 95}
     }

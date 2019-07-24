@@ -74,7 +74,7 @@
 
             var connector = ((full_string!="" && part_string!="") ? " und ":"")
             
-            var text = ":  Die Studie wird auf " + full_string + connector + part_string +" Batches aufgeteilt."
+            var text = ":  The Survey will be split into " + full_string + connector + part_string + " parts."
 
             $("#batches").text(text)
             $("#batches").show()
@@ -99,7 +99,7 @@
 
     var all_options=[];
     var sys_group = $("<optgroup label='System'></optgroup>")
-    var custom_group =$("<optgroup label='Eigene'></optgroup>")
+    var custom_group =$("<optgroup label='Own'></optgroup>")
     
     qualifications.forEach(function (obj) {
             option_type = obj.Type ? 'system' : 'custom'
@@ -129,19 +129,26 @@
                 all_options.forEach(function(obj){
                     if (obj.type=="custom")
                         return
+                    
+                    $(".selector").each(function(i, elem){
+                        elem = $(elem)
+                        if(elem.val() == obj.id)
+                            elem.closest('.row').remove()
+                    })
                     $row = create_qual_row()
                     $row.addClass("system-row")
                     $row.find("select option[value="+obj.id+"]").prop('selected',true).trigger('change');
                     $("#qualifications .row:first").after($row)
-                    $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Standardqualifikationen entfernen")
                 })
+                $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Remove default qualifications")
             }else{
                 $("#qualifications .system-row").remove()
-                $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Standardqualifikationen hinzuf�gen")
+                $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Add default qualifications")
             }
             rearrange_ids()
             added = !added
             
+            enable_disable_selected()
         });
             
         // TODO: Hide visibility radios if no qualification was chosen
@@ -149,12 +156,14 @@
         $("button#add-select").click(function() { //reconstruct HTML to match wtform            
             $row = create_qual_row()
             $("#qualifications .row:last").before($row)
-            rearrange_ids()            
+            rearrange_ids()
+            enable_disable_selected()
         });
 
         $(document).on('click','.remove-row', function(){
             $(this).parents('.row').remove();
             rearrange_ids()
+            enable_disable_selected()
         })
 
         function create_qual_row(){
@@ -166,12 +175,13 @@
             col3= $("<div class='col-auto value'></div>")
             col4= $("<div class='col-auto'></div>")
 
-            select1 = $("<select id='qualifications_select-selects-X-selector'></select>")
+            select1 = $("<select id='qualifications_select-selects-X-selector' class='selector'></select>")
             select2 = $("<select id='qualifications_select-selects-X-first_select'></select>")
             select3 = $("<select id='qualifications_select-selects-X-second_select'></select>")
 
             select1.on("change", function(){
                 show_selects_for_option($(this))
+                enable_disable_selected()
             })
 
             option = $("<option value='false'>---Select---</option>")
@@ -192,6 +202,7 @@
             return row
         }
 
+
         function rearrange_ids(){
             $('#qualifications .selectorrow').each(function (index) {
                 $(this).find('.index').text(index+1)
@@ -204,9 +215,10 @@
             });
         }
 
-        function show_selects_for_option($option){
 
-            $parent = $option.closest(".selectorrow")
+        function show_selects_for_option($selected){
+
+            $parent = $selected.closest(".selectorrow")
             $comparator_col = $parent.find(".comparator")
             $value_col = $parent.find(".value")
 
@@ -219,17 +231,17 @@
             $comparator_col.hide()
             $value_col.hide()
 
-            if($option.val()=='false') // If select ---SELECT---  return
+            if($selected.val()=='false') // If select ---SELECT---  return
                 return            
             
-            var options = all_options.find(option => option.id === $option.val())
+            var options = all_options.find(option => option.id === $selected.val())
 
             if(!options)
                 return
             
             if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
-                $option0 = $("<option value='Exists'>Existiert</option>")
-                $option1 = $("<option value='DoesNotExist'>Existiert nicht</option>")
+                $option0 = $("<option value='Exists'>Exists</option>")
+                $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
                 $comparator_select.append($option0)
                 $comparator_select.append($option1)
             }else{
@@ -269,4 +281,26 @@
                 $value_select.val(options.default.val)
             }
         }
+
+            function enable_disable_selected(){
+                selected_options = [];
+
+                $(".selector").find(':selected').filter(function(idx, el) {
+                    return $(el).attr('value');
+                }).each(function(idx, el) {
+                    selected_options.push($(el).attr('value'));
+                });
+
+                $(".selector").find('option').each(function(idx, option) { 
+                    if (selected_options.indexOf($(option).attr('value')) > -1) {
+                        if ($(option).is(':checked')) {
+                            return;
+                        } else {
+                            $(this).attr('disabled', true);
+                        }
+                    } else {
+                        $(this).attr('disabled', false);
+                    }
+                });
+            }            
     }
