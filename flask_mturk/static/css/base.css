@@ -1,3 +1,7 @@
+body{
+    background-color: rgba(0,0,0,0.03);
+}
+
 .navbar {
     padding-top: 25px !important;
     padding-bottom:  25px !important;

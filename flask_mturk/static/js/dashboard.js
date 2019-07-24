@@ -44,6 +44,7 @@
         var table = $('#project_table').DataTable({
             data: render_surveys,
             "createdRow": function( row, data, dataIndex ) {
+                $(row).addClass('mainrow')
                 if (data.batched) {
                     $(row).addClass( 'batched' ) //TODO: work more with jquery data()
 
@@ -57,7 +58,17 @@
                     "searchable": false,
                     "orderable": false,
                 },
-                { "data": "Title" },
+                /*{ "data": "Title" },*/
+                {
+                    "data": null,
+                    "render": function(data, type, row){
+                        if(row.batched){
+                            return row.name
+                        }else{
+                            return row.Title
+                        }
+                    }
+                },
                 {
                     "data": null,
                     "render": function(data, type, row){
@@ -100,6 +111,27 @@
                 } 
             ],
             "order": [[ 1, 'asc' ]]
+        });
+
+        /* https://datatables.net/plug-ins/api/row().show() */
+        $.fn.dataTable.Api.register('row().show()', function() {
+                
+            var page_info = this.table().page.info();
+            // Get row index
+            var new_row_index = this.index();
+            // Row position
+            var row_position = this.table().rows()[0].indexOf( new_row_index );
+            // Already on right page ?
+            if( row_position >= page_info.start && row_position < page_info.end ) {
+                // Return row object
+                return this;
+            }
+            // Find page number
+            var page_to_display = Math.floor( row_position / this.table().page.len() );
+            // Go to that page
+            this.table().page( page_to_display ).draw('page');
+            // Return row object
+            return this;
         });
 
         // TODO: finish
@@ -211,7 +243,7 @@
 
         $("#hide_nonbatched").click() // Default: show nonbatched
 
-        $('#project_table').on('click', 'tr:has(".info")', function(event){ // if click on info row trigger click on DataTables-ParentRow
+        $('#project_table').on('click', 'tr.info-row', function(event){ // if click on info row trigger click on DataTables-ParentRow
             if($(event.target).is(":button"))
                 return            
             $(this).prev().trigger('click')
@@ -254,7 +286,7 @@
             }
         });
 
-        $('.delete-queued').on( 'click', function (event) {
+        $('#project_table').on( 'click', '.delete-queued', function (event) {
             // should use row.data() instead of accessing html-data
             // make this implement a fetch to get the remaining lists and refresh the list
             
@@ -291,9 +323,11 @@
               })();
         } );
 
-        $('.cache-btn').on('click', function(event){
+        $('#project_table').on('click', '.cache-btn',function(event){
+            console.log("asd")
             row = $(this).closest("tr.info-row").prev("tr")
             data = table.row(row).data()
+            console.log(data)
             $.alert({
                 title: 'Batch Caching!',
                 content: 'Are you sure you want to cache the Batch "'+data.name+'"?<br>This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!',
@@ -316,7 +350,7 @@
                                             if(content.success){
                                                 table.row(row).remove()
                                                 table.draw()
-                                                show_alert("Success", 'Successfully cached Batch "'+data.Name+'"', "success")
+                                                show_alert("Success", 'Successfully cached Batch "'+data.name+'"', "success")
                                             }else{
                                                 show_alert("Error", 'Something went wrong: '+content.error, "danger")
                                             }
@@ -338,22 +372,24 @@
             });
         })
 
-        $('.toggle-groupstatus').on('click', function(event){
+        $('#project_table').on('click', '.toggle-groupstatus', function(event){
             (async () => {
-                group_id = $(this).closest('table').data('group-id')
-                const rawResponse = await fetch('/db/toggle_group_status/'+group_id, {
+                parent_row = $(this).closest('tr.info-row').prev()
+                batch_id = table.row(parent_row).data().batch_id
+                const rawResponse = await fetch('/db/toggle_group_status/'+batch_id, {
                   method: 'PATCH'
                 });
                 
                 const content = await rawResponse.json();
                 if (content.success){
                     btn_text = content.status=='active'?"Pause":"Continue"
+                    $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?'Active':'Paused')
                     $(this).text(btn_text)
                 }
             })();
         })
 
-        $('.hide_hit').on('click', function(event){
+        $('#project_table').on('click','.hide_hit', function(event){
             (async () => {
                 parent_row = $(this).closest("tr.info-row").prev()
                 hit_data = table.row(parent_row).data()
@@ -602,84 +638,92 @@
         return percentage
     };
 
-    /* https://datatables.net/plug-ins/api/row().show() */
-    $.fn.dataTable.Api.register('row().show()', function() {
-        
-        var page_info = this.table().page.info();
-        // Get row index
-        var new_row_index = this.index();
-        // Row position
-        var row_position = this.table().rows()[0].indexOf( new_row_index );
-        // Already on right page ?
-        if( row_position >= page_info.start && row_position < page_info.end ) {
-            // Return row object
-            return this;
-        }
-        // Find page number
-        var page_to_display = Math.floor( row_position / this.table().page.len() );
-        // Go to that page
-        this.table().page( page_to_display ).draw('page');
-        // Return row object
-        return this;
-    });
+    
 
-    function format_info ( data ) {
-        // `d` is the original data object for the row            
-        toggle_status_btn=""
-        cache_btn=""
-        group_id=-1
+    function format_info ( data ) { 
+        
+
+        container = $("<div class='container' style='float-left'>")
+
         if(data.batched){
+            qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
+            hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
+            csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
             group_id = data.batch_id
             query = data.batch_id+'/True'
-            toggle_status_btn = '<button type="button" class="toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
-            cache_btn = '<button type="button" class="cache-btn">Cache</button>'
+            toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
+            cache_btn = '<button type="button" class="btn btn-info cache-btn">Cache</button>'
+            batch_status = data['batch_status'] ? 'Active':'Paused'
+            row_one = $('<div class="row mt-2">'+
+                '<div class="col-2">Title:</div>'+
+                '<div class="col-2">'+data['Title']+'</div>'+
+                '<div class="col-2">Reward:</div>'+
+                '<div class="col-4">'+data['Reward']+'</div>'+
+                '<div class="col-2">'+csv_modal_btn+'</div>'+
+            '</div>')
+
+            row_two = $('<div class="row mt-2">'+
+                '<div class="col-2">Description:</div>'+
+                '<div class="col-2">'+data['Description']+'</div>'+
+                '<div class="col-2">MiniBatched:</div>'+
+                '<div class="col-4">'+data['batch_id']+'</div>'+
+                '<div class="col-2">'+cache_btn+'</div>'+
+            '</div>')
+
+            row_three = $('<div class="row mt-2">'+
+                '<div class="col-2">Keywords:</div>'+
+                '<div class="col-2">'+data['Keywords']+'</div>'+
+                '<div class="col-2 ">Batch-Status:</div>'+
+                '<div class="col-4 batch-status">'+batch_status+'</div>'+
+                '<div class="col-2">'+toggle_status_btn+'</div>'+
+            '</div>')
+
+            row_four = $('<div class="row mt-2">'+
+                '<div class="col-2">Qualifications:</div>'+
+                '<div class="col-2">'+qualificationbutton+'</div>'+
+                '<div class="col-2">HITTypeId:</div>'+
+                '<div class="col-4">'+data['HITTypeId']+'</div>'+
+                '<div class="col-2">'+hidebtn+'</div>'+
+            '</div>')
         }
-        else
+        else{
+            qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
+            hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
+            csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
             query = data.HITId
 
-        qualificationbutton = '<button type="button" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        hidebtn = '<button type="button" class="hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'
+            row_one = $('<div class="row mt-2">'+
+                '<div class="col-2 mt-2">Description:</div>'+
+                '<div class="col-2 mt-2">'+data['Description']+'</div>'+
+                '<div class="col-2 mt-2">HITId:</div>'+
+                '<div class="col-4 mt-2">'+data['HITId']+'</div>'+
+                '<div class="col-2 mt-2">'+csv_modal_btn+'</div>'+
+            '</div>')
 
-        
-        tr_one = $('<tr>'+
-                    '<td>Description:</td>'+
-                    '<td>'+data['Description']+'</td>'+
-                    '<td style="width:1rem"></td>'+
-                    '<td>HITId:</td>'+
-                    '<td>'+data['HITId']+'</td>'+
-                    '<td>'+'<button type="button" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'+'</td>'+
-                '</tr>')
+            row_two = $('<div class="row mt-2">'+
+                '<div class="col-2 mt-2">Keywords:</div>'+
+                '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
+                '<div class="col-2 mt-2">HITTypeId:</div>'+
+                '<div class="col-4 mt-2">'+data['HITTypeId']+'</div>'+
+            '</div>')
 
-        tr_two = $('<tr>'+
-                '<td>Keywords:</td>'+
-                '<td>'+data['Keywords']+'</td>'+
-                '<td style="width:1rem"></td>'+
-                '<td>HITTypeId:</td>'+
-                '<td>'+data['HITTypeId']+'</td>'+
-                '<td>'+cache_btn+'</td>'+
-            '</tr>')
-        
-        tr_three = $('<tr>'+
-                '<td>Reward:</td>'+
-                '<td>$'+data['Reward']+'</td>'+
-                '<td style="width:1rem"></td>'+
-                '<td>HITStatus:</td>'+
-                '<td>'+data['HITStatus']+'</td>'+
-                '<td>'+toggle_status_btn+'</td>'+
-            '</tr>')
+            row_three = $('<div class="row mt-2">'+
+                '<div class="col-2 mt-2">Reward:</div>'+
+                '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
+                '<div class="col-2 mt-2">HIT-Status:</div>'+
+                '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
+            '</div>')
 
-        tr_four = $('<tr>'+
-                '<td>QualificationRequirements:</td>'+
-                '<td>'+qualificationbutton+'</td>'+
-                //'<td>'+data['QualificationRequirements']+'</td>'+
-                '<td style="width:1rem"></td>'+
-                '<td>MiniBatched:</td>'+
-                '<td>'+data['batched']+(data['batch_id']==undefined?"":":"+data['batch_id'])+'</td>'+
-                '<td>'+hidebtn+'</td>'+
-            '</tr>')
-        
-        return $('<table class="info" cellpadding="5" cellspacing="0" border="0" style="width:80%">').data('group-id', group_id)
-                .append(tr_one).append(tr_two).append(tr_three).append(tr_four)
+            row_four = $('<div class="row mt-2">'+
+                '<div class="col-2">Qualifications:</div>'+
+                '<div class="col-2">'+qualificationbutton+'</div>'+
+                '<div class="col-2">MiniBatched:</div>'+
+                '<div class="col-4">'+false+'</div>'+
+                '<div class="col-2">'+hidebtn+'</div>'+
+            '</div>')
+            
+        }
+        return container.append(row_one).append(row_two).append(row_three).append(row_four)
     }
 
     function format_slide ( data ) {
@@ -702,22 +746,22 @@
         if(hit.hasOwnProperty('CreationTime')){
             ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
 
-            $tr = $('<tr active>')
-            $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
-            $tr.append($('<td>').addClass('minihittd').text(hit.HITStatus))
-            $tr.append($('<td>').addClass('minihittd').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
-            $tr.append($('<td>').addClass('minihittd').text(hit.CreationTime))
-            $tr.append($('<td>').addClass('minihittd').text(hit.Expiration))
+            $tr = $('<tr class="minihitrow running">')
+            $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
+            $tr.append($('<td>').text(hit.HITStatus))
+            $tr.append($('<td>').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
+            $tr.append($('<td>').text(hit.CreationTime))
+            $tr.append($('<td>').text(hit.Expiration))
             $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
                 .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
-            $tr.append($('<td>').addClass('minihittd').append($progressbtn))
+            $tr.append($('<td>').append($progressbtn))
         }else{
-            $tr = $('<tr inactive>')
-            $tr.append($('<td>').addClass('minihittd').text(hit.position)) //hit.position should be same as i always
-            $tr.append($('<td>').addClass('minihittd').text('Queued'))
-            $tr.append($('<td>').addClass('minihittd').text('0/'+hit.workers))
-            $tr.append($('<td>').addClass('minihittd'))
-            $tr.append($('<td>').addClass('minihittd'))
+            $tr = $('<tr class="minihitrow queued">')
+            $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
+            $tr.append($('<td>').text('Queued'))
+            $tr.append($('<td>').text('0/'+hit.workers))
+            $tr.append($('<td>'))
+            $tr.append($('<td>'))
             $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
 
             $tr.append($('<td>').addClass('minihittd').append($delbtn))                

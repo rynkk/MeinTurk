@@ -6,17 +6,60 @@ tbody tr.batched[role="row"], tbody tr.batched[role="row"]+tr{
     cursor: pointer;
 }
 
-tbody tr[role="row"] + tr{
+/*tbody tr[role="row"] + tr{
     background-color: rgba(0, 0, 0, 0.03);
-}
+}*/
 
 /* Because DataTables+Bootstrap4 table-triped+childtables is bonkers*/
-.striped tbody .odd{
+/*.striped tbody .odd{
     background-color:rgba(0, 0, 0, 0.3);
 }
 
 .striped tbody .even{
     background-color:rgba(0, 0, 0, 0.3);
+}*/
+
+tr.mainrow td:first-child { border-top-left-radius: 10px; }
+tr.mainrow td:last-child { border-top-right-radius: 10px; }
+
+div.container div.row > div {
+    word-break: break-all;
+}
+
+
+tr.minihitrow:not(:last-child){
+    border-bottom: 1px solid lightgray;
+}
+
+tr.batched{
+    background-color:rgba(3, 104, 145, 0.4)
+}
+tr.batched + tr{
+    background-color:rgba(3, 104, 145, 0.1)
+}
+.minihit-table tr.minihitrow:first-child td:first-child{
+    border-top-left-radius: 10px;
+}
+.minihit-table tr.minihitrow:first-child td:last-child{
+    border-top-right-radius: 10px;
+}
+.minihit-table tr.minihitrow:last-child td:first-child{
+    border-bottom-left-radius: 10px;
+}
+.minihit-table tr.minihitrow:last-child td:last-child{
+    border-bottom-left-radius: 10px;
+}
+.minihitrow.running{
+    background-color:rgba(3, 105, 145, 0.05);
+}
+.minihitrow.queued{
+    background-color:rgba(1, 57, 78, 0.05);
+}
+tr.standard{
+    background-color:rgba(40, 136, 80, 0.4)
+}
+tr.standard + tr{
+    background-color:rgba(40, 136, 80, 0.1)
 }
 
 table.dataTable tr.batched td:last-child i{
