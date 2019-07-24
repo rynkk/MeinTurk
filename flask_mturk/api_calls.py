@@ -99,13 +99,23 @@ class Api:
         )
         return response['HITTypeId']
 
-    def create_qualification_type(self, name, keywords, description):
-        response = client.create_qualification_type(
-            Name=name,
-            Keywords=keywords,
-            Description=description,
-            QualificationTypeStatus='Active',
-        )['QualificationType']
+    def create_qualification_type(self, name, keywords, description, autogrant=False, autograntvalue=None):
+        if not autogrant:
+            response = client.create_qualification_type(
+                Name=name,
+                Keywords=keywords,
+                Description=description,
+                QualificationTypeStatus='Active',
+            )['QualificationType']
+        else:
+            response = client.create_qualification_type(
+                Name=name,
+                Keywords=keywords,
+                Description=description,
+                QualificationTypeStatus='Active',
+                AutoGranted=autogrant,
+                AutoGrantedValue=autograntvalue
+            )['QualificationType']
         return response
 
     # ## ### Paginated functions ### ## #

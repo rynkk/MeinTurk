@@ -44,6 +44,9 @@ body{
     padding-bottom:15px;
 }
 
+.no-transform {
+    transform:none !important;
+}
 .unselectable {
     -webkit-touch-callout: none;
     -webkit-user-select: none;

@@ -170,9 +170,17 @@ class SurveyForm(FlaskForm):
 
 
 class UploadForm(FlaskForm):
-    hit_batched = BooleanField(validators=[InputRequired('Do not tinker with the hidden fields!')], widget=HiddenInput())
-    hit_identifier = StringField(validators=[InputRequired('Do not tinker with the hidden fields!!!')], widget=HiddenInput())
+    hit_batched = BooleanField(validators=[InputRequired('Could not set if HIT batched or not!')], widget=HiddenInput())
+    hit_identifier = StringField(validators=[InputRequired('Could not set HIT-Id!')], widget=HiddenInput())
     file = FileField('file', validators=[
         FileRequired(),
-        FileAllowed(['csv', 'xlsx', 'txt', 'someothercsvtypes'], 'Only CSV-Files are allowed!')
+        FileAllowed(['csv', 'xlsx', 'txt'], 'Only CSV-Files are allowed!')
     ])
+
+
+class QualificationCreationForm(FlaskForm):
+    name = StringField('Name', validators=[InputRequired('Please enter a name!')])
+    desc = StringField('Description', validators=[InputRequired('Please enter a description!')])
+    keywords = StringField('Keywords', validators=[Optional()])
+    auto_granted = BooleanField('AutoGranted', validators=[Optional()])
+    auto_granted_value = IntegerField('AutoGranted Value', validators=[Optional()], default=1, widget=NumberInput(min=0, max=100, step=1))

@@ -79,3 +79,54 @@ $('#qualification_table tbody').on('click', '.delete-qualification', async funct
         }
     });
 });
+
+$("#qualification_table_length").parent("div").removeClass("col-md-6").addClass("col-md-4")
+$("#qualification_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-4")
+check_div = $("<div>").addClass("col-sm-12 col-md-4 column-centered")
+    .append('<button type="button" class="btn btn-success" data-toggle="modal" data-target="#qualmodal"><i class="fas no-transform fa-plus-circle fa-lg"></i></button>')
+$("#qualification_table_length").parent("div").after(check_div)
+
+$("#qualform input").blur(function() {
+    $(this.form).validate().element(this);
+});
+
+$('#qualmodal').on('show.bs.modal',function(event){
+    $('#qualform')[0].reset();
+})
+
+$("#qualform").validate({
+    ignore: "",
+    submitHandler: function(form){
+        (async () => {
+            form = $('#qualform')[0]        
+            formData = new FormData(form);
+    
+            const rawResponse = await fetch('/qualifications', { 
+                method: 'POST',
+                body: formData
+            })
+            const json = await rawResponse.json()
+            if (json.success){
+                show_alert('Success','The qualification was successfully created. It might take some time until AWS processed it and it shows up.', 'success')
+                $("#qualmodal").modal('hide');
+            }else{
+                show_alert('Error',json.error, 'danger')
+            }
+          })(); 
+    }
+});
+
+$('#create_qual').on("click", function(){
+    $('#qualform').submit()
+})
+
+$('#auto_granted_value').closest('.row').css('visibility', 'hidden')
+
+$("#auto_granted").on("change", function(){
+    if(this.checked){
+        $('#auto_granted_value').closest('.row').css('visibility', 'visible')
+    }else{        
+        $('#auto_granted_value').closest('.row').css('visibility', 'hidden')
+    }
+    
+})

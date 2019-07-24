@@ -5,8 +5,9 @@ import io
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
 from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
-from flask_mturk.forms import SurveyForm, UploadForm
+from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm
 from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer
+from botocore.exceptions import ClientError
 
 from .api_calls import api
 from .helper import is_number, seconds_from_string
@@ -153,11 +154,27 @@ def survey():
     return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT)
 
 
-@app.route("/qualifications")
+@app.route("/qualifications", methods=['GET', 'POST'])
 def qualifications_page():
-    balance = api.get_balance()
-    qualifications = api.list_custom_qualifications()
-    return render_template('main/qualification_list.html', title='Qualifications', balance=balance, qualifications=qualifications)
+    form = QualificationCreationForm()
+    if request.method == 'GET':
+        balance = api.get_balance()
+        qualifications = api.list_custom_qualifications()
+        return render_template('main/qualification_list.html', title='Qualifications', balance=balance, qualifications=qualifications, form=form)
+
+    if request.method == 'POST':
+        if form.validate():
+            name = form.name.data
+            desc = form.desc.data
+            keywords = form.keywords.data
+            autogranted = form.auto_granted.data
+            autogranted_val = form.auto_granted_value.data
+            try:
+                qual = api.create_qualification_type(name, keywords, desc, autogranted, autogranted_val)
+                return json.dumps({'success': True, 'data': qual}), 201, {'ContentType': 'application/json'}
+            except ClientError as err:
+                return json.dumps({'success': False, 'error': err.response['Error']['Message']}), 418, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': form.errors}), 400, {'ContentType': 'application/json'}
 
 
 @app.route("/worker")
@@ -346,7 +363,6 @@ def upload():
     form = UploadForm()
 
     if form.validate_on_submit():
-        print("OK")
         csvfile = form.file.data
         csvdata = io.StringIO(csvfile.read().decode('utf-8'))
 

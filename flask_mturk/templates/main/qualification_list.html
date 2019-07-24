@@ -1,11 +1,59 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 {% endblock head %}
 
 {% block body %}
+<div class="modal fade" id="qualmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Qualification</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mt-4 ml-4">    
+                <form method="POST" id="qualform" novalidate="novalidate" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group row">
+                        <div class="col-2">{{ form.name.label }}*</div>
+                        <div class="col-7">{{ form.name(class="form-control")}}</div>
+                    </div>
+    
+                    <div class="form-group row">
+                        <div class="col-2">{{ form.desc.label }}*</div>
+                        <div class="col-7">{{ form.desc(class="form-control")}}</div>
+                    </div>
+        
+                    <div class="form-group row">
+                        <div class="col-2">{{ form.keywords.label }}</div>
+                        <div class="col-7">{{ form.keywords(class="form-control")}}</div>
+                    </div>
+    
+                    <div class="form-group row">
+                        <div class="col-2">{{ form.auto_granted.label }}</div>
+                        <div class="col-7">{{ form.auto_granted}}</div>
+                    </div>
+    
+                    <div class="form-group row">
+                        <div class="col-2">{{ form.auto_granted_value.label }}</div>
+                        <div class="col-2">{{ form.auto_granted_value(placeholder="1", class="form-control")}}</div>
+                    </div>          
+                    <div id="error"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="create_qual" type="button" class="btn btn-primary">Create</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid container-big">
     <table id="qualification_table" class="table striped" style="width:100%">
         <thead>
@@ -28,6 +76,7 @@
 <script>
     quals = {{ qualifications | tojson }};
 </script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/qualification-list.js') }}"></script>

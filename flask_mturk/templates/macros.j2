@@ -67,7 +67,7 @@
         </div>
         <div class="col-4 mbqual" style="display:none">
             {% set css_class = 'text form-control'  + kwargs.pop('class', '') %}
-            {{ text(class=css_class, placeholder="Standard: Projektname+Datum", aria_describedby = text.short_name+"_help", **kwargs) }}
+            {{ text(class=css_class, placeholder="Default: project name + date", aria_describedby = text.short_name+"_help", **kwargs) }}
         </div>
     </div>
 {% endmacro %}
