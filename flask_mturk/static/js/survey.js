@@ -10,39 +10,39 @@
 
     })
 
-        $('form input').on('keypress', function(e) {
-            return e.which !== 13;
-        });
+    $('form input').on('keypress', function(e) {
+        return e.which !== 13;
+    });
 
-        $("#sform input").blur(function() {
-            $(this.form).validate().element(this);
-        });
+    $("#sform input").blur(function() {
+        $(this.form).validate().element(this);
+    });
 
-        jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
-            for (i in qualifications){
-                if(qualifications[i]['Name'] == value || softblock_name == value){
-                    return false
-                }
+    jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
+        for (i in qualifications){
+            if(qualifications[i]['Name'] == value || softblock_name == value){
+                return false
             }
-            return true
-        }, "Qualification Name Already Exists!");
+        }
+        return true
+    }, "Qualification Name Already Exists!");
 
 
-        $("#sform").validate({
-            ignore: "",
-            invalidHandler: function(e, validator){
-                if(validator.errorList.length)
-                    $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
-            },
-            rules : {
-                qualification_name : { qualNameUniqueNaive : true }
-            },
-            submitHandler: function(form, event){
-                $('body').addClass("loading")
-                $(".loading-modal > p").text("Please wait while your Survey is being created!")
-                form.submit()
-            }
-        });
+    $("#sform").validate({
+        ignore: "",
+        invalidHandler: function(e, validator){
+            if(validator.errorList.length)
+                $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
+        },
+        rules : {
+            qualification_name : { qualNameUniqueNaive : true }
+        },
+        submitHandler: function(form, event){
+            $('body').addClass("loading")
+            $(".loading-modal > p").text("Please wait while your Survey is being created!")
+            form.submit()
+        }
+    });
 
     $('form#sform').find('input').each(function(){
         var $input = $(this)
@@ -277,7 +277,6 @@
             }
 
             $comparator_col.show() //comparator is always shown (unless ---SELECT---)
-            console.log(options.value)
             switch(options.value){
                 case "PercentValue":
                     for(i=100;i>=0;i-=percentage_interval)
