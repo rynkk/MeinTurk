@@ -123,12 +123,13 @@
 
 
 {% block scripts %}
-<script>    
+<script>
         var qualifications = {{qualifications | tojson}}
         var percentage_interval = {{ qualification_percentage_interval }}
         var integer_list = {{ qualification_integer_list }}
         var countrycodes = {{ cc_list | tojson}}
         var max_payment = {{ max_payment }}
+        var softblock_name = {{ softblock_name | tojson}}
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/validate-additional-methods.js') }}"></script>

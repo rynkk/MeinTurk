@@ -57,6 +57,7 @@ def survey():
     all_qualifications_w_sys = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
     # remove softblock-qualification
     all_qualifications = [q for q in all_qualifications_w_sys if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
+    softblock_name = [q['Name'] for q in all_qualifications_w_sys if q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID')][0]
     selector_choices = [(qual['QualificationTypeId'], qual["Name"]) for qual in all_qualifications]
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
@@ -67,7 +68,6 @@ def survey():
             select.selector.choices = selector_choices
 
     if form.validate_on_submit():
-
         # standard fields #
         project_name = form.project_name.data
         title = form.title.data
@@ -99,18 +99,18 @@ def survey():
         if must_be_master == "yes":
             id = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  # Sandbox
             # id = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH'  # Production
-            obj = create_qualification_object(id, 'Exists', "None", "DiscoverPreviewAndAccept")
+            obj = create_qualification_object(id, 'Exists', None, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
 
         adult_content = form.adult_content.data
         if adult_content:
             id = '00000000000000000060'
-            obj = create_qualification_object(id, 'EqualTo', 1, "PreviewAndAccept")
+            obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
 
         # softblock qualification # Deactivated till app done
         # id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
-        # obj = create_qualification_object(id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+        # obj = create_qualification_object(id, "DoesNotExist", None, "DiscoverPreviewAndAccept")
         # qualifications.append(obj)
 
         # conditional fields #
@@ -119,14 +119,14 @@ def survey():
         if(is_minibatched):
             if(form.qualification_name.data == ""):
                 now = datetime.now()
-                print('This is the qualificationname:' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
-                qualification_name = 'ParticipatedIn%s%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))
+                print('This is the qualificationname: Participated in ' + form.project_name.data + "_" + now.strftime("%Y-%m-%dT%H:%M:%S"))
+                qualification_name = 'Participated In %s_%s' % (form.project_name.data, now.strftime("%Y-%m-%dT%H:%M:%S"))
             else:
                 qualification_name = form.qualification_name.data
 
             response = api.create_qualification_type(qualification_name, keywords, "MiniBatch-Qualification for %s" % title)
             qualification_id = response['QualificationTypeId']
-            obj = create_qualification_object(qualification_id, "DoesNotExist", "None", "DiscoverPreviewAndAccept")
+            obj = create_qualification_object(qualification_id, "DoesNotExist", None, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
 
         if(is_minibatched):
@@ -151,7 +151,7 @@ def survey():
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
-    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT)
+    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT, softblock_name=softblock_name)
 
 
 @app.route("/qualifications", methods=['GET', 'POST'])
@@ -173,8 +173,8 @@ def qualifications_page():
                 qual = api.create_qualification_type(name, keywords, desc, autogranted, autogranted_val)
                 return json.dumps({'success': True, 'data': qual}), 201, {'ContentType': 'application/json'}
             except ClientError as err:
-                return json.dumps({'success': False, 'error': err.response['Error']['Message']}), 418, {'ContentType': 'application/json'}
-        return json.dumps({'success': False, 'error': form.errors}), 400, {'ContentType': 'application/json'}
+                return json.dumps({'success': False, 'error': err.response['Error']['Message']}), 409, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': form.errors}), 418, {'ContentType': 'application/json'}
 
 
 @app.route("/worker")
@@ -666,7 +666,7 @@ def create_qualification_object(id, comparator, value, restriction):
     qual_obj['Comparator'] = comparator
     qual_obj['ActionsGuarded'] = restriction
 
-    if value == "None":                   # we are done if second_select did not provide data
+    if value is None or comparator in ['Exists', 'DoesNotExist']:                   # we are done if second_select did not provide data
         return qual_obj
 
     if is_number(value):                       # int-> IntegerValues

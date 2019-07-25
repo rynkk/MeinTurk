@@ -117,7 +117,7 @@ class QualificationsSubForm(FlaskForm):
         super(QualificationsSubForm, self).__init__(*args, **kwargs)
 
     def validate_first_select(form, field):  # only allow Exists, DoesNotExist , GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
-        if(field.data not in ["Exists", "DoesNotExist ", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
+        if(field.data not in ["Exists", "DoesNotExist", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
             raise ValidationError("Unable to validate the Qualification-Comparator called:" + '"' + field.data + '"')
 
 

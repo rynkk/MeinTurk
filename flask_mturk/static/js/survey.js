@@ -18,11 +18,24 @@
             $(this.form).validate().element(this);
         });
 
+        jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
+            for (i in qualifications){
+                if(qualifications[i]['Name'] == value || softblock_name == value){
+                    return false
+                }
+            }
+            return true
+        }, "Qualification Name Already Exists!");
+
+
         $("#sform").validate({
             ignore: "",
             invalidHandler: function(e, validator){
                 if(validator.errorList.length)
                     $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
+            },
+            rules : {
+                qualification_name : { qualNameUniqueNaive : true }
             },
             submitHandler: function(form, event){
                 $('body').addClass("loading")
@@ -160,10 +173,17 @@
             enable_disable_selected()
         });
 
-        $(document).on('click','.remove-row', function(){
+        $('#qualifications').on('click','.remove-row', function(){
             $(this).parents('.row').remove();
             rearrange_ids()
             enable_disable_selected()
+        })
+
+        $('#qualifications').on('change','.own-select', function(){
+            if($(this).val() == "EqualTo" || $(this).val() == "NotEqualTo")
+                $(this).parent().next(".value").show()
+            else
+                $(this).parent().next(".value").hide()
         })
 
         function create_qual_row(){
@@ -240,10 +260,15 @@
                 return
             
             if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
+                $comparator_select.addClass("own-select")
                 $option0 = $("<option value='Exists'>Exists</option>")
                 $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
+                $option2 = $("<option value='EqualTo'>Equal To</option>")
+                $option3 = $("<option value='NotEqualTo'>Not Equal To</option>")
                 $comparator_select.append($option0)
-                $comparator_select.append($option1)
+                                  .append($option1)
+                                  .append($option2)
+                                  .append($option3)
             }else{
                 options.comparators.forEach(comparator => {
                     $option = $("<option value="+comparator.value+">"+comparator.name+"</option>")
@@ -252,7 +277,7 @@
             }
 
             $comparator_col.show() //comparator is always shown (unless ---SELECT---)
-
+            console.log(options.value)
             switch(options.value){
                 case "PercentValue":
                     for(i=100;i>=0;i-=percentage_interval)
@@ -273,6 +298,8 @@
                     $value_col.show()
                     break;
                 default:
+                    for(i=0;i<100;i++)
+                        $value_select.append($('<option></option>').val(i).html(i))   
                     break;
 
             }
