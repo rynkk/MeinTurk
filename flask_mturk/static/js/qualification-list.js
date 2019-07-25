@@ -92,7 +92,8 @@ $("#qualform input").blur(function() {
 
 $('#qualmodal').on('show.bs.modal',function(event){
     $('#qualform')[0].reset();
-})
+    $('div.bootstrap-tagsinput').tagsinput('removeAll');
+});
 
 $("#qualform").validate({
     ignore: "",

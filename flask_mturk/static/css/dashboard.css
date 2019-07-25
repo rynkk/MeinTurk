@@ -22,7 +22,7 @@ tbody tr.batched[role="row"], tbody tr.batched[role="row"]+tr{
 tr.mainrow td:first-child { border-top-left-radius: 10px; }
 tr.mainrow td:last-child { border-top-right-radius: 10px; }
 
-div.container div.row > div {
+tr.info-row div.container div.row > div {
     word-break: break-all;
 }
 

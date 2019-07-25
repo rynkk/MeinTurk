@@ -93,6 +93,96 @@
             $("#batches").show()
         }        
     }
+    $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
+
+        batched = document.getElementById('minibatch').checked
+        if (batched){
+            $('#overview_minibatch').text("enabled")
+            $('#overview_name').text($('#project_name').val()==''?'-':$('#project_name').val())
+        }else{
+            $('#overview_minibatch').text("disabled")
+            $('#overview_name').text('***Ignored for non-batched***')
+        }
+
+        $('#overview_title').text($('#title').val()==''?'-':$('#title').val())
+        masters = $('input[name="must_be_master"]:checked').val()=='yes'
+        $('#overview_masters').text(masters?'':'not')
+
+        workers = parseInt($('#amount_workers').val())
+        if (isNaN(workers)){
+            workers = 0
+            hits = 0
+        }else{
+            if(batched)
+                hits = Math.ceil(workers / 9)
+            else
+                hits = 1
+        }
+        $('#overview_hits').text(hits)
+        $('#overview_workers').text(workers)
+
+        $('#overview_lifetime').text($("#time_till_expiration-int_field").val()+" "+$("#time_till_expiration-unit_field").val())
+        $('#overview_allotted_time').text($("#allotted_time_per_worker-int_field").val()+" "+$("#allotted_time_per_worker-unit_field").val())
+        $('#overview_time_approval').text($("#accept_pay_worker_after-int_field").val()+" "+$("#accept_pay_worker_after-unit_field").val())
+
+        quals_text=""
+        $('#qualifications select.selector').each(function(){
+            if($(this).find("option:selected").val() != 'false'){
+                
+                quals_text += $(this).find("option:selected").text()+"; "
+            }
+        })
+        $('#overview_qualifications').text(quals_text)
+
+        reward = parseFloat($('#payment_per_worker').val())
+        
+        costs = calculate_cost(batched, masters, reward, workers)
+        $('#overview_reward').text(costs['reward_each'])
+        $('#overview_fees').text(costs['fee_each'])
+        $('#overview_fees_percentage').text(costs['fee_percentage'])
+        $('#overview_ass_total').text(costs['ass_total'])
+        $('#overview_nrass').text(workers)
+        $('#overview_total').text(costs['total_cost'])
+        $('#overview_saved').text(costs['saved'])
+    })
+
+    function calculate_cost(batched, masters, reward, workers){
+        // standard fee is 20%
+        fee = 0.2
+        fee_reasons="batched"
+        if(!batched){
+            // Additional 20% fees if more than 9 workers for a HIT (nonbatched) 
+            if(workers>9){
+                fee += 0.2        
+                fee_reasons="non-batched"
+            }else{
+                fee_reasons="non-batched, <9 workers"
+            }
+        }
+        // Masters increases the fee by additional 5%
+        if(masters){
+            fee+=0.05
+            fee_reasons+=", masters"
+        }
+        fee_each = reward * fee
+        total_fees = reward * fee * workers
+        fee_percentage = fee * 100
+        reward_each = reward
+        ass_total = reward_each + fee_each
+        total_reward = reward * workers
+        total_cost = total_reward + total_fees
+        
+        normal_fee = 0.2
+        if (workers > 9)   
+            normal_fee = 0.4
+        if(masters)
+            normal_fee += 0.05
+
+        total_saved = (normal_fee * reward + reward) * workers - total_cost
+        
+        return {'fee_percentage':fee_percentage, 'fee_reasons': fee_reasons, 'fee_each': fee_each, 'ass_total': ass_total,
+                'total_fees': total_fees, 'reward_each': reward_each, 'total_reward': total_reward, 'total_cost': total_cost, 'saved': total_saved}
+    }
 
     $(".next").click(function () {
         parent_id = $(this).parent().parent().parent().attr("id")
@@ -133,200 +223,197 @@
          custom_group.append(option)
     })
     $("#payment_per_worker").attr('max',max_payment)
-    initDOMs()    
-    
-    function initDOMs(){
-        var added=0
-        $("button#add-system").click(function(){
-            if(added==0){
-                all_options.forEach(function(obj){
-                    if (obj.type=="custom")
-                        return
-                    
-                    $(".selector").each(function(i, elem){
-                        elem = $(elem)
-                        if(elem.val() == obj.id)
-                            elem.closest('.row').remove()
-                    })
-                    $row = create_qual_row()
-                    $row.addClass("system-row")
-                    $row.find("select option[value="+obj.id+"]").prop('selected',true).trigger('change');
-                    $("#qualifications .row:first").after($row)
+
+    var added=0
+    $("button#add-system").click(function(){
+        if(added==0){
+            all_options.forEach(function(obj){
+                if (obj.type=="custom")
+                    return
+                
+                $(".selector").each(function(i, elem){
+                    elem = $(elem)
+                    if(elem.val() == obj.id)
+                        elem.closest('.row').remove()
                 })
-                $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Remove default qualifications")
-            }else{
-                $("#qualifications .system-row").remove()
-                $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Add default qualifications")
-            }
-            rearrange_ids()
-            added = !added
-            
-            enable_disable_selected()
-        });
-            
-        // TODO: Hide visibility radios if no qualification was chosen
-    
-        $("button#add-select").click(function() { //reconstruct HTML to match wtform            
-            $row = create_qual_row()
-            $("#qualifications .row:last").before($row)
-            rearrange_ids()
-            enable_disable_selected()
-        });
-
-        $('#qualifications').on('click','.remove-row', function(){
-            $(this).parents('.row').remove();
-            rearrange_ids()
-            enable_disable_selected()
-        })
-
-        $('#qualifications').on('change','.own-select', function(){
-            if($(this).val() == "EqualTo" || $(this).val() == "NotEqualTo")
-                $(this).parent().next(".value").show()
-            else
-                $(this).parent().next(".value").hide()
-        })
-
-        function create_qual_row(){
-            btn = $("<a class='remove-row'><i class='fas fa-trash-alt'></i></a>")
-            row = $("<div class='row selectorrow'></div>")
-            col0= $("<div class='col-auto'><p class='index'>X</p></div>")
-            col1= $("<div class='col-auto'></div>")
-            col2= $("<div class='col-auto comparator'></div>")
-            col3= $("<div class='col-auto value'></div>")
-            col4= $("<div class='col-auto'></div>")
-
-            select1 = $("<select id='qualifications_select-selects-X-selector' class='selector'></select>")
-            select2 = $("<select id='qualifications_select-selects-X-first_select'></select>")
-            select3 = $("<select id='qualifications_select-selects-X-second_select'></select>")
-
-            select1.on("change", function(){
-                show_selects_for_option($(this))
-                enable_disable_selected()
+                $row = create_qual_row()
+                $row.addClass("system-row")
+                $row.find("select option[value="+obj.id+"]").prop('selected',true).trigger('change');
+                $("#qualifications .row:first").after($row)
             })
-
-            option = $("<option value='false'>---Select---</option>")
-            select1.append(option)
-            select1.append(sys_group.clone())
-            select1.append(custom_group.clone())
-            col1.append(select1)
-            col2.append(select2)
-            col3.append(select3)
-            col4.append(btn)
-            row.append(col0)
-            row.append(col1)
-            row.append(col2)
-            row.append(col3)
-            row.append(col4)
-            col2.hide() // Hide comparator by default
-            col3.hide() // Hide values by default
-            return row
+            $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Remove default qualifications")
+        }else{
+            $("#qualifications .system-row").remove()
+            $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Add default qualifications")
         }
+        rearrange_ids()
+        added = !added
+        
+        enable_disable_selected()
+    });
+        
+    // TODO: Hide visibility radios if no qualification was chosen
 
+    $("button#add-select").click(function() { //reconstruct HTML to match wtform            
+        $row = create_qual_row()
+        $("#qualifications .row:last").before($row)
+        rearrange_ids()
+        enable_disable_selected()
+    });
 
-        function rearrange_ids(){
-            $('#qualifications .selectorrow').each(function (index) {
-                $(this).find('.index').text(index+1)
-                $(this).find('select').each(function (){
-                    var $selector = $(this)
-                    var new_id = $selector.prop("id").replace(/\d+|X/g, index)  // RegEx: Gets number or X  (combination too, but w/e)
-                    $selector.prop("id", new_id)
-                    $selector.prop("name", new_id)
-                })
-            });
-        }
+    $('#qualifications').on('click','.remove-row', function(){
+        $(this).parents('.row').remove();
+        rearrange_ids()
+        enable_disable_selected()
+    })
 
+    $('#qualifications').on('change','.own-select', function(){
+        if($(this).val() == "EqualTo" || $(this).val() == "NotEqualTo")
+            $(this).parent().next(".value").show()
+        else
+            $(this).parent().next(".value").hide()
+    })
 
-        function show_selects_for_option($selected){
+    function create_qual_row(){
+        btn = $("<a class='remove-row'><i class='fas fa-trash-alt'></i></a>")
+        row = $("<div class='row selectorrow'></div>")
+        col0= $("<div class='col-auto'><p class='index'>X</p></div>")
+        col1= $("<div class='col-auto'></div>")
+        col2= $("<div class='col-auto comparator'></div>")
+        col3= $("<div class='col-auto value'></div>")
+        col4= $("<div class='col-auto'></div>")
 
-            $parent = $selected.closest(".selectorrow")
-            $comparator_col = $parent.find(".comparator")
-            $value_col = $parent.find(".value")
+        select1 = $("<select id='qualifications_select-selects-X-selector' class='selector'></select>")
+        select2 = $("<select id='qualifications_select-selects-X-first_select'></select>")
+        select3 = $("<select id='qualifications_select-selects-X-second_select'></select>")
 
-            $comparator_select = $comparator_col.children("select")
-            $value_select = $value_col.children("select")
-            
-            $comparator_select.empty()
-            $value_select.empty()
-            
-            $comparator_col.hide()
-            $value_col.hide()
+        select1.on("change", function(){
+            show_selects_for_option($(this))
+            enable_disable_selected()
+        })
 
-            if($selected.val()=='false') // If select ---SELECT---  return
-                return            
-            
-            var options = all_options.find(option => option.id === $selected.val())
-
-            if(!options)
-                return
-            
-            if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
-                $comparator_select.addClass("own-select")
-                $option0 = $("<option value='Exists'>Exists</option>")
-                $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
-                $option2 = $("<option value='EqualTo'>Equal To</option>")
-                $option3 = $("<option value='NotEqualTo'>Not Equal To</option>")
-                $comparator_select.append($option0)
-                                  .append($option1)
-                                  .append($option2)
-                                  .append($option3)
-            }else{
-                options.comparators.forEach(comparator => {
-                    $option = $("<option value="+comparator.value+">"+comparator.name+"</option>")
-                    $comparator_select.append($option)
-                })                 
-            }
-
-            $comparator_col.show() //comparator is always shown (unless ---SELECT---)
-            switch(options.value){
-                case "PercentValue":
-                    for(i=100;i>=0;i-=percentage_interval)
-                        $value_select.append($('<option></option>').val(i).html(i))    
-                    $value_col.show()     
-                    break;
-                case "IntegerValue":
-                    for (i=0;i<integer_list.length;i++)
-                        $value_select.append($('<option></option>').val(integer_list[i]).html(integer_list[i]))      
-                    $value_col.show()
-                    break;
-                case "LocaleValue":
-                    for(let key in countrycodes){
-                        if(countrycodes.hasOwnProperty(key)){
-                            $value_select.append($('<option></option>').val(key).html(countrycodes[key]))
-                        }
-                    }
-                    $value_col.show()
-                    break;
-                default:
-                    for(i=0;i<100;i++)
-                        $value_select.append($('<option></option>').val(i).html(i))   
-                    break;
-
-            }
-            if(options.default){
-                $comparator_select.val(options.default.comparator)
-                $value_select.val(options.default.val)
-            }
-        }
-
-            function enable_disable_selected(){
-                selected_options = [];
-
-                $(".selector").find(':selected').filter(function(idx, el) {
-                    return $(el).attr('value');
-                }).each(function(idx, el) {
-                    selected_options.push($(el).attr('value'));
-                });
-
-                $(".selector").find('option').each(function(idx, option) { 
-                    if (selected_options.indexOf($(option).attr('value')) > -1) {
-                        if ($(option).is(':checked')) {
-                            return;
-                        } else {
-                            $(this).attr('disabled', true);
-                        }
-                    } else {
-                        $(this).attr('disabled', false);
-                    }
-                });
-            }            
+        option = $("<option value='false'>---Select---</option>")
+        select1.append(option)
+        select1.append(sys_group.clone())
+        select1.append(custom_group.clone())
+        col1.append(select1)
+        col2.append(select2)
+        col3.append(select3)
+        col4.append(btn)
+        row.append(col0)
+        row.append(col1)
+        row.append(col2)
+        row.append(col3)
+        row.append(col4)
+        col2.hide() // Hide comparator by default
+        col3.hide() // Hide values by default
+        return row
     }
+
+
+    function rearrange_ids(){
+        $('#qualifications .selectorrow').each(function (index) {
+            $(this).find('.index').text(index+1)
+            $(this).find('select').each(function (){
+                var $selector = $(this)
+                var new_id = $selector.prop("id").replace(/\d+|X/g, index)  // RegEx: Gets number or X  (combination too, but w/e)
+                $selector.prop("id", new_id)
+                $selector.prop("name", new_id)
+            })
+        });
+    }
+
+
+    function show_selects_for_option($selected){
+
+        $parent = $selected.closest(".selectorrow")
+        $comparator_col = $parent.find(".comparator")
+        $value_col = $parent.find(".value")
+
+        $comparator_select = $comparator_col.children("select")
+        $value_select = $value_col.children("select")
+        
+        $comparator_select.empty()
+        $value_select.empty()
+        
+        $comparator_col.hide()
+        $value_col.hide()
+
+        if($selected.val()=='false') // If select ---SELECT---  return
+            return            
+        
+        var options = all_options.find(option => option.id === $selected.val())
+
+        if(!options)
+            return
+        
+        if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
+            $comparator_select.addClass("own-select")
+            $option0 = $("<option value='Exists'>Exists</option>")
+            $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
+            $option2 = $("<option value='EqualTo'>Equal To</option>")
+            $option3 = $("<option value='NotEqualTo'>Not Equal To</option>")
+            $comparator_select.append($option0)
+                                .append($option1)
+                                .append($option2)
+                                .append($option3)
+        }else{
+            options.comparators.forEach(comparator => {
+                $option = $("<option value="+comparator.value+">"+comparator.name+"</option>")
+                $comparator_select.append($option)
+            })                 
+        }
+
+        $comparator_col.show() //comparator is always shown (unless ---SELECT---)
+        switch(options.value){
+            case "PercentValue":
+                for(i=100;i>=0;i-=percentage_interval)
+                    $value_select.append($('<option></option>').val(i).html(i))    
+                $value_col.show()     
+                break;
+            case "IntegerValue":
+                for (i=0;i<integer_list.length;i++)
+                    $value_select.append($('<option></option>').val(integer_list[i]).html(integer_list[i]))      
+                $value_col.show()
+                break;
+            case "LocaleValue":
+                for(let key in countrycodes){
+                    if(countrycodes.hasOwnProperty(key)){
+                        $value_select.append($('<option></option>').val(key).html(countrycodes[key]))
+                    }
+                }
+                $value_col.show()
+                break;
+            default:
+                for(i=0;i<100;i++)
+                    $value_select.append($('<option></option>').val(i).html(i))   
+                break;
+
+        }
+        if(options.default){
+            $comparator_select.val(options.default.comparator)
+            $value_select.val(options.default.val)
+        }
+    }
+
+    function enable_disable_selected(){
+        selected_options = [];
+
+        $(".selector").find(':selected').filter(function(idx, el) {
+            return $(el).attr('value');
+        }).each(function(idx, el) {
+            selected_options.push($(el).attr('value'));
+        });
+
+        $(".selector").find('option').each(function(idx, option) { 
+            if (selected_options.indexOf($(option).attr('value')) > -1) {
+                if ($(option).is(':checked')) {
+                    return;
+                } else {
+                    $(this).attr('disabled', true);
+                }
+            } else {
+                $(this).attr('disabled', false);
+            }
+        });
+    }  

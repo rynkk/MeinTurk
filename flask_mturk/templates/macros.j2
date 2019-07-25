@@ -114,7 +114,7 @@
             <div class="form-check">
             {% set css_class = 'form-check-label' %}
             {{ bool_field.label(class=css_class) }}
-            <i class="fas fa-info-circle fa-xs" data-toggle="tooltip" style="vertical-align: text-top" title="MiniBatching teilt einen HIT in mehrere HITs a 9 Bearbeiter auf und schickt diese nacheinander los, um Kosten zu sparen. Die Erstellung der HITs erfolgt automatisch"></i>
+            <i class="fas fa-info-circle fa-xs" data-toggle="tooltip" style="vertical-align: text-top" title="{{bool_field.description}}"></i>
             {% set css_class = 'form-check-input ml-0 relative' %}
             {{ bool_field(class=css_class) }}
                 <span id="batches"></span>
@@ -145,31 +145,16 @@
     
 {% endmacro %}
 
-{% macro render_qualifications_field(qualifications_field) %}
-    <div class='form-group'>
-        <div class="form-row">
-            <div class='col'>
-            {{ qualifications_field.label }}
-            </div>
-        </div>
-        <div class="row">            
-            <div class='col'>
-                <p>Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter Platzhalter </p>
-            </div>
-        </div>
-    </div>
-{% endmacro %}
-
 {% macro render_next_prev(page) %}
     <div class="form-group row pt-5">
         <div class="col-sm">
             {% if page != 1 %}
-                <button type="button" class="btn btn-primary btn-sm prev">Zurück</button>
+                <button type="button" class="btn btn-primary btn-sm prev">Previous</button>
             {% endif %}
         </div>
         <div class="col-sm">            
             {% if page != 5 %}
-                <button type="button" class="btn btn-primary btn-sm float-right next">Weiter</button>
+                <button type="button" class="btn btn-primary btn-sm float-right next">Next</button>
             {% endif %}
         </div>
     </div>

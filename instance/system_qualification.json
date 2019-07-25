@@ -1,7 +1,7 @@
 [
     {
         "Type": "system",
-        "Name": "Worker_NumberHITsApproved",
+        "Name": "Number HITs Approved",
         "QualificationTypeId": "00000000000000000040",
         "Comparators": [{"value": "GreaterThan", "name": "greater than"}, {"value": "GreaterThanOrEqualTo", "name": "greater than or equal to"}, {"value": "LessThan", "name": "less than"},
                         {"value": "LessThanOrEqualTo", "name": "less than or equal zo"}, {"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
@@ -10,7 +10,7 @@
     },
     {
         "Type": "system",
-        "Name": "Worker_Locale",
+        "Name": "Locale",
         "QualificationTypeId": "00000000000000000071",
         "Comparators": [{"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
         "Value": "LocaleValue",
@@ -18,7 +18,7 @@
     },
     {
         "Type": "system",
-        "Name": "Worker_PercentAssignmentsApproved",
+        "Name": "Percent Assignments Approved",
         "QualificationTypeId": "000000000000000000L0",
         "Comparators": [{"value": "GreaterThan", "name": "greater than"}, {"value": "GreaterThanOrEqualTo", "name": "greater than or equal to"}, {"value": "LessThan", "name": "less than"},
                         {"value": "LessThanOrEqualTo", "name": "less than or equal to"}, {"value": "EqualTo", "name": "equal to"}, {"value": "NotEqualTo", "name": "not equal to"}],
