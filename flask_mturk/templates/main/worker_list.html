@@ -3,6 +3,7 @@
 <h1>Home</h1>
 
 {% block head %}
+<title>{{ title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 {% endblock head %}

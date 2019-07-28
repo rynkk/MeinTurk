@@ -1,5 +1,5 @@
 $('#previewButton').on('click', function(){
-    var popup = window.open("","Preview","width=800,height=600,scrollbars=1,resizable=1")
+    var popup = window.open("","Vorschau","width=800,height=600,scrollbars=1,resizable=1")
     start = '<!DOCTYPE html><html><head><title>HIT</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><script type="text/javascript" src="https://s3.amazonaws.com/mturk-public/externalHIT_v1.js"><\/script></head><body><form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="" name="assignmentId" id="assignmentId" />'
     html = CKEDITOR.instances.editor_field.getData()
     end = '<p class="text-center"><input type="submit" id="submitButton" class="btn btn-primary" value="Submit" /></p></form><script language="Javascript">turkSetAssignmentID();<\/script></body></html>'
@@ -25,7 +25,7 @@ jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
         }
     }
     return true
-}, "Qualification Name Already Exists!");
+}, "Qualifikationsname existiert bereits!");
 
 
 $("#sform").validate({
@@ -39,7 +39,7 @@ $("#sform").validate({
     },
     submitHandler: function(form, event){
         $('body').addClass("loading")
-        $(".loading-modal > p").text("Please wait while your Survey is being created!")
+        $(".loading-modal > p").text("Bitte warten.. Deine Umfrage wird erstellt!")
         form.submit()
     }
 });
@@ -87,7 +87,7 @@ function print_batches(){
 
         var connector = ((full_string!="" && part_string!="") ? " und ":"")
         
-        var text = ":  The Survey will be split into " + full_string + connector + part_string + " parts."
+        var text = ":  Die Umfrage wird auf" + full_string + connector + part_string + " Teilumfragen aufgeteilt."
 
         $("#batches").text(text)
         $("#batches").show()
@@ -97,16 +97,16 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
 
     batched = document.getElementById('minibatch').checked
     if (batched){
-        $('#overview_minibatch').text("enabled")
+        $('#overview_minibatch').text("aktiv")
         $('#overview_name').text($('#project_name').val()==''?'-':$('#project_name').val())
     }else{
-        $('#overview_minibatch').text("disabled")
-        $('#overview_name').text('***Ignored for non-batched***')
+        $('#overview_minibatch').text("deaktiviert")
+        $('#overview_name').text('***Ignoriert für nicht gebatchte***')
     }
 
     $('#overview_title').text($('#title').val()==''?'-':$('#title').val())
     masters = $('input[name="must_be_master"]:checked').val()=='yes'
-    $('#overview_masters').text(masters?'':'not')
+    $('#overview_masters').text(masters?'':'nicht')
 
     workers = parseInt($('#amount_workers').val())
     if (isNaN(workers)){
@@ -121,9 +121,9 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
     $('#overview_hits').text(hits)
     $('#overview_workers').text(workers)
 
-    $('#overview_lifetime').text($("#time_till_expiration-int_field").val()+" "+$("#time_till_expiration-unit_field").val())
-    $('#overview_allotted_time').text($("#allotted_time_per_worker-int_field").val()+" "+$("#allotted_time_per_worker-unit_field").val())
-    $('#overview_time_approval').text($("#accept_pay_worker_after-int_field").val()+" "+$("#accept_pay_worker_after-unit_field").val())
+    $('#overview_lifetime').text($("#time_till_expiration-int_field").val()+" "+$("#time_till_expiration-unit_field option:selected").text())
+    $('#overview_allotted_time').text($("#allotted_time_per_worker-int_field").val()+" "+$("#allotted_time_per_worker-unit_field option:selected").text())
+    $('#overview_time_approval').text($("#accept_pay_worker_after-int_field").val()+" "+$("#accept_pay_worker_after-unit_field option:selected").text())
 
     quals_text=""
     $('#qualifications select.selector').each(function(){
@@ -154,15 +154,15 @@ function calculate_cost(batched, masters, reward, workers){
         // Additional 20% fees if more than 9 workers for a HIT (nonbatched) 
         if(workers>9){
             fee += 0.2        
-            fee_reasons="non-batched"
+            fee_reasons="nicht gebatched"
         }else{
-            fee_reasons="non-batched, <9 workers"
+            fee_reasons="nicht gebatched, <9 Arbeiter"
         }
     }
     // Masters increases the fee by additional 5%
     if(masters){
         fee+=0.05
-        fee_reasons+=", masters"
+        fee_reasons+=", Master"
     }
     fee_each = reward * fee
     total_fees = reward * fee * workers
@@ -202,7 +202,7 @@ $('i[data-toggle="tooltip"]').tooltip()
 
 var all_options=[];
 var sys_group = $("<optgroup label='System'></optgroup>")
-var custom_group =$("<optgroup label='Own'></optgroup>")
+var custom_group =$("<optgroup label='Eigene'></optgroup>")
 
 qualifications.forEach(function (obj) {
         option_type = obj.Type ? 'system' : 'custom'
@@ -222,7 +222,7 @@ qualifications.forEach(function (obj) {
         else
         custom_group.append(option)
 })
-$("#payment_per_worker").attr('max',max_payment)
+$("#payment_per_worker").attr('max', max_payment)
 
 var added=0
 $("button#add-system").click(function(){
@@ -241,10 +241,10 @@ $("button#add-system").click(function(){
             $row.find("select option[value="+obj.id+"]").prop('selected',true).trigger('change');
             $("#qualifications .row:first").after($row)
         })
-        $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Remove default qualifications")
+        $('button#add-system').addClass('btn-danger').removeClass('btn-success').html("Standardqualifikationen entfernen")
     }else{
         $("#qualifications .system-row").remove()
-        $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Add default qualifications")
+        $('button#add-system').addClass('btn-success').removeClass('btn-danger').html("Standardqualifikationen hinzufügen")
     }
     rearrange_ids()
     added = !added
@@ -292,7 +292,7 @@ function create_qual_row(){
         enable_disable_selected()
     })
 
-    option = $("<option value='false'>---Select---</option>")
+    option = $("<option value='false'>---Auswählen---</option>")
     select1.append(option)
     select1.append(sys_group.clone())
     select1.append(custom_group.clone())
@@ -349,10 +349,10 @@ function show_selects_for_option($selected){
     
     if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
         $comparator_select.addClass("own-select")
-        $option0 = $("<option value='Exists'>Exists</option>")
-        $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
-        $option2 = $("<option value='EqualTo'>Equal To</option>")
-        $option3 = $("<option value='NotEqualTo'>Not Equal To</option>")
+        $option0 = $("<option value='Exists'>Vorhanden</option>")
+        $option1 = $("<option value='DoesNotExist'>Nicht Vorhanden</option>")
+        $option2 = $("<option value='EqualTo'>Gleich</option>")
+        $option3 = $("<option value='NotEqualTo'>Ungleich</option>")
         $comparator_select.append($option0)
                             .append($option1)
                             .append($option2)

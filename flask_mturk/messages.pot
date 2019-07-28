@@ -1,0 +1,596 @@
+# Translations template for PROJECT.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-07-28 12:07+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.7.0\n"
+
+#: forms.py:104
+msgid "Minutes"
+msgstr ""
+
+#: forms.py:104
+msgid "Hours"
+msgstr ""
+
+#: forms.py:104
+msgid "Days"
+msgstr ""
+
+#: forms.py:114
+msgid "Qualifications 3rd Select Value invalid"
+msgstr ""
+
+#: forms.py:122
+#, python-format
+msgid "Unable to validate the Qualification-Comparator called: \"%s\""
+msgstr ""
+
+#: forms.py:135
+msgid "Project name"
+msgstr ""
+
+#: forms.py:135
+msgid "Name of the project. (Not visible to workers)"
+msgstr ""
+
+#: forms.py:136 templates/main/survey.html:74
+msgid "Title"
+msgstr ""
+
+#: forms.py:136
+msgid "Survey title being displayed to workers."
+msgstr ""
+
+#: forms.py:137 forms.py:184 templates/main/qualification_list.html:68
+msgid "Description"
+msgstr ""
+
+#: forms.py:137
+msgid "Comprehensive description of your survey."
+msgstr ""
+
+#: forms.py:138 forms.py:185
+msgid "Keywords"
+msgstr ""
+
+#: forms.py:138
+msgid "Keywords which either you or the workers can search for. (optional)"
+msgstr ""
+
+#: forms.py:139
+msgid "Time till expiration"
+msgstr ""
+
+#: forms.py:139
+msgid ""
+"Time until the survey expires and becomes unavailable to workers. "
+"MINIBATCHING: This will be assigned to each MiniHIT of the batch!"
+msgstr ""
+
+#: forms.py:142
+msgid "Amount workers"
+msgstr ""
+
+#: forms.py:142
+msgid ""
+"The amount of workers that can work on your survey. MINIBATCHING: MiniHIT"
+" will automatically be generated to reach this amount of submissions!"
+msgstr ""
+
+#: forms.py:143
+msgid "MiniBatching"
+msgstr ""
+
+#: forms.py:143
+msgid ""
+"MiniBatching will divide your survey into multiple smaller surveys with "
+"max. 9 workers each to save fees."
+msgstr ""
+
+#: forms.py:144
+msgid "MiniBatching-Qualification name"
+msgstr ""
+
+#: forms.py:145
+msgid ""
+"This will be the name under which the qualification for this batch will "
+"be saved. This qualification will prevent multiple submissions from the "
+"same worker within this batch."
+msgstr ""
+
+#: forms.py:147
+msgid "Allotted time"
+msgstr ""
+
+#: forms.py:147
+msgid "Amount of time each worker has to submit his results."
+msgstr ""
+
+#: forms.py:148
+msgid "Pay and accept worker after"
+msgstr ""
+
+#: forms.py:148
+msgid "Amount of time until submissions are auto-approved and paid."
+msgstr ""
+
+#: forms.py:151
+msgid "Workers must be Master"
+msgstr ""
+
+#: forms.py:151
+msgid ""
+"Master are workers with disinguished submission-quality. This will create"
+" additional fees."
+msgstr ""
+
+#: forms.py:151
+msgid "Yes"
+msgstr ""
+
+#: forms.py:151
+msgid "No"
+msgstr ""
+
+#: forms.py:153
+msgid "Choose all necessary qualifications for this survey."
+msgstr ""
+
+#: forms.py:153
+msgid ""
+"Workers that do not have the chosen qualifications will be unable to "
+"participate in the survey."
+msgstr ""
+
+#: forms.py:154
+msgid "Project contains adult content"
+msgstr ""
+
+#: forms.py:154
+msgid ""
+"Workers unwilling or not allowed to see adult content will be excluded "
+"from the survey if this is checked."
+msgstr ""
+
+#: forms.py:156
+msgid "Visibility"
+msgstr ""
+
+#: forms.py:156
+msgid ""
+"Public: Cannot accept the Survey without the right qualifications.; "
+"Private: Cannot accept nor preview without the right qualifications.; "
+"Hidden: Cannot accept, preview nor see the survey without the right "
+"qualifications."
+msgstr ""
+
+#: forms.py:157
+msgid "Public"
+msgstr ""
+
+#: forms.py:157
+msgid "Private"
+msgstr ""
+
+#: forms.py:157
+msgid "Hidden"
+msgstr ""
+
+#: forms.py:164
+msgid "Create Survey"
+msgstr ""
+
+#: forms.py:166
+msgid "General"
+msgstr ""
+
+#: forms.py:166
+msgid "Worker"
+msgstr ""
+
+#: forms.py:166 routes.py:173 templates/base.html:34
+msgid "Qualifications"
+msgstr ""
+
+#: forms.py:166
+msgid "Layout"
+msgstr ""
+
+#: forms.py:166
+msgid "Finish"
+msgstr ""
+
+#: forms.py:170
+msgid ""
+"Stop trying to trick the validation! You can only minibatch with more "
+"that 9 workers!"
+msgstr ""
+
+#: forms.py:174
+msgid "Could not set if HIT batched or not!"
+msgstr ""
+
+#: forms.py:175
+msgid "Could not set HIT-Id!"
+msgstr ""
+
+#: forms.py:178
+msgid "Only CSV-Files are allowed!"
+msgstr ""
+
+#: forms.py:183 templates/main/cached_list.html:15
+#: templates/main/dashboard.html:94 templates/main/dashboard.html:116
+#: templates/main/qualification_list.html:64
+msgid "Name"
+msgstr ""
+
+#: forms.py:183
+msgid "Please enter a name!"
+msgstr ""
+
+#: forms.py:184
+msgid "Please enter a description!"
+msgstr ""
+
+#: forms.py:186
+msgid "AutoGranted"
+msgstr ""
+
+#: forms.py:187
+msgid "AutoGranted Value"
+msgstr ""
+
+#: routes.py:53 templates/base.html:27
+msgid "Dashboard"
+msgstr ""
+
+#: routes.py:163
+msgid "New Survey"
+msgstr ""
+
+#: routes.py:194 templates/base.html:35 templates/main/survey.html:87
+msgid "Workers"
+msgstr ""
+
+#: routes.py:207 templates/base.html:36
+msgid "Cached Batches"
+msgstr ""
+
+#: routes.py:217
+msgid "Not found"
+msgstr ""
+
+#: routes.py:231
+msgid "Batch still has pending assignments."
+msgstr ""
+
+#: routes.py:233
+msgid "Batch still has non-completed assignments."
+msgstr ""
+
+#: routes.py:235
+msgid "Cannot cache Batch with active HITs."
+msgstr ""
+
+#: routes.py:270
+#, python-format
+msgid "Could not find Batch with id %s."
+msgstr ""
+
+#: routes.py:385
+msgid "No Assignments found."
+msgstr ""
+
+#: routes.py:398
+#, python-format
+msgid "CSV header not formatted properly: </br> Missing header %s"
+msgstr ""
+
+#: routes.py:402
+msgid "Approve and Reject are both set."
+msgstr ""
+
+#: routes.py:404
+msgid "Approve and Reject are both not set."
+msgstr ""
+
+#: routes.py:415
+msgid "Duplicate HIT/Assignment/Worker combination."
+msgstr ""
+
+#: routes.py:419
+#, python-format
+msgid "Non-valid Assignment status: \"%s\"."
+msgstr ""
+
+#: routes.py:421
+msgid "Non-valid HIT/Assignment/Worker combination."
+msgstr ""
+
+#: routes.py:423
+msgid "Bonus not a valid number."
+msgstr ""
+
+#: routes.py:425
+#, python-format
+msgid "Bonus is too high. MAX: %s."
+msgstr ""
+
+#: routes.py:427
+msgid "Bonus assigned but no reason given."
+msgstr ""
+
+#: routes.py:460
+msgid "Could not approve assignment, maybe it was auto-approved already?"
+msgstr ""
+
+#: routes.py:467
+msgid "Could not reject assignment, maybe it was auto-approved already?"
+msgstr ""
+
+#: routes.py:473
+msgid "Could not send bonus. You can only send one bonus per Assignment!"
+msgstr ""
+
+#: routes.py:502
+#, python-format
+msgid "No Batch with ID %s."
+msgstr ""
+
+#: routes.py:606
+#, python-format
+msgid "No MiniHIT at position %s of Group %s found!"
+msgstr ""
+
+#: routes.py:619
+#, python-format
+msgid "MiniHIT at position %s of Group %s was already published!"
+msgstr ""
+
+#: routes.py:641
+msgid "No Batch with ID."
+msgstr ""
+
+#: routes.py:643
+msgid "Batch is not cached."
+msgstr ""
+
+#: routes.py:654
+msgid "Group does not exist."
+msgstr ""
+
+#: templates/base.html:20
+msgid "MTurk-Custom-Framework"
+msgstr ""
+
+#: templates/base.html:28
+msgid "Create Study"
+msgstr ""
+
+#: templates/base.html:31
+msgid "Lists"
+msgstr ""
+
+#: templates/base.html:56
+msgid "Current balance:"
+msgstr ""
+
+#: templates/main/cached_list.html:16
+msgid "Batch-ID"
+msgstr ""
+
+#: templates/main/cached_list.html:17
+msgid "Submitted"
+msgstr ""
+
+#: templates/main/cached_list.html:18
+msgid "Goal"
+msgstr ""
+
+#: templates/main/dashboard.html:15 templates/main/dashboard.html:50
+#: templates/main/dashboard.html:84
+msgid "Loading"
+msgstr ""
+
+#: templates/main/dashboard.html:21
+msgid "Export"
+msgstr ""
+
+#: templates/main/dashboard.html:24
+msgid "Export Submitted"
+msgstr ""
+
+#: templates/main/dashboard.html:27
+msgid "Import"
+msgstr ""
+
+#: templates/main/dashboard.html:36
+msgid "Upload CSV"
+msgstr ""
+
+#: templates/main/dashboard.html:40 templates/main/dashboard.html:74
+#: templates/main/dashboard.html:105 templates/main/qualification_list.html:53
+msgid "Close"
+msgstr ""
+
+#: templates/main/dashboard.html:60
+msgid "WorkerID"
+msgstr ""
+
+#: templates/main/dashboard.html:61
+msgid "Answer"
+msgstr ""
+
+#: templates/main/dashboard.html:62
+msgid "Status"
+msgstr ""
+
+#: templates/main/dashboard.html:63
+msgid "Bonus paid"
+msgstr ""
+
+#: templates/main/dashboard.html:64
+msgid "Time taken"
+msgstr ""
+
+#: templates/main/dashboard.html:65
+msgid "Acceptance"
+msgstr ""
+
+#: templates/main/dashboard.html:66
+msgid "Submission"
+msgstr ""
+
+#: templates/main/dashboard.html:95
+msgid "Comparator"
+msgstr ""
+
+#: templates/main/dashboard.html:96
+msgid "Value"
+msgstr ""
+
+#: templates/main/dashboard.html:97
+msgid "Actions Guarded"
+msgstr ""
+
+#: templates/main/dashboard.html:117
+msgid "Progress"
+msgstr ""
+
+#: templates/main/dashboard.html:118
+msgid "Start"
+msgstr ""
+
+#: templates/main/dashboard.html:119
+msgid "End"
+msgstr ""
+
+#: templates/main/qualification_list.html:16
+msgid "Create Qualification"
+msgstr ""
+
+#: templates/main/qualification_list.html:52
+msgid "Create"
+msgstr ""
+
+#: templates/main/qualification_list.html:65
+msgid "Id"
+msgstr ""
+
+#: templates/main/qualification_list.html:66
+msgid "#Workers"
+msgstr ""
+
+#: templates/main/qualification_list.html:67
+msgid "CreationTime"
+msgstr ""
+
+#: templates/main/survey.html:43
+msgid "Choose required Qualifications"
+msgstr ""
+
+#: templates/main/survey.html:48
+msgid "Add Qualification"
+msgstr ""
+
+#: templates/main/survey.html:49
+msgid "Add default Qualifications"
+msgstr ""
+
+#: templates/main/survey.html:67
+msgid "HIT Overview"
+msgstr ""
+
+#: templates/main/survey.html:70
+msgid "Project Name"
+msgstr ""
+
+#: templates/main/survey.html:78
+msgid "MiniBatched"
+msgstr ""
+
+#: templates/main/survey.html:79
+msgid "MiniBatching is"
+msgstr ""
+
+#: templates/main/survey.html:82
+msgid "Amount of HITs"
+msgstr ""
+
+#: templates/main/survey.html:86
+msgid "Amount of Workers"
+msgstr ""
+
+#: templates/main/survey.html:90
+msgid "Lifetime of each HIT"
+msgstr ""
+
+#: templates/main/survey.html:94
+msgid "Allotted Time per Worker"
+msgstr ""
+
+#: templates/main/survey.html:98
+msgid "Time until automatic approval"
+msgstr ""
+
+#: templates/main/survey.html:102
+msgid "Masters Qualification"
+msgstr ""
+
+#: templates/main/survey.html:103
+msgid "Masters "
+msgstr ""
+
+#: templates/main/survey.html:103
+msgid "necessary"
+msgstr ""
+
+#: templates/main/survey.html:106
+msgid "Qualifications set"
+msgstr ""
+
+#: templates/main/survey.html:110
+msgid "Approx. Costs"
+msgstr ""
+
+#: templates/main/survey.html:113
+msgid "Reward per assignment"
+msgstr ""
+
+#: templates/main/survey.html:116
+msgid "Fee per assignment"
+msgstr ""
+
+#: templates/main/survey.html:120
+msgid "Total cost per assignment"
+msgstr ""
+
+#: templates/main/survey.html:123
+msgid "Number of assignments"
+msgstr ""
+
+#: templates/main/survey.html:126
+msgid "Total"
+msgstr ""
+
+#: templates/main/survey.html:132
+msgid "Approx. Saved"
+msgstr ""
+
+#: templates/main/survey.html:136
+msgid "Preview"
+msgstr ""
+

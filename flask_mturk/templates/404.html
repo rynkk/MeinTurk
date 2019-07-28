@@ -14,15 +14,15 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="error-template">
-                            <h1>Oops!</h1>
-                            <h2>404 Not Found</h2>
+                            <h1>{{__('Oops!')}}</h1>
+                            <h2>{{__('404 Not Found')}}</h2>
                             <div class="error-details">
-                                <p>Sorry, an error has occured, Requested page not found!</p>
+                                <p>{{__('Sorry, an error has occured, Requested page not found!')}}</p>
                             </div>
                             <div class="error-actions">
                                 <a href="{{ url_for('dashboard')}}" class="btn btn-primary btn-lg">
                                     <i class="fas fa-home"></i>
-                                    Take Me Home
+                                    {{__('Take Me Home')}}
                                 </a>
                             </div>
                         </div>

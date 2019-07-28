@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 
-<h1>Home</h1>
-
 {% block head %}
+<title>{{ title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" >
@@ -13,19 +12,19 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Placeholder</h5>
+                <h5 class="modal-title">{{ _('Loading') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body" style="padding:2rem 1rem">
-                <h5>Export</h5>
+                <h5>{{ _('Export') }}</h5>
                 <div class="container-small">
-                    <a id="export-all" class="btn btn-primary export-btn" role="button" download>Export All</a>
-                    <a id="export-submitted" class="btn btn-primary export-btn ml-4" role="button" download>Export Submitted</a>
+                    <a id="export-all" class="btn btn-primary export-btn" role="button" download>{{ _('Export All') }}</a>
+                    <a id="export-submitted" class="btn btn-primary export-btn ml-4" role="button" download>{{ _('Export Submitted') }}</a>
                 </div>
                 <hr>
-                <h5>Import</h5>
+                <h5>{{ _('Import') }}</h5>
                 <div class="container-small">
                     <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
                         {{ uploadform.hidden_tag() }}
@@ -34,11 +33,11 @@
                         <div class="success"></div>
                         <div class="error"></div>
                     </form>
-                    <button id="uploadbtn" type="button" class="btn btn-primary">Upload CSV</button>
+                    <button id="uploadbtn" type="button" class="btn btn-primary">{{ _('Upload CSV') }}</button>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
     </div>
@@ -48,7 +47,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Placeholder</h5>
+                <h5 class="modal-title">{{ _('Loading') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -58,13 +57,13 @@
                     <thead>
                         <tr class="border-bottom">
                             <th style="width:5%"></th>
-                            <th style="width:20%"><h6>WorkerID</h6></th>
-                            <th style="width:10%"><h6>Answer</h6></th>
-                            <th style="width:10%"><h6>Status</h6></th>
-                            <th style="width:10%"><h6>Bonus paid</h6></th>
-                            <th style="width:10%"><h6>Time taken</h6></th>
-                            <th style="width:20%"><h6>Acceptance</h6></th>
-                            <th style="width:20%"><h6>Submission</h6></th>
+                            <th style="width:20%"><h6>{{ _('WorkerID') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Answer') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Status') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Bonus paid') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Time taken') }}</h6></th>
+                            <th style="width:20%"><h6>{{ _('Acceptance') }}</h6></th>
+                            <th style="width:20%"><h6>{{ _('Submission') }}</h6></th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -72,7 +71,7 @@
                 <div id="progress-empty"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
     </div>
@@ -82,7 +81,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Placeholder</h5>
+                <h5 class="modal-title">{{ _('Loading') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -92,10 +91,10 @@
                     <thead>
                         <tr class="border-bottom">
                             <th style="width:5%"></th>
-                            <th style="width:20%"><h6>Name</h6></th>
-                            <th style="width:15%"><h6>Comparator</h6></th>
-                            <th style="width:10%"><h6>Value</h6></th>
-                            <th style="width:10%"><h6>Actions Guarded</h6></th>
+                            <th style="width:20%"><h6>{{ _('Name') }}</h6></th>
+                            <th style="width:15%"><h6>{{ _('Comparator') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Value') }}</h6></th>
+                            <th style="width:10%"><h6>{{ _('Actions Guarded') }}</h6></th>
                         </tr>
                     </thead>
                     <tbody></tbody>             
@@ -103,7 +102,7 @@
                 <div id="qual-empty"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
     </div>
@@ -114,10 +113,10 @@
         <thead>
             <tr>
                 <th></th>
-                <th>Name</th>
-                <th>Fortschritt</th>
-                <th>Start</th>
-                <th>Ende</th>
+                <th>{{ _('Name') }}</th>
+                <th>{{ _('Progress') }}</th>
+                <th>{{ _('Start') }}</th>
+                <th>{{ _('End') }}</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -139,5 +138,14 @@
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+{% if locale == 'de' %} {# German #}
+    <script> var url_for_datatables_de = "{{ url_for('static', filename='js/datatables.localizations/messages_de.json') }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/dashboard_de.js') }}"></script>
+{% elif locale == 'someother' %} 
+    {# Add your own here, don't forget change the babel.route in routes.py and to download the respective localization (see the readme of each localization folder) #}
+{% else %} {# English #}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endif %}
+
 {% endblock scripts %}

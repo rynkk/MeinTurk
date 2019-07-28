@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_ckeditor import CKEditor
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_babel import Babel
 
 import boto3
 import os
@@ -15,13 +16,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///batches.db'
 
 
 app.url_map.converters['awsid'] = IDConverter
-# app.config['CKEDITOR_SERVE_LOCAL'] = True
-# app.config['CKEDITOR_EXTRA_PLUGINS'] = ['codemirror']
 app.config['CKEDITOR_HEIGHT'] = 600
 
 
 app.config.from_pyfile('settings.cfg')
-
+babel = Babel(app)
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
 

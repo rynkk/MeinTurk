@@ -4,18 +4,26 @@ import io
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
-from flask_mturk import app, db, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
+from flask_mturk import app, db, babel, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
 from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm
 from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer
+from flask_babel import gettext as _
 from botocore.exceptions import ClientError
 
 from .api_calls import api
 from .helper import is_number, seconds_from_string
 
+
+@babel.localeselector
+def get_locale():
+    return request.accept_languages.best_match(['en', 'de'])
+
+
 # Use APPconfig instead of constants like MAX_BONUS
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
+    locale = get_locale()
     balance = api.get_balance()
     hits = api.list_all_hits()
     all_qualifications = SYSTEM_QUALIFICATION + api.list_custom_qualifications()
@@ -42,11 +50,12 @@ def dashboard():
 
     uform = UploadForm()
 
-    return render_template('main/dashboard.html', surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit, quals=all_qualifications, hidden_hits=hidden_hits)
+    return render_template('main/dashboard.html', title=_('Dashboard'), locale=locale, surveys=hits, ordering=order, balance=balance, uploadform=uform, createdhit=createdhit, quals=all_qualifications, hidden_hits=hidden_hits)
 
 
 @app.route("/survey", methods=['GET', 'POST'])
 def survey():
+    locale = get_locale()
     form = SurveyForm()
 
     percentage_interval = 5
@@ -151,16 +160,17 @@ def survey():
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
-    return render_template('main/survey.html', title='Neue Survey', form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT, softblock_name=softblock_name)
+    return render_template('main/survey.html', locale=locale, title=_('New Survey'), form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT, softblock_name=softblock_name)
 
 
 @app.route("/qualifications", methods=['GET', 'POST'])
 def qualifications_page():
+    locale = get_locale()
     form = QualificationCreationForm()
     if request.method == 'GET':
         balance = api.get_balance()
         qualifications = api.list_custom_qualifications()
-        return render_template('main/qualification_list.html', title='Qualifications', balance=balance, qualifications=qualifications, form=form)
+        return render_template('main/qualification_list.html', title=_('Qualifications'), locale=locale, balance=balance, qualifications=qualifications, form=form)
 
     if request.method == 'POST':
         if form.validate():
@@ -179,12 +189,14 @@ def qualifications_page():
 
 @app.route("/worker")
 def worker_page():
+    locale = get_locale()
     balance = api.get_balance()
-    return render_template('main/worker_list.html', title='Workers', balance=balance)
+    return render_template('main/worker_list.html', title=_('Workers'), locale=locale, balance=balance)
 
 
 @app.route("/cached")
 def cached_page():
+    locale = get_locale()
     balance = api.get_balance()
     groups = MiniGroup.query.filter(MiniGroup.status == 'cached').all()
     cached_batches = []
@@ -192,7 +204,7 @@ def cached_page():
         batch = {'name': group.project_name, 'id': group.id, 'goal': group.assignments_goal, 'submitted': group.assignments_submitted}
         cached_batches.append(batch)
 
-    return render_template('main/cached_list.html', title='Cached Batches', balance=balance, batches=cached_batches)
+    return render_template('main/cached_list.html', title=_('Cached Batches'), locale=locale, balance=balance, batches=cached_batches)
 
 
 @app.route("/cache_batch/<int:batchid>", methods=['DELETE'])
@@ -202,7 +214,7 @@ def cache_batch(batchid):
         .filter(MiniGroup.status != 'cached')\
         .one_or_none()
     if group is None:
-        return json.dumps({'success': False, 'error': 'Not found'}), 404, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': _('Not found')}), 404, {'ContentType': 'application/json'}
 
     hits = MiniHIT.query.filter(MiniHIT.group_id == group.id).all()
     ids = []
@@ -216,11 +228,11 @@ def cache_batch(batchid):
         ids.append(hit.id)
 
         if response['NumberOfAssignmentsPending'] > 0:
-            return json.dumps({'success': False, 'error': 'Batch still has pending assignments.'}), 423, {'ContentType': 'application/json'}
+            return json.dumps({'success': False, 'error': _('Batch still has pending assignments.')}), 423, {'ContentType': 'application/json'}
         if response['MaxAssignments'] != response['NumberOfAssignmentsCompleted'] + response['NumberOfAssignmentsAvailable']:
-            return json.dumps({'success': False, 'error': 'Batch still has non-completed assignments.'}), 423, {'ContentType': 'application/json'}
+            return json.dumps({'success': False, 'error': _('Batch still has non-completed assignments.')}), 423, {'ContentType': 'application/json'}
         if response['HITStatus'] != 'Reviewable':
-            return json.dumps({'success': False, 'error': 'Cannot cache Batch with active HITs.'}), 423, {'ContentType': 'application/json'}
+            return json.dumps({'success': False, 'error': _('Cannot cache Batch with active HITs.')}), 423, {'ContentType': 'application/json'}
         assignments = get_assignments(hit.id, False)
         bonus_payments = api.list_bonus_payments_for_hit(hit.id)
         for a in assignments:
@@ -255,7 +267,7 @@ def cache_batch(batchid):
 def update_goal(batchid, goal=None):
     group = MiniGroup.query.filter(MiniGroup.id == batchid).one_or_none()
     if not group:
-        return json.dumps({'success': False, 'error': 'Could not find Batch with id %s.' % batchid}), 200, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': _('Could not find Batch with id %s.') % batchid}), 200, {'ContentType': 'application/json'}
 
     if request.method == 'GET':
         return json.dumps({'success': True, 'goal': group.assignments_goal}), 200, {'ContentType': 'application/json'}
@@ -268,7 +280,6 @@ def update_goal(batchid, goal=None):
 @app.route("/export/<int:id>/<type_>")
 @app.route("/export/<awsid:id>/<type_>")
 def export(id, type_):
-    #             time_taken = (a['SubmitTime'] - a['AcceptTime']).total_seconds()
     print(type_)
     batched = is_number(id)
     fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
@@ -371,7 +382,7 @@ def upload():
         errors = {}
         assignments = get_assignments(form.hit_identifier.data, form.hit_batched.data)  # maybe make status Submitted
         if not assignments:
-            return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': 'No Assignments found.'}}), 404, {'ContentType': 'application/json'}
+            return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': _('No Assignments found.')}}), 404, {'ContentType': 'application/json'}
         for index, row in enumerate(csvreader, 1):
             try:
                 hitid = row['HITId']
@@ -384,13 +395,13 @@ def upload():
                 reason = row['Reason']
                 row['Softblock']
             except KeyError as e:
-                return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': 'CSV header not formatted properly: </br> Missing header %s' % e}}), 422, {'ContentType': 'application/json'}
+                return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': _('CSV header not formatted properly: </br> Missing header %s') % e}}), 422, {'ContentType': 'application/json'}
 
             # TODO:Check if assignment to be approved/rejected is Submitted and not rejected/approved already
             if approve and reject:
-                errors.setdefault(index, []).append('Approve and Reject are both set.')
+                errors.setdefault(index, []).append(_('Approve and Reject are both set.'))
             if not approve and not reject:
-                errors.setdefault(index, []).append('Approve and Reject are both not set.')
+                errors.setdefault(index, []).append(_('Approve and Reject are both not set.'))
 
             valid_hit_assignment_worker = False
             for assignment in assignments:
@@ -401,19 +412,19 @@ def upload():
 
                     # No duplicates allowed
                     if 'DuplicateCheck' in assignment:
-                        errors.setdefault(index, []).append('Duplicate HIT/Assignment/Worker combination.')
+                        errors.setdefault(index, []).append(_('Duplicate HIT/Assignment/Worker combination.'))
                     else:
                         assignment['DuplicateCheck'] = True
             if assignmentstatus not in ['Approved', 'Submitted', 'Rejected']:
-                errors.setdefault(index, []).append('Non-valid Assignment status: "%s".' % assignmentstatus)
+                errors.setdefault(index, []).append(_('Non-valid Assignment status: "%s".') % assignmentstatus)
             if not valid_hit_assignment_worker:
-                errors.setdefault(index, []).append('Non-valid HIT/Assignment/Worker combination.')
+                errors.setdefault(index, []).append(_('Non-valid HIT/Assignment/Worker combination.'))
             if bonus and not is_number(bonus):
-                errors.setdefault(index, []).append('Bonus not a valid number.')
+                errors.setdefault(index, []).append(_('Bonus not a valid number.'))
             if is_number(bonus) and float(bonus) > MAX_BONUS:
-                errors.setdefault(index, []).append('Bonus is too high. MAX: %s.' % MAX_BONUS)
+                errors.setdefault(index, []).append(_('Bonus is too high. MAX: %s.') % MAX_BONUS)
             if bonus and not reason:
-                errors.setdefault(index, []).append('Bonus assigned but no reason given.')
+                errors.setdefault(index, []).append(_('Bonus assigned but no reason given.'))
 
         if errors:
             return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
@@ -446,19 +457,20 @@ def upload():
                 if error is None:
                     total_approved += 1
                 else:
-                    warnings.setdefault(index, []).append('Could not approve assignment, maybe it was auto-approved already?')
+                    warnings.setdefault(index, []).append(_('Could not approve assignment, maybe it was auto-approved already?'))
             if reject:  # Maybe add custom reason slot to csv
                 error = api.reject_assignment(assignmentid, "We are sorry to inform you that your answer did not match our quality standards.")
                 if error is None:
                     total_rejected += 1
                 else:
-                    warnings.setdefault(index, []).append('Could not reject assignment, maybe it was auto-approved already?')
+                    # use errors here
+                    warnings.setdefault(index, []).append(_('Could not reject assignment, maybe it was auto-approved already?'))
             if bonus:
                 error = api.send_bonus(workerid, assignmentid, bonus, reason, unique_token_bonus)
                 if error is None:
                     total_bonus += float(bonus)
                 else:
-                    warnings.setdefault(index, []).append('Could not send bonus. You can only send one bonus per Assignment!')
+                    warnings.setdefault(index, []).append(_('Could not send bonus. You can only send one bonus per Assignment!'))
 
             if softblock:
                 # errorhandling for softblock
@@ -487,7 +499,7 @@ def toggle_hit_visibility(id, batched=False):
             group.hidden = not group.hidden
             hidden = group.hidden
         else:
-            return json.dumps({'success': False, 'error': 'No such group.'}), 404, {'ContentType': 'application/json'}
+            return json.dumps({'success': False, 'error': _('No Batch with ID %s.') % id}), 404, {'ContentType': 'application/json'}
     else:
         hit = HiddenHIT.query.filter(HiddenHIT.id == id).one_or_none()
         if hit is None:
@@ -591,7 +603,7 @@ def delete_queued_from_db(group_id, position):
         .filter(MiniHIT.group_id == group_id)\
         .filter(MiniHIT.position == position).one_or_none()
     if to_delete is None:
-        return json.dumps({'success': False, 'type': 'not_found', 'error': 'No MiniHIT at position %s of Group %s found!' % (position, group_id)}), 404, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'type': 'not_found', 'error': _('No MiniHIT at position %s of Group %s found!') % (position, group_id)}), 404, {'ContentType': 'application/json'}
 
     unnecessary_keys = ['AssignmentDurationInSeconds', 'AutoApprovalDelayInSeconds', 'Description', 'HITGroupId',
                         'Keywords', 'QualificationRequirements', 'Question', 'Reward', 'Title']
@@ -604,7 +616,7 @@ def delete_queued_from_db(group_id, position):
         for key in unnecessary_keys:
             if key in hit:
                 del hit[key]
-        return json.dumps({'success': False, 'type': 'locked', 'hit': hit, 'error': 'MiniHIT at position %s of Group %s was already published!' % (position, group_id)}), 423, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'type': 'locked', 'hit': hit, 'error': _('MiniHIT at position %s of Group %s was already published!') % (position, group_id)}), 423, {'ContentType': 'application/json'}
 
     db.session.delete(to_delete)
 
@@ -626,9 +638,10 @@ def delete_queued_from_db(group_id, position):
 def delete_cached(group_id):
     batch = MiniGroup.query.filter(MiniGroup.id == group_id).one_or_none()
     if(batch is None):
-        return json.dumps({'success': False, 'error': 'No such batch.'}), 404, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': _('No Batch with ID.')}), 404, {'ContentType': 'application/json'}
     if(batch.status != 'cached'):
-        return json.dumps({'success': False, 'error': 'Batch is not cached..'}), 423, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': _('Batch is not cached.')}), 423, {'ContentType': 'application/json'}
+    db.session.delete(batch)
     db.session.commit()
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
@@ -638,7 +651,7 @@ def toggle_group_status(group_id):
     group = MiniGroup.query.filter(MiniGroup.id == group_id)\
                            .filter(MiniGroup.status != 'cached').one_or_none()
     if(group is None):
-        return json.dumps({'success': False, 'error': 'Group does not exist.'}), 404, {'ContentType': 'application/json'}
+        return json.dumps({'success': False, 'error': _('Group does not exist.')}), 404, {'ContentType': 'application/json'}
     if group.status == 'active':
         group.status = 'inactive'
     else:

@@ -1,5 +1,8 @@
 
 var table = $('#cached_table').DataTable({
+    "language": {
+        "url": url_for_datatables_de
+    },
     data: batches,
     "createdRow": function( row, data, dataIndex ) {
     },
@@ -45,15 +48,15 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
     data = table.row(row).data()
 
     $.alert({
-        title: 'Cached-Batch Deletion!',
-        content: 'Are you sure you want to delete the Batch "'+data.name+'"?<br>This is non reversable and all data will be lost!',
+        title: 'Löschung gespeicherter Batch!',
+        content: 'Bist du dir sicher, dass du den Batch "<b>'+data.name+'</b>" löschen willst?<br>Dieser Vorgang lässt sich nicht umkehren und alle Umfragedaten gehen verloren!',
         buttons: {
             confirm:{
                 btnClass: 'btn-red',
                 action: function(){
                     $.alert({
-                        title: 'Really?',
-                        content: 'Are you sure?',
+                        title: 'Wirklich?',
+                        content: 'Ganz sicher?',
                         buttons:{
                             yes:{
                                 btnClass: 'btn-red',
@@ -65,9 +68,9 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
                                     if (content.success){
                                         table.row(row).remove()
                                         table.draw()
-                                        show_alert("Success", 'Successfully deleted Cached Batch "'+data.name+'"', "success")
+                                        show_alert("Erfolg", 'Gespeicherter Batch "'+data.name+'" wurde unwiderruflich gelöscht!', "success")
                                     }else{
-                                        show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                        show_alert("Fehler", 'Irgendetwas ist schiefgelaufen: '+content.error, "danger")
                                     }
                                 }
                             },

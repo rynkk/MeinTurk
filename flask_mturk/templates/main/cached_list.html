@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<title>{{ title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >    
 {% endblock head %}
@@ -11,10 +12,10 @@
         <thead>
             <tr>
                 <th></th>
-                <th style="width:50%">Name</th>
-                <th>Batch-ID</th>
-                <th>Submitted</th>
-                <th>Goal</th>
+                <th style="width:50%">{{ _('Name') }}</th>
+                <th>{{ _('Batch-ID') }}</th>
+                <th>{{ _('Submitted') }}</th>
+                <th>{{ _('Goal') }}</th>
                 <th style="width:5%"></th>
                 <th style="width:5%"></th>
             </tr>
@@ -29,5 +30,11 @@
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
+{% if locale == 'de' %} {# German #}
+<script> var url_for_datatables_de = "{{ url_for('static', filename='js/datatables.localizations/messages_de.json') }}";</script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/cached-list_de.js') }}"></script>
+{% elif locale == 'someother' %} {# Add your own here, don't forget to download the respective localization (see the readme of each localization folder) #}
+{% else %} {# English #}
 <script type="text/javascript" src="{{ url_for('static', filename='js/cached-list.js') }}"></script>
+{% endif %}
 {% endblock scripts %}

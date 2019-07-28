@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<title>{{ title }}</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tagsinput.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/survey.css') }}">
 {% endblock head %}
 
-{% block body %}
+{% block body %} 
 <div class="container-fluid container-big">
     {% import 'macros.j2' as macros %}
     <!-- StudyNavs -->
@@ -39,13 +40,13 @@
                 <div id="qualifications" class="form-group">
                     <div class="row">
                         <div class="col-8">
-                            <label class='col-form-label'>Choose required Qualifications</label>
+                            <label class='col-form-label'>{{ _('Choose required Qualifications') }}</label>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-auto">
-                            <button type="button" id="add-select" class="btn btn-primary btn-sm">Add Qualification</button>
-                            <button type="button" id="add-system" class="btn btn-success btn-sm">Add default Qualifications</button>
+                            <button type="button" id="add-select" class="btn btn-primary btn-sm">{{ _('Add Qualification') }}</button>
+                            <button type="button" id="add-system" class="btn btn-success btn-sm">{{ _('Add default Qualifications') }}</button>
                         </div>
                     </div>
                 </div>
@@ -63,76 +64,76 @@
                 {{ macros.render_next_prev(4) }}
             </div>
             <div id="p5" class="tab-pane">
-                <h2>HIT Overview</h2>
+                <h2>{{ _('HIT Overview') }}</h2>
                 <div class="container pt-3 mb-5 ml-1">
                     <div class="row">
-                            <div class="col-5">Project Name</div>
+                            <div class="col-5">{{ _('Project Name') }}</div>
                             <div id="overview_name" class="col-auto"></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Title</div>
+                            <div class="col-5">{{ _('Title') }}</div>
                             <div id="overview_title" class="col-auto"></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">MiniBatched</div>
-                            <div class="col-auto">MiniBatching is <span id="overview_minibatch" ></span></div>
+                            <div class="col-5">{{ _('MiniBatched') }}</div>
+                            <div class="col-auto">{{ _('MiniBatching is') }} <span id="overview_minibatch" ></span></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Amount of HITs</div>
+                            <div class="col-5">{{ _('Amount of HITs') }}</div>
                             <div class="col-auto"><span id="overview_hits"></span> HIT(s)</div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Amount of Workers</div>
-                            <div class="col-auto"><span id="overview_workers"></span> Workers</div>
+                            <div class="col-5">{{ _('Amount of Workers') }}</div>
+                            <div class="col-auto"><span id="overview_workers"></span> {{ _('Workers') }}</div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Lifetime of each HIT</div>
+                            <div class="col-5">{{ _('Lifetime of each HIT') }}</div>
                             <div id="overview_lifetime" class="col-auto"></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Allotted Time per Worker</div>
+                            <div class="col-5">{{ _('Allotted Time per Worker') }}</div>
                             <div id="overview_allotted_time" class="col-auto"></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Time until approval</div>
+                            <div class="col-5">{{ _('Time until automatic approval') }}</div>
                             <div id="overview_time_approval" class="col-auto"></div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Masters Qualification</div>
-                            <div class="col-auto">Masters <span id="overview_masters"></span> necessary</div>
+                            <div class="col-5">{{ _('Masters Qualification') }}</div>
+                            <div class="col-auto">{{ _('Masters ') }}<span id="overview_masters"></span> {{ _('necessary') }}</div>
                     </div>
                     <div class="row mt-1">
-                            <div class="col-5">Qualifications set</div>
+                            <div class="col-5">{{ _('Qualifications set') }}</div>
                             <div id="overview_qualifications" class="col-5"></div>
                     </div>
                     <div class="row mt-4">
-                        <div class="col-5"><h6>Approx. Costs</h6></div>
+                        <div class="col-5"><h6>{{ _('Approx. Costs') }}</h6></div>
                         <div class="col-5">
                             <div class="row">
-                                <div class="col-7">Reward per assignment</div>
+                                <div class="col-7">{{ _('Reward per assignment') }}</div>
                                 <div class="col-auto">$<span id="overview_reward"></span></div>
                                 <div class="w-100"></div>
-                                <div class="col-7">Fee per assignment</div>
+                                <div class="col-7">{{ _('Fee per assignment') }}</div>
                                 <div class="col-auto">$<span id="overview_fees"></span></div>
                                 <div class="col-auto">(<span id="overview_fees_percentage"></span>%)</div>
                                 <div class="w-100"></div>
-                                <div class="col-7">Total cost per assignment</div>
+                                <div class="col-7">{{ _('Total cost per assignment') }}</div>
                                 <div class="col-auto">$<span id="overview_ass_total"></span></div>
                                 <div class="w-100"></div>
-                                <div class="col-7">Number of assignments</div>
+                                <div class="col-7">{{ _('Number of assignments') }}</div>
                                 <div class="col-auto"><span id="overview_nrass"></span></div>
                                 <div class="w-100"></div>
-                                <div class="col-7">Total</div>
+                                <div class="col-7">{{ _('Total') }}</div>
                                 <div class="col-auto"><h6>$<span id="overview_total"></span></h6></div>
                             </div>
                         </div>
                     </div>
                     <div class="row mt-2">
-                            <div class="col-5"><h6>Approx. Saved</h6></div>
+                            <div class="col-5"><h6>{{ _('Approx. Saved') }}</h6></div>
                             <div class="col-auto"><h6>$<span id="overview_saved"></span></h6></div>
                     </div>
                 </div>
-                <button type="button" id="previewButton">Preview</button>
+                <button type="button" id="previewButton">{{ _('Preview') }}</button>
                 {{ form.submitform }}
                 {{ macros.render_next_prev(5) }}
             </div>
@@ -154,9 +155,17 @@
         var softblock_name = {{ softblock_name | tojson}}
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/validate-additional-methods.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/moment-with-locales.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/tagsinput.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/survey.js') }}"></script>
+
+{% if locale == 'de' %} {# German #}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.localizations/messages_de.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/survey_de.js') }}"></script>
+{% elif locale == 'someother' %}
+    {# Add your own here, don't forget change the babel.route in routes.py and to download the respective localization (see the readme of each localization folder) #}
+{% else %} {# English #}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/survey.js') }}"></script>
+{% endif %}
+
 {% endblock scripts %}
         

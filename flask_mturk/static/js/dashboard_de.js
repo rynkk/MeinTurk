@@ -42,6 +42,9 @@ ordering.forEach((item) => { //TODO change, maybe add group parameter to orderin
 })
 
 var table = $('#project_table').DataTable({
+    "language": {
+        "url": url_for_datatables_de
+    },
     data: render_surveys,
     "createdRow": function( row, data, dataIndex ) {
         $(row).addClass('mainrow')
@@ -146,7 +149,7 @@ table.rows().every( function(){ //Create 2 child rows and show BOTH(API restrict
                 ]             
             ).show()
         this.child().first().addClass("info-row")
-        this.child().last().hide()
+        this.child().last().addClass("slider-row").hide()
     }else{                
         this.child(format_info(this.data()),'info-row').show() // maybe change so that not added into td       
     }
@@ -175,21 +178,7 @@ if(createdhit != null){
             })
         }
     })
-}
-
-
-$("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
-$("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
-check_div = $("<div>").addClass("col-sm-12 col-md-6")
-    .append('<div class="form-check form-check-inline">'+
-                '<label for="hide_hidden" class="form-check-label">Show hidden</label>'+
-                '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
-            '</div>')
-    .append('<div class="pl-3 form-check form-check-inline">'+
-            '<label for="hide_nonbatched" class="form-check-label">Show nonbatched</label>'+
-            '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
-        '</div>')
-$("#project_table_length").parent("div").after(check_div)
+}     
 
 function getIndexOfFunc(array, funcname){
     for (i in array){
@@ -199,49 +188,6 @@ function getIndexOfFunc(array, funcname){
     }
     return -1
 }
-
-//TODO: need parameter for hide/unhide
-$("#hide_hidden").on("click",function() {
-    if(!$(this).prop("checked")){ // If not checked add filter function
-        $.fn.dataTable.ext.search.push(
-        function hidden(settings, data, dataIndex) {
-            row_data = table.row(dataIndex).data()
-            if(row_data.hidden)
-                return false
-            else
-                return true
-            }
-        );
-    }else{ // If checked get filter function and remove it
-        index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
-        if(index==-1) return
-        $.fn.dataTable.ext.search.splice(index, 1);
-    }               
-    table.draw();
-});
-
-$("#hide_hidden").click().click() // check and uncheck to initialize filter above
-
-$("#hide_nonbatched").on("click",function() {
-    if(!$(this).prop("checked")){ // If not checked add filter function
-        $.fn.dataTable.ext.search.push(
-        function batched(settings, data, dataIndex) {
-            row_data = table.row(dataIndex).data()
-            if(row_data.batched)
-                return true
-            else
-                return false
-            }
-        );
-    }else{ // If checked get filter function and remove it
-        index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
-        if(index==-1) return
-        $.fn.dataTable.ext.search.splice(index, 1);
-    }     
-    table.draw();
-});
-
-$("#hide_nonbatched").click() // Default: show nonbatched
 
 $('#project_table').on('click', 'tr.info-row', function(event){ // if click on info row trigger click on DataTables-ParentRow
     if($(event.target).is(":button"))
@@ -306,7 +252,7 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
             slide_table.children('tr').each(function(index){
                 $(this).children('td:first').text(index+1)
             })
-            show_alert("SUCCESS!", "Successfully deleted queued HIT from Database.", "success")
+            show_alert("Erfolg", "Der HIT wurde erfolgreich aus der Datenbank gelöscht!", "success")
         }else{
             errormsg = ""
 
@@ -317,7 +263,7 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
             }else if(content.type == 'not_found'){
                 errormsg = content.error
             }
-            show_alert("ERROR!", errormsg, "danger")
+            show_alert("Fehler", errormsg, "danger")
             
         }
         })();
@@ -330,14 +276,14 @@ $('#project_table').on('click', '.cache-btn',function(event){
     console.log(data)
     $.alert({
         title: 'Batch Caching!',
-        content: 'Are you sure you want to cache the Batch "'+data.name+'"?<br>This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!',
+        content: 'Bist du dir sicher, dass du den Batch "'+data.name+'" lokal speichern willst?<br>Das wird Ladezeiten bei großen Batches erheblich verringern, ist jedoch <b>unumkehrbar</b> und macht den Batch <b>unbearbeitbar</b>!',
         buttons: {
             confirm:{
                 btnClass: 'btn-blue',
                 action: function(){
                     $.alert({
-                        title: 'Really?',
-                        content: 'Are you sure?',
+                        title: 'Wirklich?',
+                        content: 'Ganz sicher?',
                         buttons:{
                             yes:{
                                 btnClass: 'btn-blue',
@@ -350,9 +296,9 @@ $('#project_table').on('click', '.cache-btn',function(event){
                                     if(content.success){
                                         table.row(row).remove()
                                         table.draw()
-                                        show_alert("Success", 'Successfully cached Batch "'+data.name+'"', "success")
+                                        show_alert("Erfolg", 'Der Batch "'+data.name+'" wurde lokal gespeichert.', "success")
                                     }else{
-                                        show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                        show_alert("Fehler", 'Irgendetwas ist schiefgelaufen: '+content.error, "danger")
                                     }
                                 }
                             },
@@ -382,8 +328,8 @@ $('#project_table').on('click', '.toggle-groupstatus', function(event){
         
         const content = await rawResponse.json();
         if (content.success){
-            btn_text = content.status=='active'?"Pause":"Continue"
-            $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?'Active':'Paused')
+            btn_text = content.status=='active'?"Pausieren":"Weiter"
+            $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?'Aktiv':'Pausiert')
             $(this).text(btn_text)
         }
     })();
@@ -409,7 +355,7 @@ $('#project_table').on('click','.hide_hit', function(event){
         const content = await rawResponse.json();
         if (content.success){
             hit_data.hidden = content.hidden
-            btn_text = content.hidden?"Show":"Hide"
+            btn_text = content.hidden?"Zeigen":"Verstecken"
             $(this).text(btn_text)
             // If we hid the row and we are not currently showing all rows we animate a fadeOut
             if(hit_data.hidden && !document.getElementById('hide_hidden').checked){
@@ -445,7 +391,7 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     
     if(data.length == 0){
         row = $('<div class="row p-5">')
-        row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
+        row.append('<div class="col-lg-12 text-center"><h2>Es wurden noch keine Ergebnisse abgeschickt.</h2></div>')
         modal.find("#progress-empty").append(row)
     }else{
         data.forEach(function(elem, index){
@@ -499,7 +445,7 @@ $('#csvmodal').on('show.bs.modal', function(event){
     data = table.row(row).data()
     $("#hit_batched").val(data.batched)
     $("#hit_identifier").val(data.batched?data.batch_id:data.HITId)
-    modal.find(".modal-title").text("CSV Actions for " + data.Title)
+    modal.find(".modal-title").text("CSV-Optionen für " + data.Title)
     if (data.batched)
         href = "/export/"+data.batch_id
     else
@@ -516,12 +462,12 @@ $('#qualmodal').on('show.bs.modal', function(event){
     modal.find("#qual-empty").empty()
     row = button.closest('tr.info-row').prev()
     data = table.row(row).data()
-    modal.find(".modal-title").text("Qualifications for " + data.Title)
+    modal.find(".modal-title").text("Qualifikationen für " + data.Title)
     // Iterate over each Qualification of HIT
     
     if(!data.QualificationRequirements.length){
         row = $('<div class="row p-5">')
-        row.append('<div class="col-lg-12 text-center"><h2>No Qualifications are assigned to this HIT</h2></div>')
+        row.append('<div class="col-lg-12 text-center"><h2>Diesem HIT wurden keine Qualifikationen zugewiesen.</h2></div>')
         modal.find("#qual-empty").append(row)
     }else{
         data.QualificationRequirements.forEach(function(elem, index){
@@ -544,17 +490,17 @@ $('#qualmodal').on('show.bs.modal', function(event){
             qual_row = $('<tr>').addClass("border-bottom")
             .append($('<td>').append($("<div>").text(index+1+".")))
             //.append($('<td>').append($("<div>").text(table_qual_id)))
-            .append($('<td>').addClass("qual-name").text("Batch-Qualification, reload the Page to show the actual Name"))
+            .append($('<td>').addClass("qual-name").text("Batch-Qualifikationen-Platzhalter, lade die Seite neu, um den tatsächlichen Namen anzuzeigen."))
             .append($('<td>').text(elem.Comparator))
             .append($('<td>').text(value))
             .append($('<td>').text(elem.ActionsGuarded))
             //Check if Id is of adult or master type
             if(table_qual_id == master_id){
-                qual_row.find(".qual-name").text('Masters')
+                qual_row.find(".qual-name").text('Master')
             }else if(table_qual_id == master_id_sandbox){
-                qual_row.find(".qual-name").text('Masters Sandbox')
+                qual_row.find(".qual-name").text('Master Sandbox')
             }else if(table_qual_id == adult_id){
-                qual_row.find(".qual-name").text('Adult Content')
+                qual_row.find(".qual-name").text('Erwachseneninhalte')
             }else{
                 //loop over all qualifications to get the name
                 for(i in quals){
@@ -575,7 +521,7 @@ $("#uploadbtn").on("click", async function(){
     $("#uploadform div.success").empty()
     $("#uploadform #file").removeClass("error")
     if(!$("#uploadform #file").val()){
-        $("#uploadform label.error").append("This field is required.")                
+        $("#uploadform label.error").append("Dieses Feld ist notwendig.")                
         $("#uploadform #file").addClass("error")
         return
     }
@@ -597,15 +543,15 @@ $("#uploadbtn").on("click", async function(){
         row = $("<div>").addClass("row")
         col = $("<div>").addClass("col-3")
         row_one = row.clone()
-        row_one.append(col.clone().text("Approved"))
+        row_one.append(col.clone().text("Angenommen"))
                 .append(col.clone().text(json.data.approved))
-                .append(col.clone().text("Rejected"))
+                .append(col.clone().text("Abgelehnt"))
                 .append(col.clone().text(json.data.rejected))
 
         row_two = row.clone()                        
-        row_two.append(col.clone().text("Bonus paid"))
+        row_two.append(col.clone().text("Bonus gezahlt"))
                 .append(col.clone().text("$"+json.data.bonus))
-                .append(col.clone().text("Softblocked"))
+                .append(col.clone().text("Gesoftblockt"))
                 .append(col.clone().text(json.data.softblocked))
         
         $("#uploadform div.success").append(row_two).append(row_one)
@@ -613,7 +559,7 @@ $("#uploadbtn").on("click", async function(){
         // Adding warnings if any
         // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
         if(Object.keys(json.warnings).length > 0){
-            $("#uploadform div.error").append('<h4>Warnings:<h4>')
+            $("#uploadform div.error").append('<h4>Warnungen:<h4>')
             for (i in json.warnings){
                 console.log(i)
                 li = $('<li>').text("Row "+i)
@@ -633,7 +579,7 @@ $("#uploadbtn").on("click", async function(){
         if(json.errortype == 'main'){
             $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
         }else if(json.errortype == 'document'){
-            $("#uploadform div.error").append('<h4>Logic-error in CSV<h4>')
+            $("#uploadform div.error").append('<h4>Logik-Fehler in CSV<h4>')
             for (i in json.errors){
                 li = $('<li>').text("Row "+i)
                 ul = $('<ul>')
@@ -665,32 +611,32 @@ function format_info ( data ) {
     container = $("<div class='container' style='float-left'>")
 
     if(data.batched){
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
+        qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">KLICK</button>'
+        hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?"Zeigen":"Verstecken") +'</button>'         
         csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
         group_id = data.batch_id
         query = data.batch_id+'/True'
-        toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
+        toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?"Pausieren":"Weiter") +'</button>'
         cache_btn = '<button type="button" class="btn btn-info cache-btn">Cache</button>'
-        batch_status = data['batch_status'] ? 'Active':'Paused'
+        batch_status = data['batch_status'] ? 'Aktiv':'Pausiert'
         row_one = $('<div class="row mt-2">'+
-            '<div class="col-2">Title:</div>'+
+            '<div class="col-2">Titel:</div>'+
             '<div class="col-2">'+data['Title']+'</div>'+
-            '<div class="col-2">Reward:</div>'+
+            '<div class="col-2">Bezahlung:</div>'+
             '<div class="col-4">'+data['Reward']+'</div>'+
             '<div class="col-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
         row_two = $('<div class="row mt-2">'+
-            '<div class="col-2">Description:</div>'+
+            '<div class="col-2">Beschreibung:</div>'+
             '<div class="col-2">'+data['Description']+'</div>'+
             '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">Yes, ID: '+data['batch_id']+'</div>'+
+            '<div class="col-4">JA, ID: '+data['batch_id']+'</div>'+
             '<div class="col-2">'+cache_btn+'</div>'+
         '</div>')
 
         row_three = $('<div class="row mt-2">'+
-            '<div class="col-2">Keywords:</div>'+
+            '<div class="col-2">Schlagwörter:</div>'+
             '<div class="col-2">'+data['Keywords']+'</div>'+
             '<div class="col-2 ">Batch-Status:</div>'+
             '<div class="col-4 batch-status">'+batch_status+'</div>'+
@@ -698,7 +644,7 @@ function format_info ( data ) {
         '</div>')
 
         row_four = $('<div class="row mt-2">'+
-            '<div class="col-2">Qualifications:</div>'+
+            '<div class="col-2">Qualifikationen:</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
             '<div class="col-2">HITTypeId:</div>'+
             '<div class="col-4">'+data['HITTypeId']+'</div>'+
@@ -706,13 +652,13 @@ function format_info ( data ) {
         '</div>')
     }
     else{
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
+        qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">KLICK</button>'
+        hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Zeigen":"Verstecken") +'</button>'         
+        csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Optionen</button>'
         query = data.HITId
 
         row_one = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Description:</div>'+
+            '<div class="col-2 mt-2">Beschreibung:</div>'+
             '<div class="col-2 mt-2">'+data['Description']+'</div>'+
             '<div class="col-2 mt-2">HITId:</div>'+
             '<div class="col-4 mt-2">'+data['HITId']+'</div>'+
@@ -720,24 +666,24 @@ function format_info ( data ) {
         '</div>')
 
         row_two = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Keywords:</div>'+
+            '<div class="col-2 mt-2">Schlagwörter:</div>'+
             '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
             '<div class="col-2 mt-2">HITTypeId:</div>'+
             '<div class="col-4 mt-2">'+data['HITTypeId']+'</div>'+
         '</div>')
 
         row_three = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Reward:</div>'+
+            '<div class="col-2 mt-2">Bezahlung:</div>'+
             '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
             '<div class="col-2 mt-2">HIT-Status:</div>'+
             '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
         '</div>')
 
         row_four = $('<div class="row mt-2">'+
-            '<div class="col-2">Qualifications:</div>'+
+            '<div class="col-2">Qualifikationen:</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
             '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">'+false+'</div>'+
+            '<div class="col-4">Nein</div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
         
@@ -872,3 +818,62 @@ function get_elements_with_value(json, key, value){
     });
     return list
 };
+
+/* DataTables language url is fetched asynchronously thus we need to wait until the table_length & table_filter exist*/
+$(function(){
+    $("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
+    $("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
+    check_div = $("<div>").addClass("col-sm-12 col-md-6")
+        .append('<div class="form-check form-check-inline">'+
+                    '<label for="hide_hidden" class="form-check-label">Versteckte zeigen</label>'+
+                    '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+                '</div>')
+        .append('<div class="pl-3 form-check form-check-inline">'+
+                '<label for="hide_nonbatched" class="form-check-label">Ungebatchte zeigen</label>'+
+                '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+            '</div>')
+    $("#project_table_length").parent("div").after(check_div)
+
+    //TODO: need parameter for hide/unhide
+    $("#hide_hidden").on("click",function() {
+        if(!$(this).prop("checked")){ // If not checked add filter function
+            $.fn.dataTable.ext.search.push(
+            function hidden(settings, data, dataIndex) {
+                row_data = table.row(dataIndex).data()
+                if(row_data.hidden)
+                    return false
+                else
+                    return true
+                }
+            );
+        }else{ // If checked get filter function and remove it
+            index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
+            if(index==-1) return
+            $.fn.dataTable.ext.search.splice(index, 1);
+        }               
+        table.draw();
+    });
+    
+    $("#hide_hidden").click().click() // check and uncheck to initialize filter above
+    
+    $("#hide_nonbatched").on("click",function() {
+        if(!$(this).prop("checked")){ // If not checked add filter function
+            $.fn.dataTable.ext.search.push(
+            function batched(settings, data, dataIndex) {
+                row_data = table.row(dataIndex).data()
+                if(row_data.batched)
+                    return true
+                else
+                    return false
+                }
+            );
+        }else{ // If checked get filter function and remove it
+            index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
+            if(index==-1) return
+            $.fn.dataTable.ext.search.splice(index, 1);
+        }     
+        table.draw();
+    });
+    
+    $("#hide_nonbatched").click() // Default: show nonbatched
+})

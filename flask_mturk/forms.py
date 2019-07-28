@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
 from flask_ckeditor import CKEditorField
+from flask_babel import lazy_gettext
 from wtforms import FormField, StringField, BooleanField, DecimalField, RadioField
 from wtforms import SelectField, IntegerField, SubmitField, FieldList, FileField
 from wtforms.validators import Optional, InputRequired, ValidationError, Regexp
@@ -100,7 +101,7 @@ class NonValidatingSelectField(SelectField):
 class IntUnitForm(FlaskForm):
     int_field = IntegerField(default=1, validators=[InputRequired()], widget=NumberInput(min=1))  # 1 minutes for testing
     unit_field = SelectField(default='minutes', validators=[InputRequired()],
-                             choices=[('minutes', 'Minutes'), ('hours', 'Hours'), ('days', 'Days')])
+                             choices=[('minutes', lazy_gettext('Minutes')), ('hours', lazy_gettext('Hours')), ('days', lazy_gettext('Days'))])
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
@@ -110,7 +111,7 @@ class IntUnitForm(FlaskForm):
 class QualificationsSubForm(FlaskForm):
     selector = SelectField()
     first_select = NonValidatingSelectField()
-    second_select = NonValidatingSelectField(validators=[Regexp(r'^[\w]+$', message="Qualifications 3rd Select Value invalid")])
+    second_select = NonValidatingSelectField(validators=[Regexp(r'^[\w]+$', message=lazy_gettext("Qualifications 3rd Select Value invalid"))])
 
     def __init__(self, *args, **kwargs):  # disable CSRF because its a child-Form
         kwargs['csrf_enabled'] = False
@@ -118,7 +119,7 @@ class QualificationsSubForm(FlaskForm):
 
     def validate_first_select(form, field):  # only allow Exists, DoesNotExist , GreaterThan GreaterThanOrEqualTo LessThan LessThanOrEqualTo EqualTo NotEqualTo In NotIn
         if(field.data not in ["Exists", "DoesNotExist", "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo", "EqualTo", "NotEqualTo", "In", "NotIn"]):
-            raise ValidationError("Unable to validate the Qualification-Comparator called:" + '"' + field.data + '"')
+            raise ValidationError(lazy_gettext('Unable to validate the Qualification-Comparator called: "%s"') % field.data)
 
 
 class QualificationsForm(FlaskForm):
@@ -131,56 +132,56 @@ class QualificationsForm(FlaskForm):
 
 class SurveyForm(FlaskForm):
     # Allgemein #
-    project_name = StringField('Project name', description='Name of the project. (Not visible to workers)', validators=[InputRequired()])
-    title = StringField('Title', description='Survey title being displayed to workers.', validators=[InputRequired()])
-    description = StringField('Description', description='Comprehensive description of your survey.', validators=[InputRequired()])
-    keywords = StringField('Keywords', description='Keywords which either you or the workers can search for. (optional)', validators=[Optional()])
-    time_till_expiration = FormField(IntUnitForm, 'Time till expiration', description='Time until the survey expires and becomes unavailable to workers. MINIBATCHING: This will be assigned to each MiniHIT of the batch!')
+    project_name = StringField(lazy_gettext('Project name'), description=lazy_gettext('Name of the project. (Not visible to workers)'), validators=[InputRequired()])
+    title = StringField(lazy_gettext('Title'), description=lazy_gettext('Survey title being displayed to workers.'), validators=[InputRequired()])
+    description = StringField(lazy_gettext('Description'), description=lazy_gettext('Comprehensive description of your survey.'), validators=[InputRequired()])
+    keywords = StringField(lazy_gettext('Keywords'), description=lazy_gettext('Keywords which either you or the workers can search for. (optional)'), validators=[Optional()])
+    time_till_expiration = FormField(IntUnitForm, lazy_gettext('Time till expiration'), description=lazy_gettext('Time until the survey expires and becomes unavailable to workers. MINIBATCHING: This will be assigned to each MiniHIT of the batch!'))
 
     # Worker allgemein #
-    amount_workers = IntegerField('Amount workers', description='The amount of workers that can work on your survey. MINIBATCHING: MiniHIT will automatically be generated to reach this amount of submissions!', default=20, validators=[InputRequired()], widget=NumberInput(min=1))
-    minibatch = BooleanField('MiniBatching', description='MiniBatching will divide your survey into multiple smaller surveys with max. 9 workers each to save fees.')
-    qualification_name = StringField('MiniBatching-Qualification name', validators=[Optional()],
-                                     description='This will be the name under which the qualification for this batch will be saved. This qualification will prevent multiple submissions from the same worker within this batch.')
+    amount_workers = IntegerField(lazy_gettext('Amount workers'), description=lazy_gettext('The amount of workers that can work on your survey. MINIBATCHING: MiniHIT will automatically be generated to reach this amount of submissions!'), default=20, validators=[InputRequired()], widget=NumberInput(min=1))
+    minibatch = BooleanField(lazy_gettext('MiniBatching'), description=lazy_gettext('MiniBatching will divide your survey into multiple smaller surveys with max. 9 workers each to save fees.'))
+    qualification_name = StringField(lazy_gettext('MiniBatching-Qualification name'), validators=[Optional()],
+                                     description=lazy_gettext('This will be the name under which the qualification for this batch will be saved. This qualification will prevent multiple submissions from the same worker within this batch.'))
     payment_per_worker = DecimalField('Payment per worker', description='Sum of Dollars($) that will be paid to workers on approval.', default=0.50, validators=[InputRequired()], widget=NumberInput(min=0.00, max=10, step=0.01))
-    allotted_time_per_worker = FormField(IntUnitForm, 'Allotted time', description='Amount of time each worker has to submit his results.')
-    accept_pay_worker_after = FormField(IntUnitForm, 'Pay and accept worker after', description='Amount of time until submissions are auto-approved and paid.')
+    allotted_time_per_worker = FormField(IntUnitForm, lazy_gettext('Allotted time'), description=lazy_gettext('Amount of time each worker has to submit his results.'))
+    accept_pay_worker_after = FormField(IntUnitForm, lazy_gettext('Pay and accept worker after'), description=lazy_gettext('Amount of time until submissions are auto-approved and paid.'))
 
     # Worker speziell #
-    must_be_master = RadioField('Workers must be Master', description='Master are workers with disinguished submission-quality. This will create additional fees.', choices=[('yes', 'Yes'), ('no', 'No')],
+    must_be_master = RadioField(lazy_gettext('Workers must be Master'), description=lazy_gettext('Master are workers with disinguished submission-quality. This will create additional fees.'), choices=[('yes', lazy_gettext('Yes')), ('no', lazy_gettext('No'))],
                                 default='no', validators=[InputRequired()])
-    qualifications_select = FormField(QualificationsForm, 'Choose all necessary qualifications for this survey.', description='Workers that do not have the chosen qualifications will be unable to participate in the survey.')
-    adult_content = BooleanField('Project contains adult content', description='Workers unwilling or not allowed to see adult content will be excluded from the survey if this is checked.', default=False,
+    qualifications_select = FormField(QualificationsForm, lazy_gettext('Choose all necessary qualifications for this survey.'), description=lazy_gettext('Workers that do not have the chosen qualifications will be unable to participate in the survey.'))
+    adult_content = BooleanField(lazy_gettext('Project contains adult content'), description=lazy_gettext('Workers unwilling or not allowed to see adult content will be excluded from the survey if this is checked.'), default=False,
                                  validators=[Optional()])
-    project_visibility = RadioField('Visibility', description='Public: Cannot accept the Survey without the right qualifications.; Private: Cannot accept nor preview without the right qualifications.; Hidden: Cannot accept, preview nor see the survey without the right qualifications.', default='Accept', validators=[InputRequired()],
-                                    choices=[('Accept', 'Public'), ('PreviewAndAccept ', 'Private'), ('DiscoverPreviewAndAccept ', 'Hidden')])
+    project_visibility = RadioField(lazy_gettext('Visibility'), description=lazy_gettext('Public: Cannot accept the Survey without the right qualifications.; Private: Cannot accept nor preview without the right qualifications.; Hidden: Cannot accept, preview nor see the survey without the right qualifications.'), default='Accept', validators=[InputRequired()],
+                                    choices=[('Accept', lazy_gettext('Public')), ('PreviewAndAccept ', lazy_gettext('Private')), ('DiscoverPreviewAndAccept ', lazy_gettext('Hidden'))])
 
     # SurveyLayout #
 
     editor_field = CKEditorField('editor_field', default=default_value)
 
     # Finish #
-    submitform = SubmitField('Create Survey')
+    submitform = SubmitField(lazy_gettext('Create Survey'))
 
-    pages = ['General', 'Worker', 'Qualifications', 'Layout', 'Finish']
+    pages = [lazy_gettext('General'), lazy_gettext('Worker'), lazy_gettext('Qualifications'), lazy_gettext('Layout'), lazy_gettext('Finish')]
 
     def validate_minibatch(form, field):
         if field.data and form.amount_workers.data < 10:
-            raise ValidationError("Stop trying to trick the validation! You can only minibatch with more that 9 workers!")
+            raise ValidationError(lazy_gettext("Stop trying to trick the validation! You can only minibatch with more that 9 workers!"))
 
 
 class UploadForm(FlaskForm):
-    hit_batched = BooleanField(validators=[InputRequired('Could not set if HIT batched or not!')], widget=HiddenInput())
-    hit_identifier = StringField(validators=[InputRequired('Could not set HIT-Id!')], widget=HiddenInput())
+    hit_batched = BooleanField(validators=[InputRequired(lazy_gettext('Could not set if HIT batched or not!'))], widget=HiddenInput())
+    hit_identifier = StringField(validators=[InputRequired(lazy_gettext('Could not set HIT-Id!'))], widget=HiddenInput())
     file = FileField('file', validators=[
         FileRequired(),
-        FileAllowed(['csv', 'xlsx', 'txt'], 'Only CSV-Files are allowed!')
+        FileAllowed(['csv', 'xlsx', 'txt'], lazy_gettext('Only CSV-Files are allowed!'))
     ])
 
 
 class QualificationCreationForm(FlaskForm):
-    name = StringField('Name', validators=[InputRequired('Please enter a name!')])
-    desc = StringField('Description', validators=[InputRequired('Please enter a description!')])
-    keywords = StringField('Keywords', validators=[Optional()])
-    auto_granted = BooleanField('AutoGranted', validators=[Optional()])
-    auto_granted_value = IntegerField('AutoGranted Value', validators=[Optional()], default=1, widget=NumberInput(min=0, max=100, step=1))
+    name = StringField(lazy_gettext('Name'), validators=[InputRequired(lazy_gettext('Please enter a name!'))])
+    desc = StringField(lazy_gettext('Description'), validators=[InputRequired(lazy_gettext('Please enter a description!'))])
+    keywords = StringField(lazy_gettext('Keywords'), validators=[Optional()])
+    auto_granted = BooleanField(lazy_gettext('AutoGranted'), validators=[Optional()])
+    auto_granted_value = IntegerField(lazy_gettext('AutoGranted Value'), validators=[Optional()], default=1, widget=NumberInput(min=0, max=100, step=1))
