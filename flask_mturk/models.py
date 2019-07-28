@@ -1,4 +1,16 @@
+import datetime
+
 from flask_mturk import db
+
+
+class Worker(db.Model):
+    __tablename__ = 'worker'
+    id = db.Column(db.String, primary_key=True)
+    no_assignments = db.Column(db.Integer, default=1)
+    no_approved = db.Column(db.Integer, default=0)
+    no_rejected = db.Column(db.Integer, default=0)
+    bonus_total = db.Column(db.Integer, default=0)
+    last_completed = db.Column(db.String, default=datetime.datetime.now(datetime.timezone.utc))
 
 
 class HiddenHIT(db.Model):

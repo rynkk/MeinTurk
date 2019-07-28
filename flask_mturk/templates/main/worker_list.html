@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-<h1>Home</h1>
-
 {% block head %}
 <title>{{ title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
@@ -9,12 +7,38 @@
 {% endblock head %}
 
 {% block body %}
-
-<!-- TODO -->
-
+<div class="container-fluid container-big">
+    <table id="worker_table" class="table striped" style="width:100%">
+        <thead>
+            <tr>
+                <th></th>
+                <th>{{ _('Worker-ID') }}</th>
+                <th>{{ _('#Approved') }}</th>
+                <th>{{ _('#Rejected') }}</th>
+                <th>{{ _('#Assignments') }}</th>
+                <th>{{ _('Last Assignment') }}</th>
+                <th style>{{ _('Softblocked') }}</th>
+                <th style="width:5%"></th>
+            </tr>
+        </thead>
+    </table>
+</div>
 {% endblock body %}
 
 {% block scripts %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
+<script>
+    workers = {{ workers | tojson }}
+</script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
-{% endblock scripts%}
+<script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
+
+{% if locale == 'de' %} {# German #}
+    <script> var url_for_datatables_de = "{{ url_for('static', filename='js/datatables.localizations/messages_de.json') }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/worker-list_de.js') }}"></script>
+{% elif locale == 'someother' %}
+    {# Add your own here, don't forget change the babel.route in routes.py and to download the respective localization (see the readme of each localization folder) #}
+{% else %} {# English #}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/worker-list.js') }}"></script>
+{% endif %}
+
+{% endblock scripts %}

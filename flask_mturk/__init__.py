@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'f03b64dca19c7e6e86b419e8c3abf4db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///batches.db'
-
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.url_map.converters['awsid'] = IDConverter
 app.config['CKEDITOR_HEIGHT'] = 600
@@ -68,7 +68,7 @@ from flask_mturk import routes
 
 __all__ = ['routes', ]
 
-from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT, CachedAnswer
+from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT, CachedAnswer, Worker
 
 admin = Admin(app, 'Database')
 
@@ -89,9 +89,14 @@ class HiddenView(ModelView):
 
 
 class AnswerView(ModelView):
-    column_display_pl = True
+    column_display_pk = True
 
 
+class WorkerView(ModelView):
+    column_display_pk = True
+
+
+admin.add_view(WorkerView(Worker, db.session, 'Worker'))
 admin.add_view(HITView(MiniHIT, db.session, 'MiniHIT'))
 admin.add_view(GroupView(MiniGroup, db.session, 'MiniGroup'))
 admin.add_view(HiddenView(HiddenHIT, db.session, 'HiddenHIT'))

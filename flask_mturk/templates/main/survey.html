@@ -29,7 +29,7 @@
             </div>
             <div id="p2" class="tab-pane">
                 {{ macros.render_int_bool(form.amount_workers, form.minibatch) }}
-                {{ macros.render_decimal(form.payment_per_worker, form.qualification_name)}}
+                {{ macros.render_decimal(form.payment_per_worker, form.qualification_name, _("Default: project name + date"))}}
                 {{ macros.render_int_unit(form.allotted_time_per_worker, 3) }}
                 {{ macros.render_int_unit(form.accept_pay_worker_after, 3) }}
                 {{ macros.render_next_prev(2) }}

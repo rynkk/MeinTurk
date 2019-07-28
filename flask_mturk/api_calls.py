@@ -21,8 +21,24 @@ class Api:
     def get_balance(self):
         return self.client.get_account_balance()['AvailableBalance']
 
+    def disassociate_qualification_from_worker(self, workerid, qualificationid):
+        return self.client.disassociate_qualification_from_worker(
+            WorkerId=workerid,
+            QualificationTypeId=qualificationid
+        )
+
+    #not needed for now
+    def get_qualification_score(self, workerid, qualificationid):
+        return self.client.get_qualification_score(
+            QualificationTypeId=qualificationid,
+            WorkerId=workerid
+        )
+
     def delete_hit(self, hit_id):
-        return self.client.delete_hit(HITId=hit_id)
+        try:
+            return {'success': True, 'data': self.client.delete_hit(HITId=hit_id)}
+        except ClientError as ce:
+            return {'success': False, 'error': ce.response['Error']['Message']}
 
     def approve_assignment(self, assignment_id):
         try:
@@ -203,12 +219,13 @@ class Api:
             result += self.list_assignments_for_hit(id, status)
         return result
 
-    #  probably have to check every hit because of race condition where hit is expired but people just accepted it which will effectively allow them to answer multiple MiniHITs
     def grant_qualifications_for_hit(self, hit_id, qualification_id):
         assignments = self.list_assignments_for_hit(hit_id)
+        workers = []
         for assignment in assignments:
-            print("assigning qualification %s to Worker %s" % (qualification_id, assignment['WorkerId']))
             self.associate_qualification_with_worker(assignment['WorkerId'], qualification_id)
+            workers.append(assignment['WorkerId'])
+        return {'success': True, 'workers': workers}
 
     def delete_all_qualification_types(self):
         qualifications = self.list_custom_qualifications()
@@ -257,3 +274,14 @@ def list_workers_with_qualification_route(qualification_id):
 @app.route('/api/delete_qualification_type/<awsid:qualification_id>', methods=['DELETE'])
 def delete_qualification_route(qualification_id):
     return jsonify(api.delete_qualification_type(qualification_id))
+
+
+@app.route("/list_payments/<awsid:id>")
+def list_payments(id):
+    payments = api.list_bonus_payments_for_hit(id)
+    return jsonify(payments)
+
+
+@app.route('/delete_hit/<awsid:id>', methods=['DELETE'])
+def delete_hit(id):
+    return jsonify(api.delete_hit(id))

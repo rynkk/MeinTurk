@@ -1,4 +1,3 @@
-
 render_surveys=[]
 
 for(hit_index in surveys){ // Add HITs that are not to be batched to 
@@ -275,17 +274,17 @@ $('#project_table').on('click', '.cache-btn',function(event){
     data = table.row(row).data()
     console.log(data)
     $.alert({
-        title: 'Batch Caching!',
-        content: 'Bist du dir sicher, dass du den Batch "'+data.name+'" lokal speichern willst?<br>Das wird Ladezeiten bei großen Batches erheblich verringern, ist jedoch <b>unumkehrbar</b> und macht den Batch <b>unbearbeitbar</b>!',
+        title: 'Batch Archivierung!',
+        content: 'Bist du dir sicher, dass du den Batch "'+data.name+'" lokal archivieren willst?<br>Das wird Ladezeiten bei großen Batches erheblich verringern, ist jedoch <b>unumkehrbar</b> und macht den Batch <b>unbearbeitbar</b>!',
         buttons: {
-            confirm:{
+            bestätigen:{
                 btnClass: 'btn-blue',
                 action: function(){
                     $.alert({
                         title: 'Wirklich?',
                         content: 'Ganz sicher?',
                         buttons:{
-                            yes:{
+                            ja:{
                                 btnClass: 'btn-blue',
                                 action: async function () {
                                     const rawResponse = await fetch('/cache_batch/'+data.batch_id, {
@@ -296,13 +295,13 @@ $('#project_table').on('click', '.cache-btn',function(event){
                                     if(content.success){
                                         table.row(row).remove()
                                         table.draw()
-                                        show_alert("Erfolg", 'Der Batch "'+data.name+'" wurde lokal gespeichert.', "success")
+                                        show_alert("Erfolg", 'Der Batch "'+data.name+'" wurde archiviert.', "success")
                                     }else{
                                         show_alert("Fehler", 'Irgendetwas ist schiefgelaufen: '+content.error, "danger")
                                     }
                                 }
                             },
-                            no:{
+                            nein:{
                                 btnClass: 'btn-green'
                                 // Do nothing
                             }
@@ -377,6 +376,58 @@ $('#project_table').on('click','.hide_hit', function(event){
         })();
 })
 
+
+$('#project_table').on('click','.delete_hit', function(event){                  
+    button = $(this)
+    row = button.closest('tr.info-row').prev()
+    data = table.row(row).data()
+    id = data['HITId']
+
+    $.alert({
+    title: 'HIT-Löschung!',
+    content: 'Bist du dir sicher, dass du den HIT "'+data.Title+'" <b>löschen</b> willst?<br>Sichere die Ergebnisse am Besten erst.',
+    buttons: {
+        bestätigen:{
+            btnClass: 'btn-blue',
+            action: function(){
+                $.alert({
+                    title: 'Wirklich?',
+                    content: 'Ganz sicher?',
+                    buttons:{
+                        ja:{
+                            btnClass: 'btn-blue',
+                            action: async function () {   
+                                const rawResponse = await fetch('/delete_hit/'+id, {
+                                    method: 'DELETE'
+                                });
+                                const content = await rawResponse.json();
+                                if(content.success){
+                                    show_alert('Erfolg', 'Der HIT wurde erfolgreich gelöscht!', 'success')
+                                    table.row(row).remove()
+                                    table.draw()
+                                }
+                                else{
+                                    show_alert('Fehler', content.error, 'danger')
+                                }
+                            }
+                        },
+                        nein:{
+                            btnClass: 'btn-green'
+                            // Do nothing
+                        }
+                    }
+                });
+            }
+            /**/
+        },
+        abbrechen: function () {
+            // close
+        }
+    }
+    });
+})
+
+
 //TODO: TEST WITH MULTIPLE WORKER SUBMISSIONS FOR EACH MINIHIT
 $('#progressmodal').on('show.bs.modal',async function(event){
     var modal = $(this)
@@ -427,7 +478,6 @@ $('#progressmodal').on('show.bs.modal',async function(event){
                     $(this).find(".bonus").text(bonus)
             })
         })
-
     }        
 })
 
@@ -613,11 +663,11 @@ function format_info ( data ) {
     if(data.batched){
         qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">KLICK</button>'
         hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?"Zeigen":"Verstecken") +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
+        csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">CSV-Optionen</button>'
         group_id = data.batch_id
         query = data.batch_id+'/True'
         toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?"Pausieren":"Weiter") +'</button>'
-        cache_btn = '<button type="button" class="btn btn-info cache-btn">Cache</button>'
+        cache_btn = '<button type="button" class="btn btn-info cache-btn">Archivieren</button>'
         batch_status = data['batch_status'] ? 'Aktiv':'Pausiert'
         row_one = $('<div class="row mt-2">'+
             '<div class="col-2">Titel:</div>'+
@@ -631,7 +681,7 @@ function format_info ( data ) {
             '<div class="col-2">Beschreibung:</div>'+
             '<div class="col-2">'+data['Description']+'</div>'+
             '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">JA, ID: '+data['batch_id']+'</div>'+
+            '<div class="col-4">Ja, ID: '+data['batch_id']+'</div>'+
             '<div class="col-2">'+cache_btn+'</div>'+
         '</div>')
 
@@ -655,6 +705,7 @@ function format_info ( data ) {
         qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">KLICK</button>'
         hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Zeigen":"Verstecken") +'</button>'         
         csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Optionen</button>'
+        delbtn = '<button type="button" class="btn btn-secondary delete_hit">Löschen</button>'
         query = data.HITId
 
         row_one = $('<div class="row mt-2">'+
@@ -677,6 +728,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
             '<div class="col-2 mt-2">HIT-Status:</div>'+
             '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
+            '<div class="col-2 mt-2">'+delbtn+'</div>'+
         '</div>')
 
         row_four = $('<div class="row mt-2">'+

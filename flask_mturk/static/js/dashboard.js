@@ -1,4 +1,3 @@
-
 render_surveys=[]
 
 for(hit_index in surveys){ // Add HITs that are not to be batched to 
@@ -431,6 +430,56 @@ $('#project_table').on('click','.hide_hit', function(event){
         })();
 })
 
+$('#project_table').on('click','.delete_hit', function(event){                  
+    button = $(this)
+    row = button.closest('tr.info-row').prev()
+    data = table.row(row).data()
+    id = data['HITId']
+
+    $.alert({
+    title: 'HIT Deletion!',
+    content: 'Are you sure that you want to <b>delete</b> the HIT "'+data.Title+'"?</br>Make sure to create a backup of your results first.',
+    buttons: {
+        confirm:{
+            btnClass: 'btn-blue',
+            action: function(){
+                $.alert({
+                    title: 'Really?',
+                    content: 'Are you sure?',
+                    buttons:{
+                        yes:{
+                            btnClass: 'btn-blue',
+                            action: async function () {   
+                                const rawResponse = await fetch('/delete_hit/'+id, {
+                                    method: 'DELETE'
+                                });
+                                const content = await rawResponse.json();
+                                if(content.success){
+                                    show_alert('Success', 'The HIT was deleted successfully!', 'success')
+                                    table.row(row).remove()
+                                    table.draw()
+                                }
+                                else{
+                                    show_alert('Error', content.error, 'danger')
+                                }
+                            }
+                        },
+                        no:{
+                            btnClass: 'btn-green'
+                            // Do nothing
+                        }
+                    }
+                });
+            }
+            /**/
+        },
+        cancel: function () {
+            // close
+        }
+    }
+    });
+})
+
 //TODO: TEST WITH MULTIPLE WORKER SUBMISSIONS FOR EACH MINIHIT
 $('#progressmodal').on('show.bs.modal',async function(event){
     var modal = $(this)
@@ -709,6 +758,7 @@ function format_info ( data ) {
         qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
         hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
         csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
+        delbtn = '<button type="button" class="btn btn-secondary delete_hit">Delete</button>'
         query = data.HITId
 
         row_one = $('<div class="row mt-2">'+
@@ -731,13 +781,14 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
             '<div class="col-2 mt-2">HIT-Status:</div>'+
             '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
+            '<div class="col-2 mt-2">'+delbtn+'</div>'+
         '</div>')
 
         row_four = $('<div class="row mt-2">'+
             '<div class="col-2">Qualifications:</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
             '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">'+false+'</div>'+
+            '<div class="col-4">No</div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
         
