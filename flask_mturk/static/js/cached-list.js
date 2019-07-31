@@ -1,8 +1,9 @@
 
 var table = $('#cached_table').DataTable({
-    data: batches,
-    "createdRow": function( row, data, dataIndex ) {
+    "language":{
+        "url": datatables_translation
     },
+    data: batches,
     "columns": [ 
         {
             "data": null,
@@ -45,17 +46,19 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
     data = table.row(row).data()
 
     $.alert({
-        title: 'Cached-Batch Deletion!',
-        content: 'Are you sure you want to delete the Batch "'+data.name+'"?<br>This is non reversable and all data will be lost!',
+        title: _('Archived Batch Deletion!'),
+        content: gt.strargs(_('Are you sure you want to delete the archived Batch "%1"?'), [data.name]) + '<br>' + _('This is non reversable and all data will be lost!'),
         buttons: {
             confirm:{
+                text: _('confirm'),
                 btnClass: 'btn-red',
                 action: function(){
                     $.alert({
-                        title: 'Really?',
-                        content: 'Are you sure?',
+                        title: _('Really?'),
+                        content: _('Are you sure?'),
                         buttons:{
                             yes:{
+                                text: _('yes'),
                                 btnClass: 'btn-red',
                                 action: async function () {
                                     const rawResponse = await fetch('/db/delete_cached/'+data.id, {
@@ -65,13 +68,14 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
                                     if (content.success){
                                         table.row(row).remove()
                                         table.draw()
-                                        show_alert("Success", 'Successfully deleted Cached Batch "'+data.name+'"', "success")
+                                        show_alert(_("Success"), gt.strargs(_('Successfully deleted archived Batch "%1"'), [data.name]), "success")
                                     }else{
-                                        show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                        show_alert(_("Error"), _('Something went wrong: ')+content.error, "danger")
                                     }
                                 }
                             },
                             no:{
+                                text: _('no'),
                                 btnClass: 'btn-green'
                                 // Do nothing
                             }
@@ -80,7 +84,8 @@ $('#cached_table tbody').on('click', '.delete-cached', async function () {
                 }
                 /**/
             },
-            cancel: function () {
+            cancel:{
+                text: _('cancel'),
                 // close
             }
         }

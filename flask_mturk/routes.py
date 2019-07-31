@@ -123,10 +123,10 @@ def survey():
             id = '00000000000000000060'
             obj = create_qualification_object(id, 'EqualTo', 1, "DiscoverPreviewAndAccept")
             qualifications.append(obj)
-        #TODO: enable in production
-        #id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
-        #obj = create_qualification_object(id, "DoesNotExist", "DiscoverPreviewAndAccept")
-        #qualifications.append(obj)
+        # TODO: enable in production
+        id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
+        obj = create_qualification_object(id, "DoesNotExist", None, "DiscoverPreviewAndAccept")
+        qualifications.append(obj)
 
         # conditional fields #
         is_minibatched = form.minibatch.data
@@ -141,9 +141,9 @@ def survey():
 
             response = api.create_qualification_type(qualification_name, keywords, "MiniBatch-Qualification for %s" % title)
             qualification_id = response['QualificationTypeId']
-            #TODO: enable in production
-            #obj = create_qualification_object(qualification_id, "DoesNotExist", None, "DiscoverPreviewAndAccept")
-            #qualifications.append(obj)
+            # TODO: enable in production
+            obj = create_qualification_object(qualification_id, "DoesNotExist", None, "DiscoverPreviewAndAccept")
+            qualifications.append(obj)
 
         if(is_minibatched):
             hit_type_id = api.create_hit_type(accept_pay_worker_after, allotted_time_per_worker, payment_per_worker, title, keywords, description, qualifications)
@@ -741,7 +741,7 @@ def add_hits_to_db(groupid: int, assignments: int) -> None:
 
     This will split the assignments into parts of 9 (the last one might be less)
     and adds these parts as queued MiniHITs to the MiniGroup specified.
-    
+
     Note: this function will not commit the changed made.
     """
 
@@ -908,12 +908,6 @@ def approve_route(hitid):
     return "200 OK"
 
 
-@app.route('/forcedeleteallhits')
-def forcedeleteallhits():
-    api.forcedelete_all_hits()
-    return "200 OK"
-
-
 @app.route("/createsoftblock")
 def softblock():
     qualification = api.create_qualification_type("Thank you!", "thanks", "For you splendid performance we award you this special qualification. Thank you again!")
@@ -926,10 +920,4 @@ def cleardb(secretkey):
         return "403 Forbidden"
     db.drop_all()
     db.create_all()
-    return "200 OK"
-
-
-@app.route("/delete_all_qualifications")
-def delete_all_qualifications():
-    api.delete_all_qualification_types()
     return "200 OK"

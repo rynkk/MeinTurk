@@ -25,7 +25,7 @@ jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
         }
     }
     return true
-}, "Qualification Name Already Exists!");
+}, _("Qualification Name Already Exists!"));
 
 
 $("#sform").validate({
@@ -39,7 +39,7 @@ $("#sform").validate({
     },
     submitHandler: function(form, event){
         $('body').addClass("loading")
-        $(".loading-modal > p").text("Please wait while your Survey is being created!")
+        $(".loading-modal > p").text(_("Please wait while your Survey is being created!"))
         form.submit()
     }
 });
@@ -80,14 +80,14 @@ function print_batches(){
     var amount =  $("#amount_workers").val()
     if (amount!=0){
         var full = Math.floor(amount/9)
-        var full_string = (full==0 ? "" : full+"x9er")
+        var full_string = (full==0 ? "" : full+"x9")
 
         var part = amount%9
-        var part_string = (part==0 ? "" : "1x"+part+"er")
+        var part_string = (part==0 ? "" : "1x"+part)
 
-        var connector = ((full_string!="" && part_string!="") ? " und ":"")
+        var connector = ((full_string!="" && part_string!="") ? _(" and "):"")
         
-        var text = ":  The Survey will be split into " + full_string + connector + part_string + " parts."
+        var text = ":  " + gt.strargs(_("The Survey will be split into %1 %2 %3 HITs."), [full_string, connector, part_string])
 
         $("#batches").text(text)
         $("#batches").show()
@@ -97,16 +97,16 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
 
     batched = document.getElementById('minibatch').checked
     if (batched){
-        $('#overview_minibatch').text("enabled")
+        $('#overview_minibatch').text(_("enabled"))
         $('#overview_name').text($('#project_name').val()==''?'-':$('#project_name').val())
     }else{
-        $('#overview_minibatch').text("disabled")
-        $('#overview_name').text('***Ignored for non-batched***')
+        $('#overview_minibatch').text(_("disabled"))
+        $('#overview_name').text(_('***Ignored for non-batched***'))
     }
 
     $('#overview_title').text($('#title').val()==''?'-':$('#title').val())
     masters = $('input[name="must_be_master"]:checked').val()=='yes'
-    $('#overview_masters').text(masters?'':'not')
+    $('#overview_masters').text(masters?'':_('not'))
 
     workers = parseInt($('#amount_workers').val())
     if (isNaN(workers)){
@@ -137,13 +137,13 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
     reward = parseFloat($('#payment_per_worker').val())
     
     costs = calculate_cost(batched, masters, reward, workers)
-    $('#overview_reward').text(costs['reward_each'])
-    $('#overview_fees').text(costs['fee_each'])
+    $('#overview_reward').text(costs['reward_each'].toFixed(2))
+    $('#overview_fees').text(costs['fee_each'].toFixed(2))
     $('#overview_fees_percentage').text(costs['fee_percentage'])
-    $('#overview_ass_total').text(costs['ass_total'])
+    $('#overview_ass_total').text(costs['ass_total'].toFixed(2))
     $('#overview_nrass').text(workers)
-    $('#overview_total').text(costs['total_cost'])
-    $('#overview_saved').text(costs['saved'])
+    $('#overview_total').text(costs['total_cost'].toFixed(2))
+    $('#overview_saved').text(costs['saved'].toFixed(2))
 })
 
 function calculate_cost(batched, masters, reward, workers){
@@ -154,15 +154,15 @@ function calculate_cost(batched, masters, reward, workers){
         // Additional 20% fees if more than 9 workers for a HIT (nonbatched) 
         if(workers>9){
             fee += 0.2        
-            fee_reasons="non-batched"
+            fee_reasons=_("non-batched")
         }else{
-            fee_reasons="non-batched, <9 workers"
+            fee_reasons=_("non-batched, <9 workers")
         }
     }
     // Masters increases the fee by additional 5%
     if(masters){
         fee+=0.05
-        fee_reasons+=", masters"
+        fee_reasons+=", " + _("masters")
     }
     fee_each = reward * fee
     total_fees = reward * fee * workers
@@ -201,8 +201,8 @@ $(".prev").click(function () {
 $('i[data-toggle="tooltip"]').tooltip()
 
 var all_options=[];
-var sys_group = $("<optgroup label='System'></optgroup>")
-var custom_group =$("<optgroup label='Own'></optgroup>")
+var sys_group = $("<optgroup label="+_('System')+"></optgroup>")
+var custom_group =$("<optgroup label="+_('Own')+"></optgroup>")
 
 qualifications.forEach(function (obj) {
         option_type = obj.Type ? 'system' : 'custom'
@@ -292,7 +292,7 @@ function create_qual_row(){
         enable_disable_selected()
     })
 
-    option = $("<option value='false'>---Select---</option>")
+    option = $("<option value='false'>---"+_("Select")+"---</option>")
     select1.append(option)
     select1.append(sys_group.clone())
     select1.append(custom_group.clone())
@@ -349,14 +349,14 @@ function show_selects_for_option($selected){
     
     if (options.comparators===undefined){   // Custom qualifications dont have the comparators-attribute set
         $comparator_select.addClass("own-select")
-        $option0 = $("<option value='Exists'>Exists</option>")
-        $option1 = $("<option value='DoesNotExist'>Does Not Exist</option>")
-        $option2 = $("<option value='EqualTo'>Equal To</option>")
-        $option3 = $("<option value='NotEqualTo'>Not Equal To</option>")
+        $option0 = $("<option value='Exists'>"+_("Exists")+"</option>")
+        $option1 = $("<option value='DoesNotExist'>"+_("Does Not Exist")+"</option>")
+        $option2 = $("<option value='EqualTo'>"+_("Equal To")+"</option>")
+        $option3 = $("<option value='NotEqualTo'>"+_("Not Equal To")+"</option>")
         $comparator_select.append($option0)
-                            .append($option1)
-                            .append($option2)
-                            .append($option3)
+                          .append($option1)
+                          .append($option2)
+                          .append($option3)
     }else{
         options.comparators.forEach(comparator => {
             $option = $("<option value="+comparator.value+">"+comparator.name+"</option>")

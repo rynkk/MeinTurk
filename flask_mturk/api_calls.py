@@ -27,7 +27,7 @@ class Api:
             QualificationTypeId=qualificationid
         )
 
-    #not needed for now
+    # not needed for now
     def get_qualification_score(self, workerid, qualificationid):
         return self.client.get_qualification_score(
             QualificationTypeId=qualificationid,
@@ -55,7 +55,10 @@ class Api:
             return ce.response['Error']['Message']
 
     def delete_qualification_type(self, qualification_id):
-        return client.delete_qualification_type(QualificationTypeId=qualification_id)
+        if(qualification_id != app.config.get('SOFTBLOCK_QUALIFICATION_ID')):
+            return client.delete_qualification_type(QualificationTypeId=qualification_id)
+        else:
+            raise ValueError('Tried to delete Softblock-Qualification')
 
     def associate_qualification_with_worker(self, worker_id, qualification_id):
         return client.associate_qualification_with_worker(
@@ -226,41 +229,6 @@ class Api:
             self.associate_qualification_with_worker(assignment['WorkerId'], qualification_id)
             workers.append(assignment['WorkerId'])
         return {'success': True, 'workers': workers}
-
-    def delete_all_qualification_types(self):
-        qualifications = self.list_custom_qualifications()
-        for qual in qualifications:
-            self.delete_qualification_type(qual['QualificationTypeId'])
-        return "200 OK"
-
-    def forcedelete_all_hits(self, retry=False):
-        # TODO: fix, also cap retries at 10 instead of 2 Need to check if there are assignments that are not approved or rejected
-        all_hits = self.list_all_hits()
-
-        if(not all_hits):
-            return "nothing to delete"
-
-        print("**********EXPIRING HITS**********")
-        for obj in all_hits:
-            print(obj['HITStatus'])
-            if obj['HITStatus'] not in ['Reviewable', 'Disposed', 'Unassignable']:
-                print("EXPIRING HIT with ID:", obj['HITId'])
-                obj['HITStatus'] = 'Reviewable'
-                # logic to check if assignments left
-                self.expire_hit(obj['HITId'])
-
-        print("**********DELETING HITS**********")
-        for obj in all_hits:
-            print(obj['HITStatus'])
-            if obj['HITStatus'] == 'Reviewable':
-                print("Deleteing HIT with ID:", obj['HITId'])
-                try:
-                    self.delete_hit(obj['HITId'])
-                except ClientError as e:
-                    print(e)
-                    print("HIT has unsubmitted or unapproved Assignments --- Skipping")
-                continue
-        return "Done"
 
 
 api = Api(client)

@@ -41,6 +41,9 @@ ordering.forEach((item) => { //TODO change, maybe add group parameter to orderin
 })
 
 var table = $('#project_table').DataTable({
+    "language":{
+        "url": datatables_translation
+    },
     data: render_surveys,
     "createdRow": function( row, data, dataIndex ) {
         $(row).addClass('mainrow')
@@ -109,8 +112,13 @@ var table = $('#project_table').DataTable({
             }
         } 
     ],
-    "order": [[ 1, 'asc' ]]
+    "order": [[ 1, 'asc' ]],
+    "initComplete": function( settings, json ) {
+        configure_header()
+    }
 });
+$("#hide_hidden").click().click() // check and uncheck to hide_hidden filter
+$("#hide_nonbatched").click() // Default: show nonbatched
 
 /* https://datatables.net/plug-ins/api/row().show() */
 $.fn.dataTable.Api.register('row().show()', function() {
@@ -145,7 +153,7 @@ table.rows().every( function(){ //Create 2 child rows and show BOTH(API restrict
                 ]             
             ).show()
         this.child().first().addClass("info-row")
-        this.child().last().hide()
+        this.child().last().addClass("slider-row").hide()
     }else{                
         this.child(format_info(this.data()),'info-row').show() // maybe change so that not added into td       
     }
@@ -176,19 +184,58 @@ if(createdhit != null){
     })
 }
 
-
-$("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
-$("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
-check_div = $("<div>").addClass("col-sm-12 col-md-6")
-    .append('<div class="form-check form-check-inline">'+
-                '<label for="hide_hidden" class="form-check-label">Show hidden</label>'+
-                '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+function configure_header(){
+    $("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
+    $("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
+    check_div = $("<div>").addClass("col-sm-12 col-md-6")
+        .append('<div class="form-check form-check-inline">'+
+                    '<label for="hide_hidden" class="form-check-label">'+_('Show hidden')+'</label>'+
+                    '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+                '</div>')
+        .append('<div class="pl-3 form-check form-check-inline">'+
+                '<label for="hide_nonbatched" class="form-check-label">'+_('Show nonbatched')+'</label>'+
+                '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
             '</div>')
-    .append('<div class="pl-3 form-check form-check-inline">'+
-            '<label for="hide_nonbatched" class="form-check-label">Show nonbatched</label>'+
-            '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
-        '</div>')
-$("#project_table_length").parent("div").after(check_div)
+    $("#project_table_length").parent("div").after(check_div)
+
+    $("#hide_hidden").on("click",function() {
+        if(!$(this).prop("checked")){ // If not checked add filter function
+            $.fn.dataTable.ext.search.push(
+            function hidden(settings, data, dataIndex) {
+                row_data = table.row(dataIndex).data()
+                if(row_data.hidden)
+                    return false
+                else
+                    return true
+                }
+            );
+        }else{ // If checked get filter function and remove it
+            index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
+            if(index==-1) return
+            $.fn.dataTable.ext.search.splice(index, 1);
+        }               
+        table.draw();
+    });    
+    
+    $("#hide_nonbatched").on("click",function() {
+        if(!$(this).prop("checked")){ // If not checked add filter function
+            $.fn.dataTable.ext.search.push(
+            function batched(settings, data, dataIndex) {
+                row_data = table.row(dataIndex).data()
+                if(row_data.batched)
+                    return true
+                else
+                    return false
+                }
+            );
+        }else{ // If checked get filter function and remove it
+            index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
+            if(index==-1) return
+            $.fn.dataTable.ext.search.splice(index, 1);
+        }     
+        table.draw();
+    });    
+}
 
 function getIndexOfFunc(array, funcname){
     for (i in array){
@@ -199,48 +246,6 @@ function getIndexOfFunc(array, funcname){
     return -1
 }
 
-//TODO: need parameter for hide/unhide
-$("#hide_hidden").on("click",function() {
-    if(!$(this).prop("checked")){ // If not checked add filter function
-        $.fn.dataTable.ext.search.push(
-        function hidden(settings, data, dataIndex) {
-            row_data = table.row(dataIndex).data()
-            if(row_data.hidden)
-                return false
-            else
-                return true
-            }
-        );
-    }else{ // If checked get filter function and remove it
-        index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
-        if(index==-1) return
-        $.fn.dataTable.ext.search.splice(index, 1);
-    }               
-    table.draw();
-});
-
-$("#hide_hidden").click().click() // check and uncheck to initialize filter above
-
-$("#hide_nonbatched").on("click",function() {
-    if(!$(this).prop("checked")){ // If not checked add filter function
-        $.fn.dataTable.ext.search.push(
-        function batched(settings, data, dataIndex) {
-            row_data = table.row(dataIndex).data()
-            if(row_data.batched)
-                return true
-            else
-                return false
-            }
-        );
-    }else{ // If checked get filter function and remove it
-        index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
-        if(index==-1) return
-        $.fn.dataTable.ext.search.splice(index, 1);
-    }     
-    table.draw();
-});
-
-$("#hide_nonbatched").click() // Default: show nonbatched
 
 $('#project_table').on('click', 'tr.info-row', function(event){ // if click on info row trigger click on DataTables-ParentRow
     if($(event.target).is(":button"))
@@ -250,7 +255,6 @@ $('#project_table').on('click', 'tr.info-row', function(event){ // if click on i
 
 var animation_running = 0;
 $('#project_table tbody').on('click', 'tr.batched[role="row"]', function (event) {
-
     if(!animation_running) // wait for both animations to finish
         animation_running = 1
     else
@@ -305,7 +309,7 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
             slide_table.children('tr').each(function(index){
                 $(this).children('td:first').text(index+1)
             })
-            show_alert("SUCCESS!", "Successfully deleted queued HIT from Database.", "success")
+            show_alert(_("Success"), _("Successfully deleted queued HIT from Database."), "success")
         }else{
             errormsg = ""
 
@@ -316,7 +320,7 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
             }else if(content.type == 'not_found'){
                 errormsg = content.error
             }
-            show_alert("ERROR!", errormsg, "danger")
+            show_alert(_("Error"), errormsg, "danger")
             
         }
         })();
@@ -328,17 +332,19 @@ $('#project_table').on('click', '.cache-btn',function(event){
     data = table.row(row).data()
     console.log(data)
     $.alert({
-        title: 'Batch Caching!',
-        content: 'Are you sure you want to cache the Batch "'+data.name+'"?<br>This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!',
+        title: _('Archiving Batch!'),
+        content: globalThis.strargs(_('Are you sure you want to archive the Batch "%1"?'), [data.name])+'<br>'+_('This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!'),
         buttons: {
             confirm:{
+                text: _('confirm'),
                 btnClass: 'btn-blue',
                 action: function(){
                     $.alert({
-                        title: 'Really?',
-                        content: 'Are you sure?',
+                        title: _('Really?'),
+                        content: _('Are you sure?'),
                         buttons:{
                             yes:{
+                                text: _('yes'),
                                 btnClass: 'btn-blue',
                                 action: async function () {
                                     const rawResponse = await fetch('/cache_batch/'+data.batch_id, {
@@ -349,13 +355,14 @@ $('#project_table').on('click', '.cache-btn',function(event){
                                     if(content.success){
                                         table.row(row).remove()
                                         table.draw()
-                                        show_alert("Success", 'Successfully cached Batch "'+data.name+'"', "success")
+                                        show_alert(_("Success"), gt.strargs(_('Successfully archived Batch "%1"'), [data.name]), "success")
                                     }else{
-                                        show_alert("Error", 'Something went wrong: '+content.error, "danger")
+                                        show_alert(_("Error"), _('Something went wrong: ')+content.error, "danger")
                                     }
                                 }
                             },
                             no:{
+                                text: _('no'),
                                 btnClass: 'btn-green'
                                 // Do nothing
                             }
@@ -364,8 +371,8 @@ $('#project_table').on('click', '.cache-btn',function(event){
                 }
                 /**/
             },
-            cancel: function () {
-                // close
+            cancel:{
+                text: _('cancel'),
             }
         }
     });
@@ -381,8 +388,8 @@ $('#project_table').on('click', '.toggle-groupstatus', function(event){
         
         const content = await rawResponse.json();
         if (content.success){
-            btn_text = content.status=='active'?"Pause":"Continue"
-            $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?'Active':'Paused')
+            btn_text = content.status=='active'?_("Pause"):_("Continue")
+            $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?_('Active'):_('Paused'))
             $(this).text(btn_text)
         }
     })();
@@ -408,9 +415,9 @@ $('#project_table').on('click','.hide_hit', function(event){
         const content = await rawResponse.json();
         if (content.success){
             hit_data.hidden = content.hidden
-            btn_text = content.hidden?"Show":"Hide"
+            btn_text = content.hidden?_("Show"):_("Hide")
             $(this).text(btn_text)
-            // If we hid the row and we are not currently showing all rows we animate a fadeOut
+            // If we hid the row and we are not currently showing hidden rows we animate a fadeOut
             if(hit_data.hidden && !document.getElementById('hide_hidden').checked){
                 rows = parent_row.add(button_row)
                 if(slider_row.is(':visible')){
@@ -437,17 +444,19 @@ $('#project_table').on('click','.delete_hit', function(event){
     id = data['HITId']
 
     $.alert({
-    title: 'HIT Deletion!',
-    content: 'Are you sure that you want to <b>delete</b> the HIT "'+data.Title+'"?</br>Make sure to create a backup of your results first.',
+    title: _('HIT Deletion!'),
+    content: gt.strargs(_('Are you sure that you want to <b>delete</b> the HIT "%1"?'), [data.Title]) + '</br>' + _('Make sure to create a backup of your results first.'),
     buttons: {
         confirm:{
+            text: _('confirm'),
             btnClass: 'btn-blue',
             action: function(){
                 $.alert({
-                    title: 'Really?',
-                    content: 'Are you sure?',
+                    title: _('Really?'),
+                    content: _('Are you sure?'),
                     buttons:{
                         yes:{
+                            text: _('yes'),
                             btnClass: 'btn-blue',
                             action: async function () {   
                                 const rawResponse = await fetch('/delete_hit/'+id, {
@@ -455,16 +464,17 @@ $('#project_table').on('click','.delete_hit', function(event){
                                 });
                                 const content = await rawResponse.json();
                                 if(content.success){
-                                    show_alert('Success', 'The HIT was deleted successfully!', 'success')
+                                    show_alert(_('Success'), _('The HIT was deleted successfully!'), 'success')
                                     table.row(row).remove()
                                     table.draw()
                                 }
                                 else{
-                                    show_alert('Error', content.error, 'danger')
+                                    show_alert(_('Error'), content.error, 'danger')
                                 }
                             }
                         },
                         no:{
+                            text: _('no'),
                             btnClass: 'btn-green'
                             // Do nothing
                         }
@@ -473,8 +483,8 @@ $('#project_table').on('click','.delete_hit', function(event){
             }
             /**/
         },
-        cancel: function () {
-            // close
+        cancel:{
+            text: _('cancel'),
         }
     }
     });
@@ -548,7 +558,7 @@ $('#csvmodal').on('show.bs.modal', function(event){
     data = table.row(row).data()
     $("#hit_batched").val(data.batched)
     $("#hit_identifier").val(data.batched?data.batch_id:data.HITId)
-    modal.find(".modal-title").text("CSV Actions for " + data.Title)
+    modal.find(".modal-title").text(_("CSV Actions for ") + data.Title)
     if (data.batched)
         href = "/export/"+data.batch_id
     else
@@ -565,12 +575,12 @@ $('#qualmodal').on('show.bs.modal', function(event){
     modal.find("#qual-empty").empty()
     row = button.closest('tr.info-row').prev()
     data = table.row(row).data()
-    modal.find(".modal-title").text("Qualifications for " + data.Title)
+    modal.find(".modal-title").text(_("Qualifications for ") + data.Title)
     // Iterate over each Qualification of HIT
     
     if(!data.QualificationRequirements.length){
         row = $('<div class="row p-5">')
-        row.append('<div class="col-lg-12 text-center"><h2>No Qualifications are assigned to this HIT</h2></div>')
+        row.append('<div class="col-lg-12 text-center"><h2>'+_('No Qualifications are assigned to this HIT')+'</h2></div>')
         modal.find("#qual-empty").append(row)
     }else{
         data.QualificationRequirements.forEach(function(elem, index){
@@ -593,17 +603,17 @@ $('#qualmodal').on('show.bs.modal', function(event){
             qual_row = $('<tr>').addClass("border-bottom")
             .append($('<td>').append($("<div>").text(index+1+".")))
             //.append($('<td>').append($("<div>").text(table_qual_id)))
-            .append($('<td>').addClass("qual-name").text("Batch-Qualification, reload the Page to show the actual Name"))
+            .append($('<td>').addClass("qual-name").text(_("Batch-Qualification, reload the Page to show the actual Name")))
             .append($('<td>').text(elem.Comparator))
             .append($('<td>').text(value))
             .append($('<td>').text(elem.ActionsGuarded))
             //Check if Id is of adult or master type
             if(table_qual_id == master_id){
-                qual_row.find(".qual-name").text('Masters')
+                qual_row.find(".qual-name").text(_('Masters'))
             }else if(table_qual_id == master_id_sandbox){
-                qual_row.find(".qual-name").text('Masters Sandbox')
+                qual_row.find(".qual-name").text(_('Masters Sandbox'))
             }else if(table_qual_id == adult_id){
-                qual_row.find(".qual-name").text('Adult Content')
+                qual_row.find(".qual-name").text(_('Adult Content'))
             }else{
                 //loop over all qualifications to get the name
                 for(i in quals){
@@ -624,7 +634,7 @@ $("#uploadbtn").on("click", async function(){
     $("#uploadform div.success").empty()
     $("#uploadform #file").removeClass("error")
     if(!$("#uploadform #file").val()){
-        $("#uploadform label.error").append("This field is required.")                
+        $("#uploadform label.error").append(_("This field is required."))
         $("#uploadform #file").addClass("error")
         return
     }
@@ -646,15 +656,15 @@ $("#uploadbtn").on("click", async function(){
         row = $("<div>").addClass("row")
         col = $("<div>").addClass("col-3")
         row_one = row.clone()
-        row_one.append(col.clone().text("Approved"))
+        row_one.append(col.clone().text(_("Approved")))
                 .append(col.clone().text(json.data.approved))
-                .append(col.clone().text("Rejected"))
+                .append(col.clone().text(_("Rejected")))
                 .append(col.clone().text(json.data.rejected))
 
         row_two = row.clone()                        
-        row_two.append(col.clone().text("Bonus paid"))
+        row_two.append(col.clone().text(_("Bonus paid")))
                 .append(col.clone().text("$"+json.data.bonus))
-                .append(col.clone().text("Softblocked"))
+                .append(col.clone().text(_("Softblocked")))
                 .append(col.clone().text(json.data.softblocked))
         
         $("#uploadform div.success").append(row_two).append(row_one)
@@ -662,10 +672,10 @@ $("#uploadbtn").on("click", async function(){
         // Adding warnings if any
         // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
         if(Object.keys(json.warnings).length > 0){
-            $("#uploadform div.error").append('<h4>Warnings:<h4>')
+            $("#uploadform div.error").append('<h4>'+_('Warnings')+':<h4>')
             for (i in json.warnings){
                 console.log(i)
-                li = $('<li>').text("Row "+i)
+                li = $('<li>').text(_("Row ")+i)
                 ul = $('<ul>')
                 for (j in json.warnings[i]){
                     row_li = $('<li>').text(json.warnings[i][j])
@@ -677,14 +687,13 @@ $("#uploadbtn").on("click", async function(){
     }else{
         $("#uploadform label.error").empty()
         $("#uploadform div.error").empty()
-        //$(this).prop("disabled",false);
         $("#uploadform #file").addClass("error")
         if(json.errortype == 'main'){
             $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
         }else if(json.errortype == 'document'){
-            $("#uploadform div.error").append('<h4>Logic-error in CSV<h4>')
+            $("#uploadform div.error").append('<h4>'+_('Logic-error in CSV')+'<h4>')
             for (i in json.errors){
-                li = $('<li>').text("Row "+i)
+                li = $('<li>').text(_("Row ")+i)
                 ul = $('<ul>')
                 for (j in json.errors[i]){
                     row_li = $('<li>').text(json.errors[i][j])
@@ -714,81 +723,81 @@ function format_info ( data ) {
     container = $("<div class='container' style='float-left'>")
 
     if(data.batched){
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
+        qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
+        hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
+        csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
         group_id = data.batch_id
         query = data.batch_id+'/True'
-        toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?"Pause":"Continue") +'</button>'
-        cache_btn = '<button type="button" class="btn btn-info cache-btn">Cache</button>'
-        batch_status = data['batch_status'] ? 'Active':'Paused'
+        toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?_("Pause"):_("Continue")) +'</button>'
+        cache_btn = '<button type="button" class="btn btn-info cache-btn">'+_('Archive')+'</button>'
+        batch_status = data['batch_status'] ? _('Active'):_('Paused')
         row_one = $('<div class="row mt-2">'+
-            '<div class="col-2">Title:</div>'+
+            '<div class="col-2">'+_('Title')+':</div>'+
             '<div class="col-2">'+data['Title']+'</div>'+
-            '<div class="col-2">Reward:</div>'+
+            '<div class="col-2">'+_('Reward')+':</div>'+
             '<div class="col-4">'+data['Reward']+'</div>'+
             '<div class="col-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
         row_two = $('<div class="row mt-2">'+
-            '<div class="col-2">Description:</div>'+
+            '<div class="col-2">'+_('Description')+':</div>'+
             '<div class="col-2">'+data['Description']+'</div>'+
-            '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">Yes, ID: '+data['batch_id']+'</div>'+
+            '<div class="col-2">'+_('MiniBatched')+':</div>'+
+            '<div class="col-4">'+_('Yes, ID')+': '+data['batch_id']+'</div>'+
             '<div class="col-2">'+cache_btn+'</div>'+
         '</div>')
 
         row_three = $('<div class="row mt-2">'+
-            '<div class="col-2">Keywords:</div>'+
+            '<div class="col-2">'+_('Keywords')+':</div>'+
             '<div class="col-2">'+data['Keywords']+'</div>'+
-            '<div class="col-2 ">Batch-Status:</div>'+
+            '<div class="col-2">'+_('Batch-Status')+':</div>'+
             '<div class="col-4 batch-status">'+batch_status+'</div>'+
             '<div class="col-2">'+toggle_status_btn+'</div>'+
         '</div>')
 
         row_four = $('<div class="row mt-2">'+
-            '<div class="col-2">Qualifications:</div>'+
+            '<div class="col-2">'+_('Qualifications')+':</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
-            '<div class="col-2">HITTypeId:</div>'+
+            '<div class="col-2">'+_('HITTypeId')+':</div>'+
             '<div class="col-4">'+data['HITTypeId']+'</div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
     }
     else{
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">CLICK</button>'
-        hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?"Show":"Hide") +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">CSV-Actions</button>'
-        delbtn = '<button type="button" class="btn btn-secondary delete_hit">Delete</button>'
+        qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
+        hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
+        csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
+        delbtn = '<button type="button" class="btn btn-secondary delete_hit">'+_('Delete')+'</button>'
         query = data.HITId
 
         row_one = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Description:</div>'+
+            '<div class="col-2 mt-2">'+_('Description')+':</div>'+
             '<div class="col-2 mt-2">'+data['Description']+'</div>'+
-            '<div class="col-2 mt-2">HITId:</div>'+
+            '<div class="col-2 mt-2">'+_('HITId')+':</div>'+
             '<div class="col-4 mt-2">'+data['HITId']+'</div>'+
             '<div class="col-2 mt-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
         row_two = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Keywords:</div>'+
+            '<div class="col-2 mt-2">'+_('Keywords')+':</div>'+
             '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
-            '<div class="col-2 mt-2">HITTypeId:</div>'+
+            '<div class="col-2 mt-2">'+_('HITTypeId')+':</div>'+
             '<div class="col-4 mt-2">'+data['HITTypeId']+'</div>'+
         '</div>')
 
         row_three = $('<div class="row mt-2">'+
-            '<div class="col-2 mt-2">Reward:</div>'+
+            '<div class="col-2 mt-2">'+_('Reward')+':</div>'+
             '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
-            '<div class="col-2 mt-2">HIT-Status:</div>'+
+            '<div class="col-2 mt-2">'+_('HIT-Status')+':</div>'+
             '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
             '<div class="col-2 mt-2">'+delbtn+'</div>'+
         '</div>')
 
         row_four = $('<div class="row mt-2">'+
-            '<div class="col-2">Qualifications:</div>'+
+            '<div class="col-2">'+_('Qualifications')+':</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
-            '<div class="col-2">MiniBatched:</div>'+
-            '<div class="col-4">No</div>'+
+            '<div class="col-2">'+_('MiniBatched')+':</div>'+
+            '<div class="col-4">'+_('No')+'</div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
         
@@ -828,7 +837,7 @@ function format_slide_row(hit){
     }else{
         $tr = $('<tr class="minihitrow queued">')
         $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
-        $tr.append($('<td>').text('Queued'))
+        $tr.append($('<td>').text(_('Queued')))
         $tr.append($('<td>').text('0/'+hit.workers))
         $tr.append($('<td>'))
         $tr.append($('<td>'))

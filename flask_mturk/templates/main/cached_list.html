@@ -28,13 +28,7 @@
 <script>
     batches = {{ batches | tojson }};
 </script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
-{% if locale == 'de' %} {# German #}
-<script> var url_for_datatables_de = "{{ url_for('static', filename='js/datatables.localizations/messages_de.json') }}";</script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/cached-list_de.js') }}"></script>
-{% elif locale == 'someother' %} {# Add your own here, don't forget to download the respective localization (see the readme of each localization folder) #}
-{% else %} {# English #}
+<script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/cached-list.js') }}"></script>
-{% endif %}
 {% endblock scripts %}

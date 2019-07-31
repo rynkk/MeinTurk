@@ -1,6 +1,9 @@
 ban_btn = "<button type='button' class='btn-sm btn-danger softblock'><i class='fas fa-lg fa-ban'></i></button>"
 unban_btn = "<button type='button' class='btn-sm btn-success softblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
 var table = $('#worker_table').DataTable({
+    "language":{
+        "url": datatables_translation
+    },
     data: workers,
     "columns": [ 
         {   
@@ -23,7 +26,7 @@ var table = $('#worker_table').DataTable({
             "data": null,
             "className":'softblock-td',
             "render": function(data, type, row){                
-                return row.softblocked?'Yes':'No'
+                return row.softblocked?_('Yes'):_('No')
             },
         },
         {
@@ -59,15 +62,15 @@ $('#worker_table').on('click', '.softblock', async function(){
     content = await rawResponse.json()
     if(content.success){
         if(content.status){
-            softblock_td.text('Yes')
+            softblock_td.text(_('Yes'))
             $(this).replaceWith(unban_btn)
         }
         else{
-            softblock_td.text('No')
+            softblock_td.text(_('No'))
             $(this).replaceWith(ban_btn)
         }
-        show_alert('Success', 'The worker with the ID "'+id+'" was successfully '+(content.status?'softblocked':'unblocked'), 'success')
+        show_alert(_('Success'), gt.strargs(_('The worker with the ID "%1" was successfully'),[id]) + (content.status?_('softblocked'):_('unblocked')), 'success')
     }else
-        show_alert('Error', 'Something went wrong: '+content.error, 'danger')
+        show_alert(_('Error'), _('Something went wrong: ')+content.error, 'danger')
     $(this).prop('disabled', false)
 })

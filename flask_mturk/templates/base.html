@@ -33,7 +33,7 @@
                         <div class="dropdown-menu bg-dark" aria-labelledby="dropdown-btn">
                             <a class="dropdown-item"  href="{{ url_for('qualifications_page')}}">{{ _('Qualifications') }}</a>
                             <a class="dropdown-item"  href="{{ url_for('worker_page')}}">{{ _('Workers') }}</a>
-                            <a class="dropdown-item"  href="{{ url_for('cached_page')}}">{{ _('Cached Batches') }}</a>
+                            <a class="dropdown-item"  href="{{ url_for('cached_page')}}">{{ _('Archived Batches') }}</a>
                         </div>
                     </li>
                 </ul>
@@ -74,7 +74,20 @@
         
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/show_alert.js') }}"></script>
+
+        {% if locale == 'de' %} {# German: 1. custom JS; 2. DataTables; 3. jQuery Validate #}
+            <link rel="gettext" type="application/x-po" href="{{ url_for('static', filename='translations/messages_de.po') }}">
+            <script> var datatables_translation = "{{ url_for('static', filename='js/datatables.localizations/messages_de.json') }}";</script>
+            <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.localizations/messages_de.js') }}"></script>
+        {% elif locale == 'someother' %} {# Add your own here, don't forget to download/create the respective localization (see the readme of each localization folder) #}
+        {% else %} {# English #}
+            <script> var datatables_translation = null;</script>
+        {% endif %}
+        
+        <script type="text/javascript" src="{{ url_for('static', filename='js/Gettext.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/Gettext-init.js') }}"></script>
 
         {% block scripts %}
         {% endblock scripts %}

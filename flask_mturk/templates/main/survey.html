@@ -154,18 +154,9 @@
         var max_payment = {{ max_payment }}
         var softblock_name = {{ softblock_name | tojson}}
 </script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/moment-with-locales.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/tagsinput.js') }}"></script>
-
-{% if locale == 'de' %} {# German #}
-    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.localizations/messages_de.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/survey_de.js') }}"></script>
-{% elif locale == 'someother' %}
-    {# Add your own here, don't forget change the babel.route in routes.py and to download the respective localization (see the readme of each localization folder) #}
-{% else %} {# English #}
-    <script type="text/javascript" src="{{ url_for('static', filename='js/survey.js') }}"></script>
-{% endif %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/survey.js') }}"></script>
 
 {% endblock scripts %}
         

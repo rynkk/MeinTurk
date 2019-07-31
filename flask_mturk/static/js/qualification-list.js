@@ -1,9 +1,12 @@
 
 var table = $('#qualification_table').DataTable({
+    "language":{
+        "url": datatables_translation
+    },
     data: quals,
     "createdRow": function( row, data, dataIndex ) {
         if (data.QualificationTypeStatus == "Active") {
-            $(row).addClass( 'active' ) //TODO: work more with jquery data()
+            $(row).addClass( 'active' )
         }else{
             $(row).addClass( 'inactive' )
         }
@@ -20,7 +23,7 @@ var table = $('#qualification_table').DataTable({
             "orderable": false,
             "searchable": false,
             "render": function(data, type, row){
-                return "<button type='button' class='btn-primary btn load-workers'>Load</button>"
+                return "<button type='button' class='btn-primary btn load-workers'>"+_("Load")+"</button>"
             },
         },
         { "data": "CreationTime"},
@@ -34,7 +37,10 @@ var table = $('#qualification_table').DataTable({
             },
         } ,
     ],
-    "order": [[ 4, 'asc' ]]
+    "order": [[ 4, 'asc' ]],
+    "initComplete": function( settings, json ) {
+        configure_header()
+    }
 });
 
 table.on( 'order.dt search.dt', function () {
@@ -58,10 +64,11 @@ $('#qualification_table tbody').on('click', '.delete-qualification', async funct
     data = table.row(row).data()
 
     $.alert({
-        title: 'Qualification Deletion!',
-        content: 'Are you sure you want to delete the Qualification "'+data.Name+'"?',
+        title: _('Qualification Deletion!'),
+        content: gt.strargs(_('Are you sure you want to delete the Qualification "%1"?'), [data.Name]),
         buttons: {
             confirm:{
+                text: _('confirm'),
                 btnClass: 'btn-red',
                 action: async function () {
                     const rawResponse = await fetch('/api/delete_qualification_type/'+data.QualificationTypeId, {
@@ -70,21 +77,23 @@ $('#qualification_table tbody').on('click', '.delete-qualification', async funct
                     const content = await rawResponse.json();
                     table.row(row).remove()
                     table.draw()
-                    show_alert("Success", 'Successfully deleted Qualification "'+data.Name+'" ('+data.QualificationTypeId+')', "success")
+                    show_alert(_("Success"), gt.strargs(_('Successfully deleted Qualification "%1" (%2)'), [data.Name, data.QualificationTypeId]), "success")
                 }
             },
-            cancel: function () {
-                // close
+            cancel:{
+                text: _('cancel'),
             }
         }
     });
 });
 
-$("#qualification_table_length").parent("div").removeClass("col-md-6").addClass("col-md-4")
-$("#qualification_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-4")
-check_div = $("<div>").addClass("col-sm-12 col-md-4 column-centered")
-    .append('<button type="button" class="btn btn-success" data-toggle="modal" data-target="#qualmodal"><i class="fas no-transform fa-plus-circle fa-lg"></i></button>')
-$("#qualification_table_length").parent("div").after(check_div)
+function configure_header(){
+    $("#qualification_table_length").parent("div").removeClass("col-md-6").addClass("col-md-4")
+    $("#qualification_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-4")
+    check_div = $("<div>").addClass("col-sm-12 col-md-4 column-centered")
+        .append('<button type="button" class="btn btn-success" data-toggle="modal" data-target="#qualmodal"><i class="fas no-transform fa-plus-circle fa-lg"></i></button>')
+    $("#qualification_table_length").parent("div").after(check_div)
+}
 
 $("#qualform input").blur(function() {
     $(this.form).validate().element(this);
@@ -108,10 +117,10 @@ $("#qualform").validate({
             })
             const json = await rawResponse.json()
             if (json.success){
-                show_alert('Success','The qualification was successfully created. It might take some time until AWS processed it and it shows up.', 'success')
+                show_alert(_('Success'), _('The qualification was successfully created. It might take some time until AWS processed it and it shows up.'), 'success')
                 $("#qualmodal").modal('hide');
             }else{
-                show_alert('Error',json.error, 'danger')
+                show_alert(_('Error'),json.error, 'danger')
             }
           })(); 
     }
