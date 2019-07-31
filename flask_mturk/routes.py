@@ -16,6 +16,8 @@ from .helper import is_number, seconds_from_string
 
 @babel.localeselector
 def get_locale():
+    if 'language' in request.cookies:
+        return request.cookies.get('language')
     return request.accept_languages.best_match(['en', 'de'])
 
 

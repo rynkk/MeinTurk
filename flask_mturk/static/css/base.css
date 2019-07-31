@@ -7,13 +7,12 @@ body{
     padding-bottom:  25px !important;
 }
 
-
-.navbar a {
+.navbar a.nav-link, .nav-item a.dropdown-item, .navbar a.navbar-brand {
     color: #f8f9fa !important;
     font-size: 1.8em !important;
 }
 
-.navbar li {
+.navbar li.nav-item {
     padding-right:5px;
     padding-left:25px;
 }
@@ -23,17 +22,17 @@ body{
 }
 
 /* Remove annoying dropdown disappering on slow hover */
-.dropdown-menu{
+.nav-item > .dropdown-menu{
     margin-top: initial;
 }
 
 /* Show dropdown on hover*/
-.dropdown:hover > .dropdown-menu {
+.nav-item.dropdown:hover > .dropdown-menu {
     display: block;
 }
 
-.dropdown-menu > a:hover,
-.dropdown-menu > a:focus {
+.nav-item > .dropdown-menu > a:hover,
+.nav-item > .dropdown-menu > a:focus {
     background-color: #6c757d !important;
 }
 
@@ -91,10 +90,16 @@ body{
                 no-repeat;
 }
 
-.loading-modal > p {
-    top: 10%;
-    position: relative;
+.flag-icon-de{
+    background-image: url("de.png")
+}
 
+.flag-icon-en{
+    background-image: url("us.png")
+}
+
+.flag-icon-spqr{
+    background-image: url("spqr.png")
 }
 
 body.loading {
