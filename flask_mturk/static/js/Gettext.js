@@ -394,10 +394,9 @@ Gettext.prototype.parse_locale_data = function(locale_data) {
 
 
 // try_load_lang_po : do an ajaxy call to load in the .po lang defs
-Gettext.prototype.try_load_lang_po = function(uri) {
-    var data = this.sjax(uri);
+Gettext.prototype.try_load_lang_po = async function(uri) {
+    var data = await this.fetch(uri);
     if (! data) return;
-
     var domain = this.uri_basename(uri);
     var parsed = this.parse_po(data);
 
@@ -598,8 +597,8 @@ Gettext.prototype.parse_po_dequote = function(str) {
 
 
 // try_load_lang_json : do an ajaxy call to load in the lang defs
-Gettext.prototype.try_load_lang_json = function(uri) {
-    var data = this.sjax(uri);
+Gettext.prototype.try_load_lang_json = async function(uri) {
+    var data = await this.fetch(uri);
     if (! data) return;
 
     var rv = this.JSON(data);
@@ -1141,36 +1140,21 @@ Gettext.prototype.isValidObject = function (thisObject) {
     }
 };
 
-Gettext.prototype.sjax = function (uri) {
-    var xmlhttp;
-    if (window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else if (navigator.userAgent.toLowerCase().indexOf('msie 5') != -1) {
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    } else {
-        xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-    }
-
-    if (! xmlhttp)
-        throw new Error("Your browser doesn't do Ajax. Unable to support external language files.");
-
-    xmlhttp.open('GET', uri, false);
-    try { xmlhttp.send(null); }
-    catch (e) { return; }
-
-    // we consider status 200 and 0 as ok.
-    // 0 happens when we request local file, allowing this to run on local files
-    var sjax_status = xmlhttp.status;
-    if (sjax_status == 200 || sjax_status == 0) {
-        return xmlhttp.responseText;
-    } else {
-        var error = xmlhttp.statusText + " (Error " + xmlhttp.status + ")";
-        if (xmlhttp.responseText.length) {
-            error += "\n" + xmlhttp.responseText;
+Gettext.prototype.fetch = async function (uri) {
+    const response = await fetch(uri)
+    const text = await response.text()
+    if (response.status == 200 || response.status == 0)
+        
+        return text
+    else{
+        var error = response.statusText + " (Error " + response.status + ")";
+        if (text.length) {
+            error += "\n" + text;
         }
         alert(error);
         return;
     }
+
 }
 
 Gettext.prototype.JSON = function (data) {
