@@ -121,14 +121,13 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
     $('#overview_hits').text(hits)
     $('#overview_workers').text(workers)
 
-    $('#overview_lifetime').text($("#time_till_expiration-int_field").val()+" "+$("#time_till_expiration-unit_field").val())
-    $('#overview_allotted_time').text($("#allotted_time_per_worker-int_field").val()+" "+$("#allotted_time_per_worker-unit_field").val())
-    $('#overview_time_approval').text($("#accept_pay_worker_after-int_field").val()+" "+$("#accept_pay_worker_after-unit_field").val())
+    $('#overview_lifetime').text($("#time_till_expiration-int_field").val()+" "+$("#time_till_expiration-unit_field").children("option:selected").text())
+    $('#overview_allotted_time').text($("#allotted_time_per_worker-int_field").val()+" "+$("#allotted_time_per_worker-unit_field").children("option:selected").text())
+    $('#overview_time_approval').text($("#accept_pay_worker_after-int_field").val()+" "+$("#accept_pay_worker_after-unit_field").children("option:selected").text())
 
     quals_text=""
     $('#qualifications select.selector').each(function(){
-        if($(this).find("option:selected").val() != 'false'){
-            
+        if($(this).find("option:selected").val() != 'false'){            
             quals_text += $(this).find("option:selected").text()+"; "
         }
     })

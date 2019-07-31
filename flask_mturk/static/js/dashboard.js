@@ -537,7 +537,7 @@ $('#progressmodal').on('show.bs.modal',async function(event){
             //look through progressmodaltables rows and change bonus-td if workerIds match
             $("table.progress-table tbody tr").each(function(){
                 if($(this).find(".worker").text() == workerid)
-                    $(this).find(".bonus").text(bonus)
+                    $(this).find(".bonus").text("$"+bonus)
             })
         })
 
@@ -735,7 +735,7 @@ function format_info ( data ) {
             '<div class="col-2">'+_('Title')+':</div>'+
             '<div class="col-2">'+data['Title']+'</div>'+
             '<div class="col-2">'+_('Reward')+':</div>'+
-            '<div class="col-4">'+data['Reward']+'</div>'+
+            '<div class="col-4">$'+data['Reward']+'</div>'+
             '<div class="col-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
@@ -787,7 +787,7 @@ function format_info ( data ) {
 
         row_three = $('<div class="row mt-2">'+
             '<div class="col-2 mt-2">'+_('Reward')+':</div>'+
-            '<div class="col-2 mt-2">'+data['Reward']+'</div>'+
+            '<div class="col-2 mt-2">$'+data['Reward']+'</div>'+
             '<div class="col-2 mt-2">'+_('HIT-Status')+':</div>'+
             '<div class="col-4 mt-2">'+data['HITStatus']+'</div>'+
             '<div class="col-2 mt-2">'+delbtn+'</div>'+
