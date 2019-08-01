@@ -39,15 +39,17 @@ if(app.config.get('SOFTBLOCK_QUALIFICATION_ID') is None):
     print("*** ABORTING ***")
     exit()
 
-MAX_BONUS = app.config.get('MAX_BONUS')
-if(MAX_BONUS is None):
+if(app.config.get('MAX_BONUS') is None):
     print("*** WARNING: MAX_BONUS in config not set, defaulting to $5.0 ***")
-    MAX_BONUS = 5.0
+    app.config['MAX_BONUS'] = 5.0
 
-MAX_PAYMENT = app.config.get('MAX_PAYMENT')
-if(MAX_PAYMENT is None):
+if(app.config.get('MAX_PAYMENT') is None):
     print("*** WARNING: MAX_PAYMENT in config not set, defaulting to $10.0 ***")
-    MAX_PAYMENT = 10.0
+    app.config['MAX_PAYMENT'] = 10.0
+
+if(app.config.get('DEFAULT_REJECTION_MESSAGE ') is None):
+    print("*** WARNING: DEFAULT_REJECTION_MESSAGE in config not set, using default text: 'Sorry, your answer did not match our quality standards' ***")
+    app.config['DEFAULT_REJECTION_MESSAGE'] = 'Sorry, your answer did not match our quality standards'
 
 # Connect to MTurk-Server
 

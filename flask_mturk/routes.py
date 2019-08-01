@@ -4,7 +4,7 @@ import io
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
-from flask_mturk import app, db, babel, ISO3166, SYSTEM_QUALIFICATION, MAX_BONUS, MAX_PAYMENT
+from flask_mturk import app, db, babel, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm
 from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer, Worker
 from flask_babel import gettext as _
@@ -21,7 +21,6 @@ def get_locale():
     return request.accept_languages.best_match(['en', 'de'])
 
 
-# Use APPconfig instead of constants like MAX_BONUS
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
@@ -80,7 +79,7 @@ def survey():
 
     # if post then add choices for each entry of qualifications_select.selects so that form qual_select can validate
     if request.method == "POST":
-        if form.payment_per_worker.data > MAX_PAYMENT:
+        if form.payment_per_worker.data > app.config.get('MAX_PAYMENT'):
             return
         for select in form.qualifications_select.selects:
             select.selector.choices = selector_choices
@@ -167,7 +166,7 @@ def survey():
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
         flash_errors(form)
-    return render_template('main/survey.html', locale=locale, title=_('New Survey'), form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=MAX_PAYMENT, softblock_name=softblock_name)
+    return render_template('main/survey.html', locale=locale, title=_('New Survey'), form=form, balance=balance, qualifications=all_qualifications, qualification_percentage_interval=percentage_interval, qualification_integer_list=integer_list, cc_list=ISO3166, max_payment=app.config.get('MAX_PAYMENT'), softblock_name=softblock_name)
 
 
 @app.route("/qualifications", methods=['GET', 'POST'])
@@ -460,8 +459,8 @@ def upload():
                 errors.setdefault(index, []).append(_('Non-valid HIT/Assignment/Worker combination.'))
             if bonus and not is_number(bonus):
                 errors.setdefault(index, []).append(_('Bonus not a valid number.'))
-            if is_number(bonus) and float(bonus) > MAX_BONUS:
-                errors.setdefault(index, []).append(_('Bonus is too high. MAX: %s.') % MAX_BONUS)
+            if is_number(bonus) and float(bonus) > app.config.get('MAX_BONUS'):
+                errors.setdefault(index, []).append(_('Bonus is too high. MAX: %s.') % app.config.get('MAX_BONUS'))
             if bonus and not reason:
                 errors.setdefault(index, []).append(_('Bonus assigned but no reason given.'))
 
@@ -507,7 +506,7 @@ def upload():
                 else:
                     warnings.setdefault(index, []).append(_('Could not approve assignment, maybe it was auto-approved already?'))
             if reject:  # Maybe add custom reason slot to csv
-                error = api.reject_assignment(assignmentid, "We are sorry to inform you that your answer did not match our quality standards.")
+                error = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
                 if error is None:
                     total_rejected += 1
                     worker.no_rejected += 1
