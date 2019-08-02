@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-02 17:39+0200\n"
+"POT-Creation-Date: 2019-08-02 18:07+0200\n"
 "PO-Revision-Date: 2019-07-31 21:40+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: lt\n"
@@ -82,7 +82,9 @@ msgstr "Usque ad tempus expletum"
 msgid ""
 "Time until the survey expires and becomes unavailable to workers. "
 "MINIBATCHING: This will be assigned to each MiniHIT of the batch!"
-msgstr "Usque ad tempus aliquet exspirat et fit ut unavailable operarios. MINIcumulus: Hoc erit unicuique assignata est ex Minisuffragium cumulus!"
+msgstr ""
+"Usque ad tempus aliquet exspirat et fit ut unavailable operarios. "
+"MINIcumulus: Hoc erit unicuique assignata est ex Minisuffragium cumulus!"
 
 #: forms.py:142
 msgid "Amount workers"
@@ -92,7 +94,9 @@ msgstr "moles operarios"
 msgid ""
 "The amount of workers that can work on your survey. MINIBATCHING: MiniHIT"
 " will automatically be generated to reach this amount of submissions!"
-msgstr "Moles operarios qui operantur in aliquet. MINIcumulus: ad summam submissionibus Minisuffragium automatically generatur;"
+msgstr ""
+"Moles operarios qui operantur in aliquet. MINIcumulus: ad summam "
+"submissionibus Minisuffragium automatically generatur;"
 
 #: forms.py:143
 msgid "MiniBatching"
@@ -102,7 +106,9 @@ msgstr "Minicumulus"
 msgid ""
 "MiniBatching will divide your survey into multiple smaller surveys with "
 "max. 9 workers each to save fees."
-msgstr "Minus in plures divisa Minicumulus aliquet lustrat max. IX operarios inter se servare fees."
+msgstr ""
+"Minus in plures divisa Minicumulus aliquet lustrat max. IX operarios "
+"inter se servare fees."
 
 #: forms.py:144
 msgid "MiniBatching-Qualification name"
@@ -113,7 +119,9 @@ msgid ""
 "This will be the name under which the qualification for this batch will "
 "be saved. This qualification will prevent multiple submissions from the "
 "same worker within this batch."
-msgstr "Dicendum quod hoc nomen, sub quo salvus massa. Ne plures simul operatur Qudd hac massa penatibus a."
+msgstr ""
+"Dicendum quod hoc nomen, sub quo salvus massa. Ne plures simul operatur "
+"Qudd hac massa penatibus a."
 
 #: forms.py:147
 msgid "Allotted time"
@@ -139,7 +147,9 @@ msgstr "Operarios esse debet Magister"
 msgid ""
 "Master are workers with disinguished submission-quality. This will create"
 " additional fees."
-msgstr "Magister Sunt operarios in obsequio species distinguuntur. Hoc erit creare additional feodis."
+msgstr ""
+"Magister Sunt operarios in obsequio species distinguuntur. Hoc erit "
+"creare additional feodis."
 
 #: forms.py:151 static/js/worker-list.js:29 static/js/worker-list.js:65
 msgid "Yes"
@@ -168,7 +178,9 @@ msgstr "Project continet Eliquatio"
 msgid ""
 "Workers unwilling or not allowed to see adult content will be excluded "
 "from the survey if this is checked."
-msgstr "Aut non licet invito operarios videte Eliquatio excluduntur a aliquet ut, si hic est sedatus."
+msgstr ""
+"Aut non licet invito operarios videte Eliquatio excluduntur a aliquet ut,"
+" si hic est sedatus."
 
 #: forms.py:156
 msgid "Visibility"
@@ -180,7 +192,11 @@ msgid ""
 "Private: Cannot accept nor preview without the right qualifications.; "
 "Hidden: Cannot accept, preview nor see the survey without the right "
 "qualifications."
-msgstr "Publica: Numquid non est sine iure accipere temperabo ad circumspectis .; Privatum potest recipere qualitatem sine missione vel praevisum .; Occultatum: Numquid non accipit, nec videre preview circumspectis ius non habent."
+msgstr ""
+"Publica: Numquid non est sine iure accipere temperabo ad circumspectis .;"
+" Privatum potest recipere qualitatem sine missione vel praevisum .; "
+"Occultatum: Numquid non accipit, nec videre preview circumspectis ius non"
+" habent."
 
 #: forms.py:157
 msgid "Public"
@@ -223,7 +239,9 @@ msgstr "consummavi"
 msgid ""
 "Stop trying to trick the validation! You can only minibatch with more "
 "that 9 workers!"
-msgstr "Quaerit avaritiam convalidandum prohibere! IX, quod non potest ultra ad te minicumulus operarios!"
+msgstr ""
+"Quaerit avaritiam convalidandum prohibere! IX, quod non potest ultra ad "
+"te minicumulus operarios!"
 
 #: forms.py:174
 msgid "Could not set if HIT batched or not!"
@@ -417,7 +435,7 @@ msgstr "etiam"
 #: static/js/cached-list.js:71 static/js/dashboard.js:345
 #: static/js/dashboard.js:389 static/js/dashboard.js:500
 #: static/js/dashboard.js:545 static/js/dashboard.js:579
-#: static/js/qualification-list.js:80 static/js/qualification-list.js:120
+#: static/js/qualification-list.js:80 static/js/qualification-list.js:141
 #: static/js/worker-list.js:72
 msgid "Success"
 msgstr "success"
@@ -429,7 +447,7 @@ msgstr "Feliciter delevit scrinium cumulus \\ \"%1 \""
 #: static/js/cached-list.js:73 static/js/dashboard.js:356
 #: static/js/dashboard.js:391 static/js/dashboard.js:505
 #: static/js/dashboard.js:551 static/js/dashboard.js:585
-#: static/js/qualification-list.js:123 static/js/worker-list.js:74
+#: static/js/qualification-list.js:144 static/js/worker-list.js:74
 msgid "Error"
 msgstr "Error"
 
@@ -472,7 +490,9 @@ msgstr "Esne certus vos volo ut omnium vanitatum seges \\ \"%1 \"?"
 msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
-msgstr "Hic temporibus autem et decrescet loading non reversable et mutari non poterit iam seges!"
+msgstr ""
+"Hic temporibus autem et decrescet loading non reversable et mutari non "
+"poterit iam seges!"
 
 #: static/js/dashboard.js:389
 msgid "Successfully archived Batch \"%1\""
@@ -671,11 +691,17 @@ msgstr "Esne certus vos volo ut delete a facultas \\ \"%1 \"?"
 msgid "Successfully deleted Qualification \"%1\" (%2)"
 msgstr "Feliciter delevit facultas  \"%1 \" (%2)"
 
-#: static/js/qualification-list.js:120
+#: static/js/qualification-list.js:96
+msgid "Hide Batch qualifications"
+msgstr "celare stapelus qualicationus"
+
+#: static/js/qualification-list.js:141
 msgid ""
 "The qualification was successfully created. It might take some time until"
 " AWS processed it and it shows up."
-msgstr "Et absolute bene esse creatum. Ut aliquando ad discursum AWS eaque ostendit."
+msgstr ""
+"Et absolute bene esse creatum. Ut aliquando ad discursum AWS eaque "
+"ostendit."
 
 #: static/js/survey.js:28
 msgid "Qualification Name Already Exists!"

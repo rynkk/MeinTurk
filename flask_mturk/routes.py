@@ -900,8 +900,6 @@ def get_route(hitid):
     return jsonify(api.get_hit(hitid))
 
 
-
-
 @app.route("/createsoftblock")
 def softblock():
     qualification = api.create_qualification_type("Thank you!", "thanks", "For you splendid performance we award you this special qualification. Thank you again!")

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-02 17:39+0200\n"
+"POT-Creation-Date: 2019-08-02 18:07+0200\n"
 "PO-Revision-Date: 2019-07-28 12:08+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -81,7 +81,9 @@ msgstr "Zeit bis zum Ablauf"
 msgid ""
 "Time until the survey expires and becomes unavailable to workers. "
 "MINIBATCHING: This will be assigned to each MiniHIT of the batch!"
-msgstr "Zeit bis die Umfrage abläuft und für Arbeitnehmer nicht mehr verfügbar ist. MINIBATCHING: Dies wird jedem MiniHIT des Batches zugewiesen!"
+msgstr ""
+"Zeit bis die Umfrage abläuft und für Arbeitnehmer nicht mehr verfügbar "
+"ist. MINIBATCHING: Dies wird jedem MiniHIT des Batches zugewiesen!"
 
 #: forms.py:142
 msgid "Amount workers"
@@ -91,7 +93,10 @@ msgstr "Anzahl Arbeiter"
 msgid ""
 "The amount of workers that can work on your survey. MINIBATCHING: MiniHIT"
 " will automatically be generated to reach this amount of submissions!"
-msgstr "Die Anzahl der Arbeiter, die an Ihrer Umfrage arbeiten können. MINIBATCHING: MiniHITs werden automatisch generiert, um diese Anzahl von Einsendungen zu erreichen!"
+msgstr ""
+"Die Anzahl der Arbeiter, die an Ihrer Umfrage arbeiten können. "
+"MINIBATCHING: MiniHITs werden automatisch generiert, um diese Anzahl von "
+"Einsendungen zu erreichen!"
 
 #: forms.py:143
 msgid "MiniBatching"
@@ -101,7 +106,9 @@ msgstr "MiniBatching"
 msgid ""
 "MiniBatching will divide your survey into multiple smaller surveys with "
 "max. 9 workers each to save fees."
-msgstr "MiniBatching unterteilt Ihre Umfrage in mehrere kleinere Umfragen mit je max. 9 Arbeiter, um Gebühren zu sparen."
+msgstr ""
+"MiniBatching unterteilt Ihre Umfrage in mehrere kleinere Umfragen mit je "
+"max. 9 Arbeiter, um Gebühren zu sparen."
 
 #: forms.py:144
 msgid "MiniBatching-Qualification name"
@@ -112,7 +119,11 @@ msgid ""
 "This will be the name under which the qualification for this batch will "
 "be saved. This qualification will prevent multiple submissions from the "
 "same worker within this batch."
-msgstr "Dies ist der Name, unter dem die Qualifikation für diesen Batch gespeichert wird. Durch diese Qualifikation wird verhindert, dass innerhalb dieses Batches mehrere Einreichungen desselben Arbeiters erfolgen."
+msgstr ""
+"Dies ist der Name, unter dem die Qualifikation für diesen Batch "
+"gespeichert wird. Durch diese Qualifikation wird verhindert, dass "
+"innerhalb dieses Batches mehrere Einreichungen desselben Arbeiters "
+"erfolgen."
 
 #: forms.py:147
 msgid "Allotted time"
@@ -138,7 +149,9 @@ msgstr "Arbeiter müssen Master sein"
 msgid ""
 "Master are workers with disinguished submission-quality. This will create"
 " additional fees."
-msgstr "Master sind Arbeiter mit außergewöhnlicher Abgabequalität. Hierdurch entstehen zusätzliche Gebühren."
+msgstr ""
+"Master sind Arbeiter mit außergewöhnlicher Abgabequalität. Hierdurch "
+"entstehen zusätzliche Gebühren."
 
 #: forms.py:151 static/js/worker-list.js:29 static/js/worker-list.js:65
 msgid "Yes"
@@ -157,7 +170,9 @@ msgstr "Wählen Sie alle erforderlichen Qualifikationen für diese Umfrage aus."
 msgid ""
 "Workers that do not have the chosen qualifications will be unable to "
 "participate in the survey."
-msgstr "Arbeitnehmer, die nicht über die gewählten Qualifikationen verfügen, können an der Umfrage nicht teilnehmen."
+msgstr ""
+"Arbeitnehmer, die nicht über die gewählten Qualifikationen verfügen, "
+"können an der Umfrage nicht teilnehmen."
 
 #: forms.py:154
 msgid "Project contains adult content"
@@ -167,7 +182,9 @@ msgstr "Das Projekt enthält nicht jugendfreie Inhalte"
 msgid ""
 "Workers unwilling or not allowed to see adult content will be excluded "
 "from the survey if this is checked."
-msgstr "Arbeitnehmer, die solche Inhalte nicht sehen wollen oder dürfen, werden von der Umfrage ausgeschlossen, wenn dies aktiviert ist."
+msgstr ""
+"Arbeitnehmer, die solche Inhalte nicht sehen wollen oder dürfen, werden "
+"von der Umfrage ausgeschlossen, wenn dies aktiviert ist."
 
 #: forms.py:156
 msgid "Visibility"
@@ -179,7 +196,12 @@ msgid ""
 "Private: Cannot accept nor preview without the right qualifications.; "
 "Hidden: Cannot accept, preview nor see the survey without the right "
 "qualifications."
-msgstr "Öffentlich: Kann die Umfrage ohne die richtigen Qualifikationen nicht annehmen .; Privat: Kann ohne die richtigen Qualifikationen weder annehmen noch eine Vorschau anzeigen .; Ausgeblendet: Die Umfrage kann ohne die richtigen Qualifikationen nicht angenommen, in der Vorschau angezeigt oder angezeigt werden."
+msgstr ""
+"Öffentlich: Kann die Umfrage ohne die richtigen Qualifikationen nicht "
+"annehmen .; Privat: Kann ohne die richtigen Qualifikationen weder "
+"annehmen noch eine Vorschau anzeigen .; Ausgeblendet: Die Umfrage kann "
+"ohne die richtigen Qualifikationen nicht angenommen, in der Vorschau "
+"angezeigt oder angezeigt werden."
 
 #: forms.py:157
 msgid "Public"
@@ -222,7 +244,9 @@ msgstr "Fertig"
 msgid ""
 "Stop trying to trick the validation! You can only minibatch with more "
 "that 9 workers!"
-msgstr "Hör auf zu versuchen, die Validierung auszutricksen! Sie können nur mit mehr als 9 Arbeitern minibatchen!"
+msgstr ""
+"Hör auf zu versuchen, die Validierung auszutricksen! Sie können nur mit "
+"mehr als 9 Arbeitern minibatchen!"
 
 #: forms.py:174
 msgid "Could not set if HIT batched or not!"
@@ -340,15 +364,21 @@ msgstr "Bonus zugewiesen, aber keinen Grund angegeben."
 
 #: routes.py:507
 msgid "Could not approve assignment, maybe it was auto-approved already?"
-msgstr "Abgabe konnte nicht genehmigt werden, wurde sie möglicherweise bereits automatisch genehmigt?"
+msgstr ""
+"Abgabe konnte nicht genehmigt werden, wurde sie möglicherweise bereits "
+"automatisch genehmigt?"
 
 #: routes.py:515
 msgid "Could not reject assignment, maybe it was auto-approved already?"
-msgstr "Abgabe konnte nicht abgelehnt werden, wurde sie möglicherweise bereits automatisch genehmigt?"
+msgstr ""
+"Abgabe konnte nicht abgelehnt werden, wurde sie möglicherweise bereits "
+"automatisch genehmigt?"
 
 #: routes.py:522
 msgid "Could not send bonus. You can only send one bonus per Assignment!"
-msgstr "Bonus konnte nicht gesendet werden. Du kannst nur einen Bonus pro Abgabe senden!"
+msgstr ""
+"Bonus konnte nicht gesendet werden. Du kannst nur einen Bonus pro Abgabe "
+"senden!"
 
 #: routes.py:556
 #, python-format
@@ -416,7 +446,7 @@ msgstr "Ja"
 #: static/js/cached-list.js:71 static/js/dashboard.js:345
 #: static/js/dashboard.js:389 static/js/dashboard.js:500
 #: static/js/dashboard.js:545 static/js/dashboard.js:579
-#: static/js/qualification-list.js:80 static/js/qualification-list.js:120
+#: static/js/qualification-list.js:80 static/js/qualification-list.js:141
 #: static/js/worker-list.js:72
 msgid "Success"
 msgstr "Erfolg"
@@ -428,7 +458,7 @@ msgstr "Archivierter Stapel \"%1\" erfolgreich gelöscht"
 #: static/js/cached-list.js:73 static/js/dashboard.js:356
 #: static/js/dashboard.js:391 static/js/dashboard.js:505
 #: static/js/dashboard.js:551 static/js/dashboard.js:585
-#: static/js/qualification-list.js:123 static/js/worker-list.js:74
+#: static/js/qualification-list.js:144 static/js/worker-list.js:74
 msgid "Error"
 msgstr "Fehler"
 
@@ -457,7 +487,9 @@ msgstr "Nicht gebatchte zeigen"
 
 #: static/js/dashboard.js:345
 msgid "Successfully deleted queued HIT from Database."
-msgstr "In der Warteschlange befindlicher HIT wurde erfolgreich aus der Datenbank gelöscht."
+msgstr ""
+"In der Warteschlange befindlicher HIT wurde erfolgreich aus der Datenbank"
+" gelöscht."
 
 #: static/js/dashboard.js:366
 msgid "Archiving Batch!"
@@ -471,7 +503,9 @@ msgstr "Möchten Sie den Batch\"%1\" wirklich archivieren?"
 msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
-msgstr "Dies verkürzt die Ladezeiten, ist jedoch nicht umkehrbar und Sie können den Batch nicht mehr modifizieren!"
+msgstr ""
+"Dies verkürzt die Ladezeiten, ist jedoch nicht umkehrbar und Sie können "
+"den Batch nicht mehr modifizieren!"
 
 #: static/js/dashboard.js:389
 msgid "Successfully archived Batch \"%1\""
@@ -513,7 +547,9 @@ msgstr "Möchten Sie den HIT \"%1\" wirklich <b>löschen</b>?"
 
 #: static/js/dashboard.js:481
 msgid "Make sure to create a backup of your results first."
-msgstr "Stellen Sie sicher, dass Sie zuerst eine Sicherungskopie Ihrer Ergebnisse erstellen."
+msgstr ""
+"Stellen Sie sicher, dass Sie zuerst eine Sicherungskopie Ihrer Ergebnisse"
+" erstellen."
 
 #: static/js/dashboard.js:500
 msgid "The HIT was deleted successfully!"
@@ -656,7 +692,7 @@ msgstr "In Warteschlange"
 
 #: static/js/qualification-list.js:26
 msgid "Load"
-msgstr "Belastung"
+msgstr "Laden"
 
 #: static/js/qualification-list.js:67
 msgid "Qualification Deletion!"
@@ -670,11 +706,17 @@ msgstr "Möchten Sie die Qualifikation \"%1\" wirklich löschen?"
 msgid "Successfully deleted Qualification \"%1\" (%2)"
 msgstr "Qualifikation \"%1 \" (%2) wurde erfolgreich gelöscht"
 
-#: static/js/qualification-list.js:120
+#: static/js/qualification-list.js:96
+msgid "Hide Batch qualifications"
+msgstr "Batchqualifikationen verstecken"
+
+#: static/js/qualification-list.js:141
 msgid ""
 "The qualification was successfully created. It might take some time until"
 " AWS processed it and it shows up."
-msgstr "Die Qualifikation wurde erfolgreich erstellt. Es kann einige Zeit dauern, bis AWS sie verarbeitet hat und sie angezeigt wird."
+msgstr ""
+"Die Qualifikation wurde erfolgreich erstellt. Es kann einige Zeit dauern,"
+" bis AWS sie verarbeitet hat und sie angezeigt wird."
 
 #: static/js/survey.js:28
 msgid "Qualification Name Already Exists!"
@@ -770,7 +812,9 @@ msgstr "404 Nicht Gefunden"
 
 #: templates/404.html:20
 msgid "Sorry, an error has occured, Requested page not found!"
-msgstr "Entschuldigung, da ist wohl was schiefgelaufen. Die angeforderte Seite wurde nicht gefunden"
+msgstr ""
+"Entschuldigung, da ist wohl was schiefgelaufen. Die angeforderte Seite "
+"wurde nicht gefunden"
 
 #: templates/404.html:25
 msgid "Take Me Home"
