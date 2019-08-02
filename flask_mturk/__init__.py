@@ -47,7 +47,7 @@ if(app.config.get('MAX_PAYMENT') is None):
     print("*** WARNING: MAX_PAYMENT in config not set, defaulting to $10.0 ***")
     app.config['MAX_PAYMENT'] = 10.0
 
-if(app.config.get('DEFAULT_REJECTION_MESSAGE ') is None):
+if(app.config.get('DEFAULT_REJECTION_MESSAGE') is None):
     print("*** WARNING: DEFAULT_REJECTION_MESSAGE in config not set, using default text: 'Sorry, your answer did not match our quality standards' ***")
     app.config['DEFAULT_REJECTION_MESSAGE'] = 'Sorry, your answer did not match our quality standards'
 

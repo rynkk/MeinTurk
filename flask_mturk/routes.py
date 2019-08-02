@@ -900,13 +900,6 @@ def get_route(hitid):
     return jsonify(api.get_hit(hitid))
 
 
-@app.route('/approve_all/<awsid:hitid>')
-def approve_route(hitid):
-    assignments = api.list_assignments_for_hit(hitid)
-    for assignment in assignments:
-        if(assignment['AssignmentStatus'] == 'Submitted'):
-            api.approve_assignment(assignment['AssignmentId'])
-    return "200 OK"
 
 
 @app.route("/createsoftblock")
@@ -922,3 +915,34 @@ def cleardb(secretkey):
     db.drop_all()
     db.create_all()
     return "200 OK"
+
+
+@app.route('/clear_all/<secretkey>')
+def clear_all(secretkey, hits=None):
+    if secretkey != app.config.get('SECRET_KEY'):
+        return "403 Forbidden"
+    hits = api.list_all_hits()
+    for i in range(5):  # try to delete all hits 5 times
+        if hits:  # if hits is not empty
+            hits = delete_hits(hits)
+    db.drop_all()
+    db.create_all()
+    return jsonify(api.list_all_hits())
+
+
+def delete_hits(hits):
+    # we pray that all assignments were approved or rejected already
+    # else we got a problem
+    for hit in hits:
+        id = hit['HITId']
+        pending = hit['NumberOfAssignmentsPending']
+        if hit['HITStatus'] == 'Reviewable' and pending == 0:
+            api.delete_hit(id)
+            hits.remove(hit)
+        elif hit['HITStatus'] == 'Assignable' and pending == 0:
+            # no pending and Assignable => expire and try later
+            api.expire_hit(id)
+        elif hit['HITStatus'] == 'Unassignable':
+            # pending assignments, cant do anything about that
+            hits.remove(hit)
+    return hits

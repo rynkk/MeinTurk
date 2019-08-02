@@ -44,7 +44,7 @@
 </div>
 
 <div class="modal fade" id="progressmodal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ _('Loading') }}</h5>
@@ -56,21 +56,24 @@
                 <table class="progress-table">
                     <thead>
                         <tr class="border-bottom">
-                            <th style="width:5%"></th>
+                            <th style="width:3%"></th>
                             <th style="width:20%"><h6>{{ _('WorkerID') }}</h6></th>
                             <th style="width:10%"><h6>{{ _('Answer') }}</h6></th>
                             <th style="width:10%"><h6>{{ _('Status') }}</h6></th>
                             <th style="width:10%"><h6>{{ _('Bonus paid') }}</h6></th>
                             <th style="width:10%"><h6>{{ _('Time taken') }}</h6></th>
-                            <th style="width:20%"><h6>{{ _('Acceptance') }}</h6></th>
-                            <th style="width:20%"><h6>{{ _('Submission') }}</h6></th>
+                            <th style="width:15%"><h6>{{ _('Acceptance') }}</h6></th>
+                            <th style="width:15%"><h6>{{ _('Submission') }}</h6></th>
+                            <th style="width:7%"><input type='checkbox' id='checkbox-toggler'></th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-                <div id="progress-empty"></div>
+                <div class="info-empty"></div>
             </div>
             <div class="modal-footer">
+                <button type="button" id="approve-selected" class="btn btn-success selected-action" disabled>{{ _('Approve selected') }}</button>
+                <button type="button" id="reject-selected" class="btn btn-danger selected-action" disabled>{{ _('Reject selected') }}</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
@@ -99,7 +102,7 @@
                     </thead>
                     <tbody></tbody>             
                 </table>
-                <div id="qual-empty"></div>
+                <div class="info-empty"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>

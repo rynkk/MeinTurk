@@ -8,7 +8,7 @@
 
             $('#alert').addClass(alert_class)
             $('#alert .alert-heading').text(heading)
-            $('#alert .alert-message').text(message)
+            $('#alert .alert-message').html(message)
             $('#alert').slideDown(function(){
                 timeout = setTimeout(function(){
                     $('#alert').slideUp()

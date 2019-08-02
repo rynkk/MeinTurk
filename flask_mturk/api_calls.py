@@ -203,7 +203,7 @@ class Api:
 
     def forcedelete_hit(self, hit_id):
         self.expire_hit(hit_id)
-        time.sleep(5)
+        time.sleep(1)
         self.delete_hit(hit_id)
 
     def delete_hits(self, hit_ids):
@@ -253,3 +253,36 @@ def list_payments(id):
 @app.route('/delete_hit/<awsid:id>', methods=['DELETE'])
 def delete_hit(id):
     return jsonify(api.delete_hit(id))
+
+
+@app.route('/api/approve_assignment/<awsid:assignmentid>', methods=['PATCH'])
+def approve_route(assignmentid):
+    response = api.approve_assignment(assignmentid)
+    if response is None:
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': response}), 423
+
+
+@app.route('/api/reject_assignment/<awsid:assignmentid>', methods=['PATCH'])
+def reject_route(assignmentid):
+    response = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
+    if response is None:
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': response}), 423
+
+
+@app.route('/api/approve_all/<awsid:hitid>', methods=['PATCH'])
+def approve_all_route(hitid):
+    assignments = api.list_assignments_for_hit(hitid)
+    errors = []
+    for assignment in assignments:
+        if(assignment['AssignmentStatus'] == 'Submitted'):
+            error = api.approve_assignment(assignment['AssignmentId'])
+            if(error is not None):
+                errors.append(error)
+    if(not errors):
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': errors}), 423

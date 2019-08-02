@@ -142,3 +142,10 @@ label.error{
   line-height: 15px;
   margin: 5px 0 0;
 }
+
+@media (min-width: 768px) {
+    .modal-xl {
+      width: 90%;
+     max-width:1000px;
+    }
+  }

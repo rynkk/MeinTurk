@@ -327,13 +327,11 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
 } );
 
 $('#project_table').on('click', '.cache-btn',function(event){
-    console.log("asd")
     row = $(this).closest("tr.info-row").prev("tr")
     data = table.row(row).data()
-    console.log(data)
     $.alert({
         title: _('Archiving Batch!'),
-        content: globalThis.strargs(_('Are you sure you want to archive the Batch "%1"?'), [data.name])+'<br>'+_('This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!'),
+        content: gt.strargs(_('Are you sure you want to archive the Batch "%1"?'), [data.name])+'<br>'+_('This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!'),
         buttons: {
             confirm:{
                 text: _('confirm'),
@@ -481,7 +479,6 @@ $('#project_table').on('click','.delete_hit', function(event){
                     }
                 });
             }
-            /**/
         },
         cancel:{
             text: _('cancel'),
@@ -490,30 +487,138 @@ $('#project_table').on('click','.delete_hit', function(event){
     });
 })
 
-//TODO: TEST WITH MULTIPLE WORKER SUBMISSIONS FOR EACH MINIHIT
+$('#reject-selected').on('click', function(){
+    $('body').addClass('loading')
+    errors = []
+    checkboxes =  $(".checkbox-group:checked")
+    count = checkboxes.length
+    checkboxes.each(async function(){
+        hitid = $(this).data('id')
+        let rawResponse = await fetch('/api/reject_assignment/'+hitid,{
+            method: 'PATCH'
+        })
+        let data = await rawResponse.json()
+        if(!data.success){
+            errors.push({'id': hitid, 'error': data.error})
+        }
+        if (!--count) alert_cfg()
+    })
+
+    function alert_cfg(){
+        if(errors.length == 0){
+            show_alert(_('Success'), _('The selected assignments were successfully rejected!'), 'success')
+        }else{
+            string = _("The following errors occured:")+" </br>"
+            for(i=0; i<errors.length; i++){
+                string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
+            }
+            show_alert(_('Error'), string, 'danger')
+        }
+    
+        $('#progressmodal').modal('hide')
+        $('body').removeClass('loading')
+    }
+})
+
+
+$('#approve-selected').on('click', function(){
+    $('body').addClass('loading')
+    errors = []
+    checkboxes =  $(".checkbox-group:checked")
+    count = checkboxes.length
+    checkboxes.each(async function(){
+        hitid = $(this).data('id')
+        let rawResponse = await fetch('/api/approve_assignment/'+hitid,{
+            method: 'PATCH'
+        })
+        let data = await rawResponse.json()
+        if(!data.success){
+            errors.push({'id': hitid, 'error': data.error})
+        }
+        if (!--count) alert_cfg()
+    })
+
+    function alert_cfg(){
+        if(errors.length == 0){
+            show_alert(_('Success'), _('The selected assignments were successfully approved!'), 'success')
+        }else{
+            string = _("The following errors occured:")+" </br>"
+            for(i=0; i<errors.length; i++){
+                string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
+            }
+            show_alert(_('Error'), string, 'danger')
+        }
+    
+        $('#progressmodal').modal('hide')
+        $('body').removeClass('loading')
+    }
+})
+
+$('#checkbox-toggler').on('click', function(){
+    if(this.checked)
+        $('input.checkbox-group').prop('checked', true).trigger('change')
+    else
+        $('input.checkbox-group').prop('checked', false).trigger('change')
+})
+
+$('#progressmodal').on('hidden.bs.modal', function (e) {
+    var modal = $(this)
+    $('#checkbox-toggler').prop('checked',false)
+    modal.find(".info-empty").empty()
+    modal.find(".modal-body tbody").empty()
+    modal.find(".modal-title").text(_("Loading"))
+    $('button.selected-action').prop('disabled', true)
+})
+
+$('#progressmodal').on('change', '.checkbox-group', function(){
+    any_checked = false
+    $(this).each(function(){
+        if(this.checked){
+            any_checked = true
+            return false
+        }
+    })
+    if(any_checked)
+        $('button.selected-action').prop('disabled', false)
+    else
+        $('button.selected-action').prop('disabled', true)
+})
+
 $('#progressmodal').on('show.bs.modal',async function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
-    var position = button.data("position")
-    var id = button.data("id")
-    modal.find(".modal-title").text("Progress for "+position+". HIT")
-    modal.find("#progress-empty").empty()
-    tbody = modal.find(".modal-body tbody").empty()
+    if (button.data('batched')){
+        var position = button.data("position")
+        var id = button.data("id")
+        modal.find(".modal-title").text("Progress for "+position+". HIT")
+    } else {
+        row = button.closest('tr.info-row').prev()
+        var row_data = table.row(row).data()
+        var id = row_data['HITId']
+        modal.find(".modal-title").text("Progress for HIT "+row_data.Title)
+    }
     const rawResponse = await fetch("/list_assignments/"+id);
     const data = await rawResponse.json()
-    
     if(data.length == 0){
         row = $('<div class="row p-5">')
         row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
-        modal.find("#progress-empty").append(row)
+        modal.find(".info-empty").append(row)
     }else{
+        tbody = modal.find(".modal-body tbody")
         data.forEach(function(elem, index){
             //could use date to show GMT+2 time
             acceptTime = new Date(elem.AcceptTime)                        
             submitTime = new Date(elem.SubmitTime)
 
             timeTakenMin = (submitTime - acceptTime) / 1000 / 60  //1000: milli to seconds; 60: seconds to minutes
-            timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma
+            timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma            
+
+            var checkbox;
+            if (elem.AssignmentStatus == 'Submitted'){
+                checkbox = $('<input type="checkbox" class="checkbox-group">').data('id', elem.AssignmentId)
+            }else{
+                checkbox = '<input type="checkbox" disabled>'
+            }
 
             row = $('<tr>').addClass("border-bottom")
             row.append($('<td>').text(index+1+"."))
@@ -524,6 +629,8 @@ $('#progressmodal').on('show.bs.modal',async function(event){
                 .append($('<td>').text(timeTakenRounded + 'min'))
                 .append($('<td>').text(elem.AcceptTime))
                 .append($('<td>').text(elem.SubmitTime))
+                .append($('<td>').append(checkbox))
+            
             tbody.append(row)
         })
 
@@ -544,16 +651,19 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     }        
 })
 
-$('#csvmodal').on('show.bs.modal', function(event){
+$('#csvmodal').on('hidden.bs.modal', function(event){
+    var modal = $(this)
     $("#uploadform #file").val('').removeClass("error")
     $("#uploadform label.error").empty()
     $("#uploadform div.error").empty()
-    $("#uploadform div.success").empty()             
+    $("#uploadform div.success").empty()  
+    modal.find(".modal-body tbody").empty()
+})
 
+$('#csvmodal').on('show.bs.modal', function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
-    tbody = modal.find(".modal-body tbody").empty()
-    modal.find("#qual-empty").empty()
+    tbody = modal.find(".modal-body tbody")
     row = button.closest('tr.info-row').prev()
     data = table.row(row).data()
     $("#hit_batched").val(data.batched)
@@ -568,11 +678,17 @@ $('#csvmodal').on('show.bs.modal', function(event){
     $("#export-submitted").attr("href", href+"/submitted")
 })
 
+$('#qualmodal').on('hidden.bs.modal', function(event){
+    var modal = $(this)
+    modal.find(".modal-body tbody").empty()
+    modal.find(".info-empty").empty()
+    modal.find(".modal-title").text(_('Loading'))
+})
+
 $('#qualmodal').on('show.bs.modal', function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
-    tbody = modal.find(".modal-body tbody").empty()
-    modal.find("#qual-empty").empty()
+    tbody = modal.find(".modal-body tbody")
     row = button.closest('tr.info-row').prev()
     data = table.row(row).data()
     modal.find(".modal-title").text(_("Qualifications for ") + data.Title)
@@ -581,7 +697,7 @@ $('#qualmodal').on('show.bs.modal', function(event){
     if(!data.QualificationRequirements.length){
         row = $('<div class="row p-5">')
         row.append('<div class="col-lg-12 text-center"><h2>'+_('No Qualifications are assigned to this HIT')+'</h2></div>')
-        modal.find("#qual-empty").append(row)
+        modal.find(".info-empty").append(row)
     }else{
         data.QualificationRequirements.forEach(function(elem, index){
             table_qual_id = elem.QualificationTypeId
@@ -767,6 +883,7 @@ function format_info ( data ) {
         qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
         hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
         csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
+        result_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#progressmodal">'+_('Results')+'</button>'
         delbtn = '<button type="button" class="btn btn-secondary delete_hit">'+_('Delete')+'</button>'
         query = data.HITId
 
@@ -783,6 +900,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
             '<div class="col-2 mt-2">'+_('HITTypeId')+':</div>'+
             '<div class="col-4 mt-2">'+data['HITTypeId']+'</div>'+
+            '<div class="col-2 mt-2">'+result_btn+'</div>'+
         '</div>')
 
         row_three = $('<div class="row mt-2">'+
@@ -831,7 +949,7 @@ function format_slide_row(hit){
         $tr.append($('<td>').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
         $tr.append($('<td>').text(hit.CreationTime))
         $tr.append($('<td>').text(hit.Expiration))
-        $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position)
+        $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position).data("batched", true)
             .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
         $tr.append($('<td>').append($progressbtn))
     }else{
