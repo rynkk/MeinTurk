@@ -90,6 +90,29 @@ body{
                 no-repeat;
 }
 
+.loading-modal > .loading-text {
+    position: absolute;
+    text-align: center;
+    margin-top: 8rem;
+}
+
+.loading-modal > #loading-progress {
+    position: absolute;
+    font-weight: 500;
+}
+
+.loading-modal > .loading-text > #loading-last,  .loading-modal > .loading-text > #loading-next{
+    font-weight: lighter;
+    font-size: large;
+    height: 1.5rem;
+    color: darkslategrey;
+}
+
+.loading-modal > .loading-text > #loading-main {
+    font-size: x-large;
+    height: 2rem;
+}
+
 .flag-icon-de{
     background-image: url("de.png")
 }

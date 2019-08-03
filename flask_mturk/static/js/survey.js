@@ -39,7 +39,7 @@ $("#sform").validate({
     },
     submitHandler: function(form, event){
         $('body').addClass("loading")
-        $(".loading-modal > p").text(_("Please wait while your Survey is being created!"))
+        $("#loading-main").text(_("Please wait while your Survey is being created!"))
         form.submit()
     }
 });

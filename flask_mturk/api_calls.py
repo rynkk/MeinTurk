@@ -61,12 +61,16 @@ class Api:
             raise ValueError('Tried to delete Softblock-Qualification')
 
     def associate_qualification_with_worker(self, worker_id, qualification_id):
-        return client.associate_qualification_with_worker(
-            QualificationTypeId=qualification_id,
-            WorkerId=worker_id,
-            IntegerValue=1,
-            SendNotification=False,
-        )
+        try:
+            client.associate_qualification_with_worker(
+                QualificationTypeId=qualification_id,
+                WorkerId=worker_id,
+                IntegerValue=1,
+                SendNotification=False,
+            )
+            return None
+        except ClientError as ce:
+            return ce.response['Error']['Message']
 
     def send_bonus(self, worker_id, assignment_id, bonus_amount, reason, token):
         try:
@@ -255,34 +259,10 @@ def delete_hit(id):
     return jsonify(api.delete_hit(id))
 
 
-@app.route('/api/approve_assignment/<awsid:assignmentid>', methods=['PATCH'])
-def approve_route(assignmentid):
-    response = api.approve_assignment(assignmentid)
+@app.route('/api/softblock/<awsid:workerid>', methods=['PATCH'])
+def softblock_route(workerid):
+    response = api.associate_qualification_with_worker(workerid, app.config.get('SOFTBLOCK_QUALIFICATION_ID'))
     if response is None:
-        return jsonify({'success': True}), 200
+        return jsonify({'success': True})
     else:
-        return jsonify({'success': False, 'error': response}), 423
-
-
-@app.route('/api/reject_assignment/<awsid:assignmentid>', methods=['PATCH'])
-def reject_route(assignmentid):
-    response = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
-    if response is None:
-        return jsonify({'success': True}), 200
-    else:
-        return jsonify({'success': False, 'error': response}), 423
-
-
-@app.route('/api/approve_all/<awsid:hitid>', methods=['PATCH'])
-def approve_all_route(hitid):
-    assignments = api.list_assignments_for_hit(hitid)
-    errors = []
-    for assignment in assignments:
-        if(assignment['AssignmentStatus'] == 'Submitted'):
-            error = api.approve_assignment(assignment['AssignmentId'])
-            if(error is not None):
-                errors.append(error)
-    if(not errors):
-        return jsonify({'success': True}), 200
-    else:
-        return jsonify({'success': False, 'error': errors}), 423
+        return jsonify({'success': False, 'error': response})

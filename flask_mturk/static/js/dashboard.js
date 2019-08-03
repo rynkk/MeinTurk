@@ -141,6 +141,8 @@ $.fn.dataTable.Api.register('row().show()', function() {
     return this;
 });
 
+$('i[data-toggle="tooltip"]').tooltip()
+
 // TODO: finish
 // TODO: dont save IDs etc in DOMs but get them via the row.data
 table.rows().every( function(){ //Create 2 child rows and show BOTH(API restriction)
@@ -487,22 +489,77 @@ $('#project_table').on('click','.delete_hit', function(event){
     });
 })
 
+async function testingstuff(){
+    $('body').addClass('loading')
+    errors = []
+    checkboxes =  $(".checkbox-group:checked")
+    queue = []
+
+    for(i=0; i<50; i++){
+        assid = $(this).closest('tr').data('assid')
+        workerid = $(this).closest('tr').data('workerid')
+        queue.push('Approving Assignment ' + (i+1))
+        if(i % 2 || i % 3)
+            queue.push('Softblocking Worker' + (i+1))
+    }
+
+    lw = new LoadingWheel(50, queue)
+
+    for(i=0; i<50; i++){
+        let rawResponse = await fetch('/testingstuff')
+        let data = await rawResponse.json()
+        lw.nextValue()
+        if(i % 2 || i % 3){
+            let rawResponse2 = await fetch('/testingstuff')
+            let data2 = await rawResponse2.json()
+            lw.nextValue()
+        }
+        lw.nextStep()
+    }
+    $('body').removeClass('loading')
+}
+
 $('#reject-selected').on('click', function(){
     $('body').addClass('loading')
     errors = []
     checkboxes =  $(".checkbox-group:checked")
+    queue = []
+    checkboxes.each(function(){
+        assid = $(this).closest('tr').data('assid')
+        workerid = $(this).closest('tr').data('workerid')
+        queue.push('Rejecting Assignment ' + assid)
+        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        if(softblock_btn[0].checked)
+            queue.push('Softblocking Worker' + workerid)
+    })
+    lw = new LoadingWheel(checkboxes.length, queue)
     count = checkboxes.length
     checkboxes.each(async function(){
-        hitid = $(this).data('id')
-        let rawResponse = await fetch('/api/reject_assignment/'+hitid,{
+        assid = $(this).closest('tr').data('assid')
+        workerid = $(this).closest('tr').data('workerid')
+        let rawResponse = await fetch('/reject_assignment/'+assid+'/'+workerid,{
             method: 'PATCH'
         })
         let data = await rawResponse.json()
         if(!data.success){
-            errors.push({'id': hitid, 'error': data.error})
+            errors.push({'id': assid, 'error': data.error})
         }
+        lw.nextValue()
+        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        if(softblock_btn[0].checked){
+            let rawResponse2 = await fetch('/api/softblock/'+workerid,{
+                method: 'PATCH'
+            })
+            let data2 = await rawResponse2.json()
+            if(!data2.success){
+                errors.push({'id': workerid, 'error': data.error})
+            }
+            lw.nextValue()
+        }
+        lw.nextStep()
         if (!--count) alert_cfg()
     })
+    $('body').removeClass('loading')
 
     function alert_cfg(){
         if(errors.length == 0){
@@ -513,30 +570,52 @@ $('#reject-selected').on('click', function(){
                 string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
             }
             show_alert(_('Error'), string, 'danger')
-        }
-    
+        }    
         $('#progressmodal').modal('hide')
-        $('body').removeClass('loading')
     }
 })
-
 
 $('#approve-selected').on('click', function(){
     $('body').addClass('loading')
     errors = []
     checkboxes =  $(".checkbox-group:checked")
+    queue = []
+    checkboxes.each(function(){
+        assid = $(this).closest('tr').data('assid')
+        workerid = $(this).closest('tr').data('workerid')
+        queue.push('Approving Assignment ' + assid)
+        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        if(softblock_btn[0].checked)
+            queue.push('Softblocking Worker' + workerid)
+    })
+    lw = new LoadingWheel(checkboxes.length, queue)
     count = checkboxes.length
     checkboxes.each(async function(){
-        hitid = $(this).data('id')
-        let rawResponse = await fetch('/api/approve_assignment/'+hitid,{
+        assid = $(this).closest('tr').data('assid')
+        workerid = $(this).closest('tr').data('workerid')
+        let rawResponse = await fetch('/approve_assignment/'+assid+'/'+workerid,{
             method: 'PATCH'
         })
         let data = await rawResponse.json()
         if(!data.success){
-            errors.push({'id': hitid, 'error': data.error})
+            errors.push({'id': assid, 'error': data.error})
         }
+        lw.nextValue()
+        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        if(softblock_btn[0].checked){
+            let rawResponse2 = await fetch('/api/softblock/'+workerid,{
+                method: 'PATCH'
+            })
+            let data2 = await rawResponse2.json()
+            if(!data2.success){
+                errors.push({'id': workerid, 'error': data.error})
+            }
+            lw.nextValue()
+        }
+        lw.nextStep()
         if (!--count) alert_cfg()
     })
+    $('body').removeClass('loading')
 
     function alert_cfg(){
         if(errors.length == 0){
@@ -547,10 +626,8 @@ $('#approve-selected').on('click', function(){
                 string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
             }
             show_alert(_('Error'), string, 'danger')
-        }
-    
+        }    
         $('#progressmodal').modal('hide')
-        $('body').removeClass('loading')
     }
 })
 
@@ -613,15 +690,17 @@ $('#progressmodal').on('show.bs.modal',async function(event){
             timeTakenMin = (submitTime - acceptTime) / 1000 / 60  //1000: milli to seconds; 60: seconds to minutes
             timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma            
 
-            var checkbox;
+            var checkbox, softblockbox;
             if (elem.AssignmentStatus == 'Submitted'){
-                checkbox = $('<input type="checkbox" class="checkbox-group">').data('id', elem.AssignmentId)
+                checkbox = $('<input type="checkbox" class="checkbox-group">')
+                softblockbox= $('<input type="checkbox" class="softblock-group">')
             }else{
                 checkbox = '<input type="checkbox" disabled>'
+                softblockbox = '<input type="checkbox" disabled>'
             }
 
             row = $('<tr>').addClass("border-bottom")
-            row.append($('<td>').text(index+1+"."))
+            row.append($('<td>').text(index+1+".")).data('assid', elem.AssignmentId).data('workerid', elem.WorkerId)
                 .append($('<td>').addClass("worker").text(elem.WorkerId))
                 .append($('<td>').text(elem.Answer))
                 .append($('<td>').text(elem.AssignmentStatus))
@@ -630,7 +709,7 @@ $('#progressmodal').on('show.bs.modal',async function(event){
                 .append($('<td>').text(elem.AcceptTime))
                 .append($('<td>').text(elem.SubmitTime))
                 .append($('<td>').append(checkbox))
-            
+                .append($('<td>').append(softblockbox))            
             tbody.append(row)
         })
 

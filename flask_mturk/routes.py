@@ -881,6 +881,57 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created o
     scheduler.start()
 
 
+@app.route('/approve_assignment/<awsid:assignmentid>/<awsid:workerid>', methods=['PATCH'])
+def approve_route(assignmentid, workerid):
+    response = api.approve_assignment(assignmentid)
+    if response is None:
+        worker = Worker.query.filter(Worker.id == workerid).one_or_none()
+        if worker is None:
+            # Normally the worker will be created once a HIT is finished (in update_mini_hits)
+            # If the results are approved while the HIT is still assignable we have to create the worker now.
+            worker = Worker(id=workerid, no_assignments=0, no_approved=1)
+            db.session.add(worker)
+        else:
+            worker.no_approved += 1
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': response}), 423
+
+
+@app.route('/reject_assignment/<awsid:assignmentid>', methods=['PATCH'])
+def reject_route(assignmentid, workerid):
+    response = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
+    if response is None:
+        worker = Worker.query.filter(Worker.id == workerid).one_or_none()
+        if worker is None:
+            # Normally the worker will be created once a HIT is finished (in update_mini_hits)
+            # If the results are approved while the HIT is still assignable we have to create the worker now.
+            worker = Worker(id=workerid, no_assignments=0, no_rejected=1)
+            db.session.add(worker)
+        else:
+            worker.no_rejected += 1
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': response}), 423
+
+
+@app.route('/approve_all/<awsid:hitid>', methods=['PATCH'])
+def approve_all_route(hitid):
+    assignments = api.list_assignments_for_hit(hitid)
+    errors = []
+    for assignment in assignments:
+        if(assignment['AssignmentStatus'] == 'Submitted'):
+            error = api.approve_assignment(assignment['AssignmentId'])
+            if(error is not None):
+                errors.append(error)
+    if(not errors):
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': errors}), 423
+
+
 ######################################################################
 #                          DEBUGGING ROUTES                          #
 ######################################################################
@@ -888,6 +939,13 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created o
 @app.route('/delete_hit/<awsid:hitid>')
 def delete_route(hitid):
     return api.delete_hit(hitid)
+
+
+import time
+@app.route('/testingstuff')
+def testing_route():
+    time.sleep(0.5)
+    return jsonify({'success': True})
 
 
 @app.route('/expire_hit/<awsid:hitid>')

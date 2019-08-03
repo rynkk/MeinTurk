@@ -69,7 +69,7 @@ $('#worker_table').on('click', '.softblock', async function(){
             softblock_td.text(_('No'))
             $(this).replaceWith(ban_btn)
         }
-        show_alert(_('Success'), gt.strargs(_('The worker with the ID "%1" was successfully'),[id]) + (content.status?_('softblocked'):_('unblocked')), 'success')
+        show_alert(_('Success'), gt.strargs(_('The worker with the ID "%1" was successfully'),[id]) +" "+ (content.status?_('softblocked'):_('unblocked')), 'success')
     }else
         show_alert(_('Error'), _('Something went wrong: ')+content.error, 'danger')
     $(this).prop('disabled', false)

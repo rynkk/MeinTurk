@@ -78,12 +78,20 @@
         {% endblock body %}
                 
         
-        <div class="loading-modal"><p></p></div>
+        <div class="loading-modal">
+            <p id='loading-progress'></p>
+            <div class="loading-text">
+                <p id='loading-last'></p>
+                <p id='loading-main'></p>
+                <p id='loading-next'></p>
+            </div>
+        </div>
         
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>   
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.validate.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/show_alert.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/loading-wheel.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap-select.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/base.js') }}"></script>
 
