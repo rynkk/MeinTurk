@@ -676,6 +676,8 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     }
     const rawResponse = await fetch("/list_assignments/"+id);
     const data = await rawResponse.json()
+
+    all_times = []
     if(data.length == 0){
         row = $('<div class="row p-5">')
         row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
@@ -687,8 +689,10 @@ $('#progressmodal').on('show.bs.modal',async function(event){
             acceptTime = new Date(elem.AcceptTime)                        
             submitTime = new Date(elem.SubmitTime)
 
-            timeTakenMin = (submitTime - acceptTime) / 1000 / 60  //1000: milli to seconds; 60: seconds to minutes
-            timeTakenRounded = (Math.round(timeTakenMin*10)/10).toFixed(1) // Rounds minutes to 1 digit after comma            
+            timeTakenSec = (submitTime - acceptTime) / 1000  //1000: milli to seconds 
+            all_times.push(timeTakenSec)
+
+            timeTakenRounded = (Math.round(timeTakenSec/60*10)/10).toFixed(1) // Converts sec to min and rounds minutes to 1 digit after comma            
 
             var checkbox, softblockbox;
             if (elem.AssignmentStatus == 'Submitted'){
@@ -705,13 +709,25 @@ $('#progressmodal').on('show.bs.modal',async function(event){
                 .append($('<td>').text(elem.Answer))
                 .append($('<td>').text(elem.AssignmentStatus))
                 .append($('<td>').addClass("bonus").text('-'))
-                .append($('<td>').text(timeTakenRounded + 'min'))
+                .append($('<td class="time-taken">').data('seconds', timeTakenSec).text(timeTakenRounded + 'min'))
                 .append($('<td>').text(elem.AcceptTime))
                 .append($('<td>').text(elem.SubmitTime))
                 .append($('<td>').append(checkbox))
                 .append($('<td>').append(softblockbox))            
             tbody.append(row)
         })
+
+        avg_time = average(all_times)
+        std = standardDeviation(all_times)
+        lower_bound = avg_time - std
+        upper_bound = avg_time + std
+        $('.time-taken').each(function(){
+            if($(this).data('seconds') < lower_bound || $(this).data('seconds') > upper_bound){
+                $(this).addClass('text-danger font-weight-bold')
+            }
+        })
+        // Demo for this : https://jsfiddle.net/0m9pw3rx/5/
+
 
         const rawResponse2 = await fetch("/list_payments/"+id)
         const data2 = await rawResponse2.json()
