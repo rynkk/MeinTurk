@@ -117,8 +117,16 @@ var table = $('#project_table').DataTable({
         configure_header()
     }
 });
-$("#hide_hidden").click().click() // check and uncheck to hide_hidden filter
-$("#hide_nonbatched").click() // Default: show nonbatched
+// Hide hidden by default
+$.fn.dataTable.ext.search.push(
+    function hidden(settings, data, dataIndex) {
+        row_data = table.row(dataIndex).data()
+        if(row_data.hidden)
+            return false
+        else
+            return true
+        }
+    );
 
 /* https://datatables.net/plug-ins/api/row().show() */
 $.fn.dataTable.Api.register('row().show()', function() {
@@ -196,7 +204,7 @@ function configure_header(){
                 '</div>')
         .append('<div class="pl-3 form-check form-check-inline">'+
                 '<label for="hide_nonbatched" class="form-check-label">'+_('Show nonbatched')+'</label>'+
-                '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
+                '<input id="hide_nonbatched" type="checkbox" class="form-check-input" style="margin-left:1rem" checked>'+
             '</div>')
     $("#project_table_length").parent("div").after(check_div)
 

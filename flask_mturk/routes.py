@@ -315,7 +315,7 @@ def export(id, type_):
     """Route that exports either all or only submitted results of normal and batched HITs"""
 
     batched = is_number(id)
-    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'Bonus', 'Reason', 'Softblock']
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'RejectionMessage', 'Bonus', 'Reason', 'Softblock']
 
     if type_ == 'all':
         assignments = get_assignments(id, batched)  # Add submitted, rejected and approved Assignments to export
@@ -332,9 +332,15 @@ def export(id, type_):
     csv_writer.writeheader()
 
     for a in assignments:
-        row = {'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'], 'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
+        row = {'HITId': a['HITId'], 'AssignmentId': a['AssignmentId'], 'WorkerId': a['WorkerId'],
+               'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
         time_taken = int((a['SubmitTime'] - a['AcceptTime']).total_seconds())
         row['TimeTaken'] = time_taken
+        print(a)
+        if 'RequesterFeedback' in a:
+            row['RejectionMessage'] = a['RequesterFeedback']
+        else:
+            row['RejectionMessage'] = ''
 
         if a['AssignmentStatus'] == 'Submitted':
             csv_writer.writerow(row)
@@ -430,6 +436,7 @@ def upload():
                 assignmentstatus = row['Status']
                 approve = row['Approve']
                 reject = row['Reject']
+                row['RejectionMessage']
                 bonus = row['Bonus']
                 reason = row['Reason']
                 row['Softblock']
@@ -485,6 +492,7 @@ def upload():
             workerid = row['WorkerId']
             approve = row['Approve']
             reject = row['Reject']
+            rejection_message = row['RejectionMessage']
             bonus = row['Bonus']
             reason = row['Reason']
             softblock = row['Softblock']
@@ -506,7 +514,11 @@ def upload():
                 else:
                     warnings.setdefault(index, []).append(_('Could not approve assignment, maybe it was auto-approved already?'))
             if reject:  # Maybe add custom reason slot to csv
-                error = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
+                if rejection_message == '':  # if rejection message not set set it to default
+                    rejection_message = app.config.get('DEFAULT_REJECTION_MESSAGE')
+
+                error = api.reject_assignment(assignmentid, rejection_message)
+
                 if error is None:
                     total_rejected += 1
                     worker.no_rejected += 1
