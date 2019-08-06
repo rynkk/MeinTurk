@@ -355,10 +355,13 @@ $('#project_table').on('click', '.cache-btn',function(event){
                                 text: _('yes'),
                                 btnClass: 'btn-blue',
                                 action: async function () {
+                                    $('body').addClass('loading')
                                     const rawResponse = await fetch('/cache_batch/'+data.batch_id, {
                                         method: 'DELETE'
                                     });
-                                        
+                                    
+                                    $('body').removeClass('loading')
+                                    $('#loading-main').text(_('Archiving Batch. This may take some time depending on the size of the batch!'))
                                     const content = await rawResponse.json();
                                     if(content.success){
                                         table.row(row).remove()

@@ -27,6 +27,13 @@ jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
     return true
 }, _("Qualification Name Already Exists!"));
 
+jQuery.validator.addMethod("disallowSelectOption", function(value, element) {
+    if(value == 'false'){
+        return false
+    }
+    return true
+}, _("Please select a valid option."));
+
 
 $("#sform").validate({
     ignore: "",
@@ -36,6 +43,12 @@ $("#sform").validate({
     },
     rules : {
         qualification_name : { qualNameUniqueNaive : true }
+    },
+    errorPlacement: function(error, element) {
+        if  ($(element).hasClass('selector') )
+            error.insertAfter(element.closest('.selectorrow').find('.removediv'));
+        else
+            error.insertAfter(element);
     },
     submitHandler: function(form, event){
         $('body').addClass("loading")
@@ -280,7 +293,7 @@ function create_qual_row(){
     col1= $("<div class='col-auto'></div>")
     col2= $("<div class='col-auto comparator'></div>")
     col3= $("<div class='col-auto value'></div>")
-    col4= $("<div class='col-auto'></div>")
+    col4= $("<div class='col-auto removediv'></div>")
 
     select1 = $("<select id='qualifications_select-selects-X-selector' class='selector'></select>")
     select2 = $("<select id='qualifications_select-selects-X-first_select'></select>")
@@ -319,6 +332,14 @@ function rearrange_ids(){
             $selector.prop("id", new_id)
             $selector.prop("name", new_id)
         })
+    });
+
+    // Add rules for dynamic qualification fields on submit
+    $('#qualifications .selector').each(function() {
+        $(this).rules("add", 
+            {
+                disallowSelectOption : true
+            });
     });
 }
 

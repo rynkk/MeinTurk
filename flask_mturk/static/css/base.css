@@ -138,12 +138,16 @@ body.loading > .loading-modal{
     word-break:break-word
 }
 
-input.error{
+input.error, select.error{
     -moz-box-shadow: 0 0 3px 0 red!important;
     -webkit-box-shadow: 0 0 3px 0 red!important;
     box-shadow: 0 0 3px 0 red!important;
     border-color: red!important;
     background-color: #fce4e4!important;
+}
+
+select.error option, select.error optgroup{
+    background-color: white!important;
 }
 
 label.error{    
