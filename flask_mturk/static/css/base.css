@@ -113,18 +113,6 @@ body{
     height: 2rem;
 }
 
-.flag-icon-de{
-    background-image: url("de.png")
-}
-
-.flag-icon-en{
-    background-image: url("us.png")
-}
-
-.flag-icon-spqr{
-    background-image: url("spqr.png")
-}
-
 body.loading {
     overflow: hidden;   
 }
@@ -171,4 +159,11 @@ label.error{
       width: 90%;
      max-width:1000px;
     }
+  }
+
+  .alertdiv{      
+    position: fixed;
+    width: 100%;
+    z-index: 999;
+    height: 0;
   }
