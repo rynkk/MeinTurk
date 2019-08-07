@@ -1,3 +1,11 @@
+$.fn.dataTable.ext.type.order['date-pre'] = function ( data ) {
+    var value = $(data).attr('val')
+    if(isNaN(value)){
+        return Number.MAX_SAFE_INTEGER
+    }else{
+        return parseInt(value)
+    }
+};
 
 var table = $('#qualification_table').DataTable({
     "language":{
@@ -26,7 +34,13 @@ var table = $('#qualification_table').DataTable({
                 return "<button type='button' class='btn-primary btn load-workers'>"+_("Load")+"</button>"
             },
         },
-        { "data": "CreationTime"},
+        {
+            "data": null,
+            "render": function(data, type, row){
+                return "<span val="+new Date(data.CreationTime).getTime()+">"+toDate(data.CreationTime)+"</span>" //necessary hack for DataTables sorting :(
+            },
+            "type": "date"
+        },
         { "data": "Description", "orderable": false  },
         {
             "data": null,
@@ -37,7 +51,7 @@ var table = $('#qualification_table').DataTable({
             },
         } ,
     ],
-    "order": [[ 4, 'asc' ]],
+    "order": [[ 4, 'desc' ]],
     "initComplete": function( settings, json ) {
         configure_header()
     }

@@ -1,3 +1,12 @@
+$.fn.dataTable.ext.type.order['date-pre'] = function ( data ) {
+    var value = $(data).attr('val')
+    if(isNaN(value)){
+        return Number.MAX_SAFE_INTEGER
+    }else{
+        return parseInt(value)
+    }
+};
+
 var ban_btn = "<button type='button' class='btn-sm btn-danger softblock'><i class='fas fa-lg fa-ban'></i></button>"
 var unban_btn = "<button type='button' class='btn-sm btn-success softblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
 var table = $('#worker_table').DataTable({
@@ -21,7 +30,12 @@ var table = $('#worker_table').DataTable({
         },
         { "data": "no_rej" },
         { "data": "no_ass" },
-        { "data": "last_submission" },
+        {
+            "data": null,
+            "render": function(data, type, row){
+                return "<span val="+new Date(row.last_submission).getTime()+">"+toDate(row.last_submission)+"</span>" //necessary hack for DataTables sorting :(
+            }
+        },
         {
             "data": null,
             "className":'softblock-td',
@@ -41,7 +55,7 @@ var table = $('#worker_table').DataTable({
             },
         } ,
     ],
-    "order": [[ 2, 'asc' ]]
+    "order": [[ 5, 'desc' ]]
 });
 
 table.on( 'order.dt search.dt', function () {
@@ -49,6 +63,15 @@ table.on( 'order.dt search.dt', function () {
         cell.innerHTML = i+1+".";
     } );
 }).draw();
+
+$.fn.dataTable.ext.type.order['date-pre'] = function ( data ) {
+    var value = $(data).attr('val')
+    if(isNaN(value)){
+        return Number.MAX_SAFE_INTEGER
+    }else{
+        return parseInt(value)
+    }
+};
 
 $('#worker_table').on('click', '.softblock', async function(){
     $(this).prop('disabled', true)

@@ -1,12 +1,12 @@
-render_surveys=[]
+var render_surveys=[]
 
-for(hit_index in surveys){ // Add HITs that are not to be batched
-    hit = surveys[hit_index]
+for(let hit_index in surveys){ // Add HITs that are not to be batched
+    var hit = surveys[hit_index]
     if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batch'))
         continue
     hit.batched = false
 
-    for (i in hidden_hits){
+    for(let i in hidden_hits){
         if (hidden_hits[i][0]==hit.HITId)
             hit.hidden=true
     }
@@ -15,13 +15,12 @@ for(hit_index in surveys){ // Add HITs that are not to be batched
 
 //TODO CHANGE THIS 
 ordering.forEach((item) => { //TODO change, maybe add group parameter to ordering
-    minihits = get_elements_with_value(surveys, "RequesterAnnotation", "batch"+item.batch_id)
-    hits_batch_id = item.batch_id
-    hits_order = item.hits
-    for(i=0; i<minihits.length; i++){
-        hit = minihits[i] 
+    var minihits = get_elements_with_value(surveys, "RequesterAnnotation", "batch"+item.batch_id)
+    var hits_order = item.hits
+    for(let i=0; i<minihits.length; i++){
+        var hit = minihits[i] 
         if(hit.hasOwnProperty("HITId")){ //if hit is not queued it has an ID
-            hit_order = get_element_with_value(hits_order, "id", hit.HITId)
+            var hit_order = get_element_with_value(hits_order, "id", hit.HITId)
             if(hit_order){
                 hit.position = hit_order.position
                 hit.workers = hit_order.workers
@@ -31,11 +30,11 @@ ordering.forEach((item) => { //TODO change, maybe add group parameter to orderin
             }
         }
     }
-    for(i in hits_order){
+    for(let i in hits_order){
         if(hits_order[i].id == null)
             minihits.push({'batch_id':item.batch_id, 'position':hits_order[i].position, 'workers':hits_order[i].workers})
     }
-    hit_group = summarize_minihits(minihits, item.batch_status, item.hidden, item.batch_goal, item.batch_name)
+    var hit_group = summarize_minihits(minihits, item.batch_status, item.hidden, item.batch_goal, item.batch_name)
     if(minihits.length) // MTURK API processes created hits for a bit -> cannot access instantly, so if we have a hit in DB but not in mturk-query ignore it
         render_surveys.push(hit_group)
 })
@@ -73,31 +72,52 @@ var table = $('#project_table').DataTable({
         {
             "data": null,
             "render": function(data, type, row){
-                noAssComplete = row.NumberOfAssignmentsCompleted
-                noAssMax = row.MaxAssignments
-                noAssGoal = row.assignment_goal
-                noAssPending = row.NumberOfAssignmentsPending                        
-                noAssSubmitted = noAssMax - (row.NumberOfAssignmentsAvailable + noAssPending)
+                var noAssComplete = row.NumberOfAssignmentsCompleted
+                var noAssMax = row.MaxAssignments
+                var noAssGoal = row.assignment_goal
+                var noAssPending = row.NumberOfAssignmentsPending                        
+                var noAssSubmitted = noAssMax - (row.NumberOfAssignmentsAvailable + noAssPending)
 
                 if (row.batched){
-                    percentSubmitted = (noAssSubmitted/noAssGoal*100).toFixed(1)
+                    var percentSubmitted = (noAssSubmitted/noAssGoal*100).toFixed(1)
                     return noAssSubmitted+"/"+noAssGoal+"("+noAssMax+")"+" ("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
                 }
                 else{
-                    percentSubmitted = (noAssSubmitted/noAssMax*100).toFixed(1)
+                    var percentSubmitted = (noAssSubmitted/noAssMax*100).toFixed(1)
                     return noAssSubmitted+"/"+noAssMax+" ("+percentSubmitted+"%)P:"+noAssPending+", C:"+noAssComplete
                 }
             },
             "type": "amount-complete"
         },
-        { "data": "CreationTime" },
-        { "data": "Expiration" } ,
+        {
+            "data": null,
+            "render": function(data, type, row){
+                return "<span val="+new Date(data.CreationTime).getTime()+">"+toDate(data.CreationTime)+"</span>" //necessary hack for DataTables sorting :(
+            },
+            "type": "date"
+        },
+        {
+            "data": null,
+            "render": function(data, type, row){
+                if (data.Expiration == 'tbd')
+                    return  "<span val=none>" + _('TBD') + "</span>"
+                else
+                    return "<span val="+new Date(data.Expiration).getTime()+">"+toDate(data.Expiration)+"</span>"
+            },
+            "type": "date"
+        },
         { 
             "data": null,
             "visible": false,
             "render": function(data, type, row){  //This makes the infochild searchable, too
                 return data.Description + data.HITStatus + data.Keywords + data.HITReviewStatus + data.HITId + data.HITTypeId
             }
+        },
+        {
+            "data":null,
+            "orderable": false,
+            "render": function(){return ""},
+            "width": "25%"
         },
         {
             "data": null,
@@ -119,7 +139,7 @@ var table = $('#project_table').DataTable({
 // Hide hidden by default
 $.fn.dataTable.ext.search.push(
     function hidden(settings, data, dataIndex) {
-        row_data = table.row(dataIndex).data()
+        var row_data = table.row(dataIndex).data()
         if(row_data.hidden)
             return false
         else
@@ -178,7 +198,7 @@ table.on( 'order.dt search.dt', function () {
 function configure_header(){
     $("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
     $("#project_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
-    check_div = $("<div>").addClass("col-sm-12 col-md-6")
+    var check_div = $("<div>").addClass("col-sm-12 col-md-6")
         .append('<div class="form-check form-check-inline">'+
                     '<label for="hide_hidden" class="form-check-label">'+_('Show hidden')+'</label>'+
                     '<input id="hide_hidden" type="checkbox" class="form-check-input" style="margin-left:1rem">'+
@@ -193,7 +213,7 @@ function configure_header(){
         if(!$(this).prop("checked")){ // If not checked add filter function
             $.fn.dataTable.ext.search.push(
             function hidden(settings, data, dataIndex) {
-                row_data = table.row(dataIndex).data()
+                var row_data = table.row(dataIndex).data()
                 if(row_data.hidden)
                     return false
                 else
@@ -201,7 +221,7 @@ function configure_header(){
                 }
             );
         }else{ // If checked get filter function and remove it
-            index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
+            var index = getIndexOfFunc($.fn.dataTable.ext.search, "hidden")
             if(index==-1) return
             $.fn.dataTable.ext.search.splice(index, 1);
         }               
@@ -212,7 +232,7 @@ function configure_header(){
         if(!$(this).prop("checked")){ // If not checked add filter function
             $.fn.dataTable.ext.search.push(
             function batched(settings, data, dataIndex) {
-                row_data = table.row(dataIndex).data()
+                var row_data = table.row(dataIndex).data()
                 if(row_data.batched)
                     return true
                 else
@@ -220,7 +240,7 @@ function configure_header(){
                 }
             );
         }else{ // If checked get filter function and remove it
-            index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
+            var index = getIndexOfFunc($.fn.dataTable.ext.search, "batched")
             if(index==-1) return
             $.fn.dataTable.ext.search.splice(index, 1);
         }     
@@ -229,7 +249,7 @@ function configure_header(){
 }
 
 function getIndexOfFunc(array, funcname){
-    for (i in array){
+    for(let i in array){
         if(array[i].name==funcname){
             return i
         }
@@ -285,9 +305,9 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
     // make this implement a fetch to get the remaining lists and refresh the list
     
     (async () => {
-        slide_table = $(this).closest('table')
-        group_id = slide_table.data('group-id')
-        position = $(this).closest('tr').children("td:first").text()
+        var slide_table = $(this).closest('table')
+        var group_id = slide_table.data('group-id')
+        var position = $(this).closest('tr').children("td:first").text()
         slide_table.find('button').attr('disabled', 'true')
         const rawResponse = await fetch('/db/delete-queued/'+group_id+'/'+position, {
             method: 'DELETE'
@@ -302,7 +322,7 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
             })
             show_alert(_("Success"), _("Successfully deleted queued HIT from Database."), "success")
         }else{
-            errormsg = ""
+            var errormsg = ""
 
             if(content.type == 'locked'){
                 tr = format_slide_row(content.hit)
@@ -318,8 +338,8 @@ $('#project_table').on( 'click', '.delete-queued', function (event) {
 } );
 
 $('#project_table').on('click', '.cache-btn',function(event){
-    row = $(this).closest("tr.info-row").prev("tr")
-    data = table.row(row).data()
+    var row = $(this).closest("tr.info-row").prev("tr")
+    var data = table.row(row).data()
     $.alert({
         title: _('Archiving Batch!'),
         content: gt.strargs(_('Are you sure you want to archive the Batch "%1"?'), [data.name])+'<br>'+_('This will decrease the loading times but is also non reversable and you will not be able to modify the Batch anymore!'),
@@ -372,15 +392,15 @@ $('#project_table').on('click', '.cache-btn',function(event){
 
 $('#project_table').on('click', '.toggle-groupstatus', function(event){
     (async () => {
-        parent_row = $(this).closest('tr.info-row').prev()
-        batch_id = table.row(parent_row).data().batch_id
+        var parent_row = $(this).closest('tr.info-row').prev()
+        var batch_id = table.row(parent_row).data().batch_id
         const rawResponse = await fetch('/db/toggle_group_status/'+batch_id, {
             method: 'PATCH'
         });
         
         const content = await rawResponse.json();
         if (content.success){
-            btn_text = content.status=='active'?_("Pause"):_("Continue")
+            var btn_text = content.status=='active'?_("Pause"):_("Continue")
             $(this).closest('tr.info-row').find('.batch-status').text(content.status=='active'?_('Active'):_('Paused'))
             $(this).text(btn_text)
         }
@@ -389,12 +409,12 @@ $('#project_table').on('click', '.toggle-groupstatus', function(event){
 
 $('#project_table').on('click','.hide_hit', function(event){
     (async () => {
-        button = $(this)
-        button_row = $(this).closest("tr.info-row")
-        parent_row = button_row.prev()
-        slider_row = button_row.next('tr.slider-row')   
-        hit_data = table.row(parent_row).data()
-        query=""
+        var button = $(this)
+        var button_row = $(this).closest("tr.info-row")
+        var parent_row = button_row.prev()
+        var slider_row = button_row.next('tr.slider-row')   
+        var hit_data = table.row(parent_row).data()
+        var query=""
         if(hit_data.batched)
             query = hit_data.batch_id+"/True"
         else
@@ -407,11 +427,11 @@ $('#project_table').on('click','.hide_hit', function(event){
         const content = await rawResponse.json();
         if (content.success){
             hit_data.hidden = content.hidden
-            btn_text = content.hidden?_("Show"):_("Hide")
+            var btn_text = content.hidden?_("Show"):_("Hide")
             $(this).text(btn_text)
             // If we hid the row and we are not currently showing hidden rows we animate a fadeOut
             if(hit_data.hidden && !document.getElementById('hide_hidden').checked){
-                rows = parent_row.add(button_row)
+                var rows = parent_row.add(button_row)
                 if(slider_row.is(':visible')){
                     rows = rows.add(slider_row)
                 }
@@ -430,10 +450,10 @@ $('#project_table').on('click','.hide_hit', function(event){
 })
 
 $('#project_table').on('click','.delete_hit', function(event){                  
-    button = $(this)
-    row = button.closest('tr.info-row').prev()
-    data = table.row(row).data()
-    id = data['HITId']
+    var button = $(this)
+    var row = button.closest('tr.info-row').prev()
+    var data = table.row(row).data()
+    var id = data['HITId']
 
     $.alert({
     title: _('HIT Deletion!'),
@@ -483,21 +503,21 @@ $('#project_table').on('click','.delete_hit', function(event){
 
 async function testingstuff(){
     $('body').addClass('loading')
-    errors = []
-    checkboxes =  $(".checkbox-group:checked")
-    queue = []
+    var errors = []
+    var checkboxes =  $(".checkbox-group:checked")
+    var queue = []
 
-    for(i=0; i<50; i++){
-        assid = $(this).closest('tr').data('assid')
-        workerid = $(this).closest('tr').data('workerid')
+    for(let i=0; i<50; i++){
+        var assid = $(this).closest('tr').data('assid')
+        var workerid = $(this).closest('tr').data('workerid')
         queue.push('Approving Assignment ' + (i+1))
         if(i % 2 || i % 3)
             queue.push('Softblocking Worker' + (i+1))
     }
 
-    lw = new LoadingWheel(50, queue)
+    var lw = new LoadingWheel(50, queue)
 
-    for(i=0; i<50; i++){
+    for(let i=0; i<50; i++){
         let rawResponse = await fetch('/testingstuff')
         let data = await rawResponse.json()
         lw.nextValue()
@@ -513,36 +533,36 @@ async function testingstuff(){
 
 $('#reject-selected').on('click', function(){
     $('body').addClass('loading')
-    errors = []
-    checkboxes =  $(".checkbox-group:checked")
-    queue = []
+    var errors = []
+    var checkboxes =  $(".checkbox-group:checked")
+    var queue = []
     checkboxes.each(function(){
-        assid = $(this).closest('tr').data('assid')
-        workerid = $(this).closest('tr').data('workerid')
+        var assid = $(this).closest('tr').data('assid')
+        var workerid = $(this).closest('tr').data('workerid')
         queue.push('Rejecting Assignment ' + assid)
-        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        var softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
         if(softblock_btn[0].checked)
             queue.push('Softblocking Worker' + workerid)
     })
-    lw = new LoadingWheel(checkboxes.length, queue)
-    count = checkboxes.length
+    var lw = new LoadingWheel(checkboxes.length, queue)
+    var count = checkboxes.length
     checkboxes.each(async function(){
-        assid = $(this).closest('tr').data('assid')
-        workerid = $(this).closest('tr').data('workerid')
-        let rawResponse = await fetch('/reject_assignment/'+assid+'/'+workerid,{
+        var assid = $(this).closest('tr').data('assid')
+        var workerid = $(this).closest('tr').data('workerid')
+        const rawResponse = await fetch('/reject_assignment/'+assid+'/'+workerid,{
             method: 'PATCH'
         })
-        let data = await rawResponse.json()
+        const data = await rawResponse.json()
         if(!data.success){
             errors.push({'id': assid, 'error': data.error})
         }
         lw.nextValue()
-        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        var softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
         if(softblock_btn[0].checked){
-            let rawResponse2 = await fetch('/api/softblock/'+workerid,{
+            const rawResponse2 = await fetch('/api/softblock/'+workerid,{
                 method: 'PATCH'
             })
-            let data2 = await rawResponse2.json()
+            const data2 = await rawResponse2.json()
             if(!data2.success){
                 errors.push({'id': workerid, 'error': data.error})
             }
@@ -558,7 +578,7 @@ $('#reject-selected').on('click', function(){
             show_alert(_('Success'), _('The selected assignments were successfully rejected!'), 'success')
         }else{
             string = _("The following errors occured:")+" </br>"
-            for(i=0; i<errors.length; i++){
+            for(let i=0; i<errors.length; i++){
                 string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
             }
             show_alert(_('Error'), string, 'danger')
@@ -569,36 +589,36 @@ $('#reject-selected').on('click', function(){
 
 $('#approve-selected').on('click', function(){
     $('body').addClass('loading')
-    errors = []
-    checkboxes =  $(".checkbox-group:checked")
-    queue = []
+    var errors = []
+    var checkboxes =  $(".checkbox-group:checked")
+    var queue = []
     checkboxes.each(function(){
-        assid = $(this).closest('tr').data('assid')
-        workerid = $(this).closest('tr').data('workerid')
-        queue.push('Approving Assignment ' + assid)
-        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        var assid = $(this).closest('tr').data('assid')
+        var workerid = $(this).closest('tr').data('workerid')
+        queue.push(_('Approving Assignment ') + assid)
+        var softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
         if(softblock_btn[0].checked)
-            queue.push('Softblocking Worker' + workerid)
+            queue.push(_('Softblocking Worker') + workerid)
     })
-    lw = new LoadingWheel(checkboxes.length, queue)
-    count = checkboxes.length
+    var lw = new LoadingWheel(checkboxes.length, queue)
+    var count = checkboxes.length
     checkboxes.each(async function(){
-        assid = $(this).closest('tr').data('assid')
-        workerid = $(this).closest('tr').data('workerid')
-        let rawResponse = await fetch('/approve_assignment/'+assid+'/'+workerid,{
+        var assid = $(this).closest('tr').data('assid')
+        var workerid = $(this).closest('tr').data('workerid')
+        const rawResponse = await fetch('/approve_assignment/'+assid+'/'+workerid,{
             method: 'PATCH'
         })
-        let data = await rawResponse.json()
+        const data = await rawResponse.json()
         if(!data.success){
             errors.push({'id': assid, 'error': data.error})
         }
         lw.nextValue()
-        softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
+        var softblock_btn = $(this).closest('td').next('td').find('.softblock-group')
         if(softblock_btn[0].checked){
-            let rawResponse2 = await fetch('/api/softblock/'+workerid,{
+            const rawResponse2 = await fetch('/api/softblock/'+workerid,{
                 method: 'PATCH'
             })
-            let data2 = await rawResponse2.json()
+            const data2 = await rawResponse2.json()
             if(!data2.success){
                 errors.push({'id': workerid, 'error': data.error})
             }
@@ -613,8 +633,8 @@ $('#approve-selected').on('click', function(){
         if(errors.length == 0){
             show_alert(_('Success'), _('The selected assignments were successfully approved!'), 'success')
         }else{
-            string = _("The following errors occured:")+" </br>"
-            for(i=0; i<errors.length; i++){
+            var string = _("The following errors occured:")+" </br>"
+            for(let i=0; i<errors.length; i++){
                 string += gt.strargs(_('AssignmentId %1: %2'), [errors[i]['id'], errors[i]['error']]) +'</br>'
             }
             show_alert(_('Error'), string, 'danger')
@@ -640,7 +660,7 @@ $('#progressmodal').on('hidden.bs.modal', function (e) {
 })
 
 $('#progressmodal').on('change', '.checkbox-group', function(){
-    any_checked = false
+    var any_checked = false
     $(this).each(function(){
         if(this.checked){
             any_checked = true
@@ -669,9 +689,9 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     const rawResponse = await fetch("/list_assignments/"+id);
     const data = await rawResponse.json()
 
-    all_times = []
+    var all_times = []
     if(data.length == 0){
-        row = $('<div class="row p-5">')
+        var row = $('<div class="row p-5">')
         row.append('<div class="col-lg-12 text-center"><h2>' + _('No Results have been submitted') + '</h2></div>')
         modal.find(".info-empty").append(row)
         $('button.selected-action').hide()
@@ -680,13 +700,13 @@ $('#progressmodal').on('show.bs.modal',async function(event){
         tbody = modal.find(".modal-body tbody")
         data.forEach(function(elem, index){
             //could use date to show GMT+2 time
-            acceptTime = new Date(elem.AcceptTime)                        
-            submitTime = new Date(elem.SubmitTime)
+            var acceptTime = new Date(elem.AcceptTime)                        
+            var submitTime = new Date(elem.SubmitTime)
 
-            timeTakenSec = (submitTime - acceptTime) / 1000  //1000: milli to seconds 
+            var timeTakenSec = (submitTime - acceptTime) / 1000  //1000: milli to seconds 
             all_times.push(timeTakenSec)
 
-            timeTakenRounded = (Math.round(timeTakenSec/60*10)/10).toFixed(1) // Converts sec to min and rounds minutes to 1 digit after comma            
+            var timeTakenRounded = (Math.round(timeTakenSec/60*10)/10).toFixed(1) // Converts sec to min and rounds minutes to 1 digit after comma            
 
             var checkbox, softblockbox;
             if (elem.AssignmentStatus == 'Submitted'){
@@ -697,24 +717,24 @@ $('#progressmodal').on('show.bs.modal',async function(event){
                 softblockbox = '<input type="checkbox" disabled>'
             }
 
-            row = $('<tr>').addClass("border-bottom")
-            row.append($('<td>').text(index+1+".")).data('assid', elem.AssignmentId).data('workerid', elem.WorkerId)
+            var row = $('<tr>').addClass("border-bottom")
+            row.append($('<td class="py-3">').text(index+1+".")).data('assid', elem.AssignmentId).data('workerid', elem.WorkerId)
                 .append($('<td>').addClass("worker").text(elem.WorkerId))
                 .append($('<td>').text(elem.Answer))
                 .append($('<td>').text(elem.AssignmentStatus))
                 .append($('<td>').addClass("bonus").text('-'))
                 .append($('<td class="time-taken">').data('seconds', timeTakenSec).text(timeTakenRounded + 'min'))
-                .append($('<td>').text(elem.AcceptTime))
-                .append($('<td>').text(elem.SubmitTime))
+                .append($('<td>').append(toDate(elem.AcceptTime)))
+                .append($('<td>').append(toDate(elem.SubmitTime)))
                 .append($('<td>').append(checkbox))
                 .append($('<td>').append(softblockbox))            
             tbody.append(row)
         })
 
-        avg_time = average(all_times)
-        std = standardDeviation(all_times)
-        lower_bound = avg_time - std
-        upper_bound = avg_time + std
+        var avg_time = average(all_times)
+        var std = standardDeviation(all_times)
+        var lower_bound = avg_time - std
+        var upper_bound = avg_time + std
         $('.time-taken').each(function(){
             if($(this).data('seconds') < lower_bound || $(this).data('seconds') > upper_bound){
                 $(this).addClass('text-danger font-weight-bold')
@@ -727,8 +747,8 @@ $('#progressmodal').on('show.bs.modal',async function(event){
         const data2 = await rawResponse2.json()
         data2.forEach(function(elem){
             // Get WorkerId of BonusPayment-data
-            workerid = elem.WorkerId
-            bonus = elem.BonusAmount
+            var workerid = elem.WorkerId
+            var bonus = elem.BonusAmount
 
             //look through progressmodaltables rows and change bonus-td if workerIds match
             $("table.progress-table tbody tr").each(function(){
@@ -752,9 +772,9 @@ $('#csvmodal').on('hidden.bs.modal', function(event){
 $('#csvmodal').on('show.bs.modal', function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
-    tbody = modal.find(".modal-body tbody")
-    row = button.closest('tr.info-row').prev()
-    data = table.row(row).data()
+    var tbody = modal.find(".modal-body tbody")
+    var row = button.closest('tr.info-row').prev()
+    var data = table.row(row).data()
     $("#hit_batched").val(data.batched)
     $("#hit_identifier").val(data.batched?data.batch_id:data.HITId)
     modal.find(".modal-title").text(_("CSV Actions for ") + data.Title)
@@ -777,20 +797,20 @@ $('#qualmodal').on('hidden.bs.modal', function(event){
 $('#qualmodal').on('show.bs.modal', function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
-    tbody = modal.find(".modal-body tbody")
-    row = button.closest('tr.info-row').prev()
-    data = table.row(row).data()
+    var tbody = modal.find(".modal-body tbody")
+    var row = button.closest('tr.info-row').prev()
+    var data = table.row(row).data()
     modal.find(".modal-title").text(_("Qualifications for ") + data.Title)
     // Iterate over each Qualification of HIT
     
     if(!data.QualificationRequirements.length){
-        row = $('<div class="row p-5">')
-        row.append('<div class="col-lg-12 text-center"><h2>'+_('No Qualifications are assigned to this HIT')+'</h2></div>')
-        modal.find(".info-empty").append(row)
+        var empty_row = $('<div class="row p-5">')
+        empty_row.append('<div class="col-lg-12 text-center"><h2>'+_('No Qualifications are assigned to this HIT')+'</h2></div>')
+        modal.find(".info-empty").append(empty_row)
     }else{
         data.QualificationRequirements.forEach(function(elem, index){
-            table_qual_id = elem.QualificationTypeId
-            value = "-"
+            var table_qual_id = elem.QualificationTypeId
+            var value = "-"
 
             if(elem.hasOwnProperty('IntegerValues')){
                 value=""
@@ -805,13 +825,13 @@ $('#qualmodal').on('show.bs.modal', function(event){
                 })
             }
 
-            qual_row = $('<tr>').addClass("border-bottom")
-            .append($('<td>').append($("<div>").text(index+1+".")))
-            //.append($('<td>').append($("<div>").text(table_qual_id)))
-            .append($('<td>').addClass("qual-name").text(_("Batch-Qualification, reload the Page to show the actual Name")))
-            .append($('<td>').text(elem.Comparator))
-            .append($('<td>').text(value))
-            .append($('<td>').text(elem.ActionsGuarded))
+            var qual_row = $('<tr>').addClass("border-bottom")
+                .append($('<td>').append($("<div class='py-3'>").text(index+1+".")))
+                //.append($('<td>').append($("<div>").text(table_qual_id)))
+                .append($('<td>').addClass("qual-name").text(_("Batch-Qualification, reload the Page to show the actual Name")))
+                .append($('<td>').text(elem.Comparator))
+                .append($('<td>').text(value))
+                .append($('<td>').text(elem.ActionsGuarded))
             //Check if Id is of adult or master type
             if(table_qual_id == master_id){
                 qual_row.find(".qual-name").text(_('Masters'))
@@ -821,7 +841,7 @@ $('#qualmodal').on('show.bs.modal', function(event){
                 qual_row.find(".qual-name").text(_('Adult Content'))
             }else{
                 //loop over all qualifications to get the name
-                for(i in quals){
+                for(let i in quals){
                     if(quals[i].QualificationTypeId==table_qual_id){
                         qual_row.find(".qual-name").text(quals[i].Name)
                     }
@@ -858,15 +878,15 @@ $("#uploadbtn").on("click", async function(){
     if(json.success){
         console.log(json)
         // Adding Approved/Rejected, BonusPaid/softblocked                       
-        row = $("<div>").addClass("row")
-        col = $("<div>").addClass("col-3")
-        row_one = row.clone()
+        var row = $("<div>").addClass("row")
+        var col = $("<div>").addClass("col-3")
+        var row_one = row.clone()
         row_one.append(col.clone().text(_("Approved")))
                 .append(col.clone().text(json.data.approved))
                 .append(col.clone().text(_("Rejected")))
                 .append(col.clone().text(json.data.rejected))
 
-        row_two = row.clone()                        
+        var row_two = row.clone()                        
         row_two.append(col.clone().text(_("Bonus paid")))
                 .append(col.clone().text("$"+json.data.bonus))
                 .append(col.clone().text(_("Softblocked")))
@@ -878,12 +898,12 @@ $("#uploadbtn").on("click", async function(){
         // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
         if(Object.keys(json.warnings).length > 0){
             $("#uploadform div.error").append('<h4>'+_('Warnings')+':<h4>')
-            for (i in json.warnings){
+            for(let i in json.warnings){
                 console.log(i)
-                li = $('<li>').text(_("Row ")+i)
-                ul = $('<ul>')
-                for (j in json.warnings[i]){
-                    row_li = $('<li>').text(json.warnings[i][j])
+                var li = $('<li>').text(_("Row ")+i)
+                var ul = $('<ul>')
+                for(let j in json.warnings[i]){
+                    var row_li = $('<li>').text(json.warnings[i][j])
                     ul.append(row_li)
                 }
                 $("#uploadform div.error").append($('<ul>').append(li.append(ul)))                                
@@ -897,18 +917,18 @@ $("#uploadbtn").on("click", async function(){
             $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
         }else if(json.errortype == 'document'){
             $("#uploadform div.error").append('<h4>'+_('Logic-error in CSV')+'<h4>')
-            for (i in json.errors){
-                li = $('<li>').text(_("Row ")+i)
-                ul = $('<ul>')
-                for (j in json.errors[i]){
-                    row_li = $('<li>').text(json.errors[i][j])
+            for(let i in json.errors){
+                var li = $('<li>').text(_("Row ")+i)
+                var ul = $('<ul>')
+                for(let j in json.errors[i]){
+                    var row_li = $('<li>').text(json.errors[i][j])
                     ul.append(row_li)
                 }
                 $("#uploadform div.error").append($('<ul>').append(li.append(ul)))
                 
             }
         }else if(json.errortype == 'form'){
-            for(i in json.errors)
+            for(let i in json.errors)
                 $("#uploadform label.error").append(json.errors[i]+'<br/>')
         }
     }
@@ -916,27 +936,34 @@ $("#uploadbtn").on("click", async function(){
 
 
 $.fn.dataTable.ext.type.order['amount-complete-pre'] = function ( data ) {
-    percentage = data.substring(data.indexOf(" (")+2, data.indexOf("%)")) // isolate percentage
+    var percentage = data.substring(data.indexOf(" (")+2, data.indexOf("%)")) // isolate percentage
     return percentage
 };
 
+$.fn.dataTable.ext.type.order['date-pre'] = function ( data ) {
+    var value = $(data).attr('val')
+    if(isNaN(value)){
+        return Number.MAX_SAFE_INTEGER
+    }else{
+        return parseInt(value)
+    }
+};
 
 
-function format_info ( data ) { 
-    
+function format_info ( data ) {     
 
-    container = $("<div class='container' style='float-left'>")
+    var container = $("<div class='container' style='float-left'>")
 
     if(data.batched){
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
-        hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
-        group_id = data.batch_id
-        query = data.batch_id+'/True'
-        toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?_("Pause"):_("Continue")) +'</button>'
-        cache_btn = '<button type="button" class="btn btn-info cache-btn">'+_('Archive')+'</button>'
-        batch_status = data['batch_status'] ? _('Active'):_('Paused')
-        row_one = $('<div class="row mt-2">'+
+        var qualificationbutton = '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
+        var hidebtn = '<button type="button" class="btn btn-info hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
+        var csv_modal_btn = '<button type="button" class="btn btn-info" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
+        var group_id = data.batch_id
+        var query = data.batch_id+'/True'
+        var toggle_status_btn = '<button type="button" class="btn btn-info toggle-groupstatus">'+ (data["batch_status"]?_("Pause"):_("Continue")) +'</button>'
+        var cache_btn = '<button type="button" class="btn btn-info cache-btn">'+_('Archive')+'</button>'
+        var batch_status = data['batch_status'] ? _('Active'):_('Paused')
+        var row_one = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Title')+':</div>'+
             '<div class="col-2">'+data['Title']+'</div>'+
             '<div class="col-2">'+_('Reward')+':</div>'+
@@ -944,7 +971,7 @@ function format_info ( data ) {
             '<div class="col-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
-        row_two = $('<div class="row mt-2">'+
+        var row_two = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Description')+':</div>'+
             '<div class="col-2">'+data['Description']+'</div>'+
             '<div class="col-2">'+_('MiniBatched')+':</div>'+
@@ -952,7 +979,7 @@ function format_info ( data ) {
             '<div class="col-2">'+cache_btn+'</div>'+
         '</div>')
 
-        row_three = $('<div class="row mt-2">'+
+        var row_three = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Keywords')+':</div>'+
             '<div class="col-2">'+data['Keywords']+'</div>'+
             '<div class="col-2">'+_('Batch-Status')+':</div>'+
@@ -960,7 +987,7 @@ function format_info ( data ) {
             '<div class="col-2">'+toggle_status_btn+'</div>'+
         '</div>')
 
-        row_four = $('<div class="row mt-2">'+
+        var row_four = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Qualifications')+':</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
             '<div class="col-2">'+_('HITTypeId')+':</div>'+
@@ -969,14 +996,14 @@ function format_info ( data ) {
         '</div>')
     }
     else{
-        qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
-        hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
-        csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
-        result_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#progressmodal">'+_('Results')+'</button>'
-        delbtn = '<button type="button" class="btn btn-secondary delete_hit">'+_('Delete')+'</button>'
-        query = data.HITId
+        var qualificationbutton = '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#qualmodal">'+_('CLICK')+'</button>'
+        var hidebtn = '<button type="button" class="btn btn-success hide_hit">'+ (data["hidden"]?_("Show"):_("Hide")) +'</button>'         
+        var csv_modal_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>'
+        var result_btn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#progressmodal">'+_('Results')+'</button>'
+        var delbtn = '<button type="button" class="btn btn-secondary delete_hit">'+_('Delete')+'</button>'
+        var query = data.HITId
 
-        row_one = $('<div class="row mt-2">'+
+        var row_one = $('<div class="row mt-2">'+
             '<div class="col-2 mt-2">'+_('Description')+':</div>'+
             '<div class="col-2 mt-2">'+data['Description']+'</div>'+
             '<div class="col-2 mt-2">'+_('HITId')+':</div>'+
@@ -984,7 +1011,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
-        row_two = $('<div class="row mt-2">'+
+        var row_two = $('<div class="row mt-2">'+
             '<div class="col-2 mt-2">'+_('Keywords')+':</div>'+
             '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
             '<div class="col-2 mt-2">'+_('HITTypeId')+':</div>'+
@@ -992,7 +1019,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+result_btn+'</div>'+
         '</div>')
 
-        row_three = $('<div class="row mt-2">'+
+        var row_three = $('<div class="row mt-2">'+
             '<div class="col-2 mt-2">'+_('Reward')+':</div>'+
             '<div class="col-2 mt-2">$'+data['Reward']+'</div>'+
             '<div class="col-2 mt-2">'+_('HIT-Status')+':</div>'+
@@ -1000,7 +1027,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+delbtn+'</div>'+
         '</div>')
 
-        row_four = $('<div class="row mt-2">'+
+        var row_four = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Qualifications')+':</div>'+
             '<div class="col-2">'+qualificationbutton+'</div>'+
             '<div class="col-2">'+_('MiniBatched')+':</div>'+
@@ -1014,41 +1041,41 @@ function format_info ( data ) {
 
 function format_slide ( data ) {
     // `d` is the original data object for the row
-    group_id = data.batch_id
-    data = data.minihits
-    $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
+    var group_id = data.batch_id
+    var data = data.minihits
+    var $table = $(' <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">').addClass('minihit-table')
     $table.data('group-id', group_id)
     
-    for(i in data){
-        hit = data[i]
-        $row = format_slide_row(hit)
+    for(let i in data){
+        var hit = data[i]
+        var $row = format_slide_row(hit)
         $table.append($row)
     }
-    $slider = $('<div>').addClass('slider').append( $table)
+    var $slider = $('<div>').addClass('slider').append( $table)
     return $slider
 }
 
 function format_slide_row(hit){
     if(hit.hasOwnProperty('CreationTime')){
-        ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
+        var ass_submitted = hit.MaxAssignments - (hit.NumberOfAssignmentsAvailable + hit.NumberOfAssignmentsPending)
 
-        $tr = $('<tr class="minihitrow running">')
+        var $tr = $('<tr class="minihitrow running">')
         $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
         $tr.append($('<td>').text(hit.HITStatus))
         $tr.append($('<td>').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
         $tr.append($('<td>').text(hit.CreationTime))
         $tr.append($('<td>').text(hit.Expiration))
-        $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position).data("batched", true)
+        var $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position).data("batched", true)
             .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
         $tr.append($('<td>').append($progressbtn))
     }else{
-        $tr = $('<tr class="minihitrow queued">')
+        var $tr = $('<tr class="minihitrow queued">')
         $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
         $tr.append($('<td>').text(_('Queued')))
         $tr.append($('<td>').text('0/'+hit.workers))
         $tr.append($('<td>'))
         $tr.append($('<td>'))
-        $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
+        var $delbtn = $('<button type=button>').addClass("btn btn-sm btn-danger delete-queued").append('<i class="fa fa-trash"></i>')                   
 
         $tr.append($('<td>').addClass('minihittd').append($delbtn))                
     }
@@ -1064,10 +1091,10 @@ function compare( a, b ) {
         return 1;
     }
     return 0;
-    }
+}
 
 function summarize_minihits(array, status, hidden, goal, name){ //take array of minihits and returns hitgroup with an informationoverview
-    hitgroup = {}
+    var hitgroup = {}
     hitgroup.name = name
     hitgroup.assignment_goal = goal
     hitgroup.NumberOfAssignmentsAvailable = 0
@@ -1078,7 +1105,7 @@ function summarize_minihits(array, status, hidden, goal, name){ //take array of 
     hitgroup.hidden = hidden
     hitgroup.batch_status = (status == 'active') ? true : false
     array.sort(compare)
-    for (i = 0; i < array.length; i++){
+    for(let i = 0; i < array.length; i++){
         if(i == 0){ // the first minihit should never be queued -> can savely access attributes
             hitgroup.CreationTime = array[i].CreationTime
             hitgroup.Title = array[i].Title
@@ -1122,8 +1149,8 @@ function summarize_minihits(array, status, hidden, goal, name){ //take array of 
 }
 
 function get_element_with_value(json, key, value){
-    for(item_index in json){
-        item = json[item_index]
+    for(let item_index in json){
+        var item = json[item_index]
         if(item.hasOwnProperty(key) && item[key] == value){
             return item
         }
@@ -1132,7 +1159,7 @@ function get_element_with_value(json, key, value){
 }
 
 function get_elements_with_value(json, key, value){
-    list = []
+    var list = []
     json.forEach((item) => {
         if(item.hasOwnProperty(key) && item[key] == value)
             list.push(item) 
@@ -1145,10 +1172,10 @@ $(function(){
         // Hide hidden by default
         table.rows().every( function(){
             // check if either row or sliderchild has ID
-            data = this.data()
+            var data = this.data()
             if( (data.hasOwnProperty("HITId") && data["HITId"] == createdhit) || get_element_with_value(data.minihits,"HITId", createdhit) ){
                 this.show()
-                $row = $(this.node())
+                var $row = $(this.node())
                 $('html').animate({
                     'scrollTop': $row.offset().top - 500
                 }, 2000, 'swing', function(){                

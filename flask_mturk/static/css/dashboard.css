@@ -22,10 +22,13 @@ tbody tr.batched[role="row"], tbody tr.batched[role="row"]+tr{
 tr.mainrow td:first-child { border-top-left-radius: 10px; }
 tr.mainrow td:last-child { border-top-right-radius: 10px; }
 
+tr.mainrow td{
+    text-align: center;
+}
+
 tr.info-row div.container div.row > div {
     word-break: break-all;
 }
-
 
 tr.minihitrow:not(:last-child){
     border-bottom: 1px solid lightgray;
@@ -82,7 +85,7 @@ table.dataTable tr.batched.shown td:last-child{
 }
 
 tr.info-row .row > div:last-child > button{
-    width:75%;
+    width:80%;
 }
 
 @keyframes highlight {

@@ -14,3 +14,7 @@ $('.selectpicker').on('change', function(){
     document.cookie = 'language='+selected+'; max-age=31536000;'
     location.reload();
 })
+
+function toDate(dateString){
+    return moment(dateString).calendar(null, {sameElse: 'LLL'})
+}
