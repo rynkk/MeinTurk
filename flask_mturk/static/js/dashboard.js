@@ -1,6 +1,6 @@
 render_surveys=[]
 
-for(hit_index in surveys){ // Add HITs that are not to be batched to 
+for(hit_index in surveys){ // Add HITs that are not to be batched
     hit = surveys[hit_index]
     if(hit.hasOwnProperty('RequesterAnnotation') && hit['RequesterAnnotation'].includes('batch'))
         continue
@@ -48,7 +48,7 @@ var table = $('#project_table').DataTable({
     "createdRow": function( row, data, dataIndex ) {
         $(row).addClass('mainrow')
         if (data.batched) {
-            $(row).addClass( 'batched' ) //TODO: work more with jquery data()
+            $(row).addClass( 'batched' )
 
         }else{
             $(row).addClass( 'standard' )
@@ -60,7 +60,6 @@ var table = $('#project_table').DataTable({
             "searchable": false,
             "orderable": false,
         },
-        /*{ "data": "Title" },*/
         {
             "data": null,
             "render": function(data, type, row){
@@ -126,7 +125,7 @@ $.fn.dataTable.ext.search.push(
         else
             return true
         }
-    );
+);
 
 /* https://datatables.net/plug-ins/api/row().show() */
 $.fn.dataTable.Api.register('row().show()', function() {
@@ -175,24 +174,6 @@ table.on( 'order.dt search.dt', function () {
     } );
 } ).draw();       
 
-if(createdhit != null){
-    table.rows().every( function(){
-        // check if either row or sliderchild has ID
-        // TODO: wth did I do with get_element_with_value
-        data = this.data()
-        if( (data.hasOwnProperty("HITId") && data["HITId"] == createdhit) || get_element_with_value(data.minihits,"HITId", createdhit) ){
-            this.show()
-            $row = $(this.node())
-            $('html, body').animate({
-                'scrollTop': $row.offset().top - 500
-            }, 2000, 'swing', function(){
-                $row.addClass("highlight")
-                $row.next().addClass("highlight")
-                setTimeout(function(){$(".highlight").removeClass("highlight")}, 3000)
-            })
-        }
-    })
-}
 
 function configure_header(){
     $("#project_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
@@ -1156,3 +1137,24 @@ function get_elements_with_value(json, key, value){
     });
     return list
 };
+
+$(function(){
+    if(createdhit != null){
+        // Hide hidden by default
+        table.rows().every( function(){
+            // check if either row or sliderchild has ID
+            data = this.data()
+            if( (data.hasOwnProperty("HITId") && data["HITId"] == createdhit) || get_element_with_value(data.minihits,"HITId", createdhit) ){
+                this.show()
+                $row = $(this.node())
+                $('html').animate({
+                    'scrollTop': $row.offset().top - 500
+                }, 2000, 'swing', function(){                
+                    $row.addClass("highlight")
+                    $row.next().addClass("highlight")
+                    setTimeout(function(){$(".highlight").removeClass("highlight")}, 3000)
+                })
+            }
+        })
+    }
+})

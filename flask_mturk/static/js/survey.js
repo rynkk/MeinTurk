@@ -10,12 +10,20 @@ $('#previewButton').on('click', function(){
 
 })
 
-$('form input').on('keypress', function(e) {
+$("form input").on('keypress', function(e) {
     return e.which !== 13;
 });
 
-$("#sform input").blur(function() {
-    $(this.form).validate().element(this);
+$("#sform").on('blur', 'input, select', function() {
+    $(this.form).validate().element(this)
+    page = $(this).closest('.tab-pane')
+
+    if(page.find('select, input').hasClass('error')){
+        $('a[href="#'+page.attr("id")+'"').addClass('error')
+    }else{
+        $('a[href="#'+page.attr("id")+'"').removeClass('error')
+    }
+
 });
 
 jQuery.validator.addMethod("qualNameUniqueNaive", function(value) {
@@ -38,8 +46,12 @@ jQuery.validator.addMethod("disallowSelectOption", function(value, element) {
 $("#sform").validate({
     ignore: "",
     invalidHandler: function(e, validator){
-        if(validator.errorList.length)
+        if(validator.errorList.length){
             $('#tabs a[href="#' + $(validator.errorList[0].element).closest(".tab-pane").attr('id') + '"]').tab('show')
+            for (i=0; i<validator.errorList.length; i++){
+                $('#tabs a[href="#' + $(validator.errorList[i].element).closest(".tab-pane").attr('id') + '"]').addClass('error')
+            }
+        }
     },
     rules : {
         qualification_name : { qualNameUniqueNaive : true }
@@ -144,6 +156,9 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
             quals_text += $(this).find("option:selected").text()+"; "
         }
     })
+    if (quals_text == "")
+        quals_text = _('None')
+    
     $('#overview_qualifications').text(quals_text)
 
     reward = parseFloat($('#payment_per_worker').val())

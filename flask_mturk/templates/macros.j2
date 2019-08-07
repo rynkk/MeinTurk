@@ -140,16 +140,16 @@
     
 {% endmacro %}
 
-{% macro render_next_prev(page) %}
+{% macro render_next_prev(page, next_text, prev_text) %}
     <div class="form-group row pt-5">
         <div class="col-sm">
             {% if page != 1 %}
-                <button type="button" class="btn btn-primary btn-sm prev">Previous</button>
+                <button type="button" class="btn btn-primary btn-sm prev">{{prev_text}}</button>
             {% endif %}
         </div>
         <div class="col-sm">            
             {% if page != 5 %}
-                <button type="button" class="btn btn-primary btn-sm float-right next">Next</button>
+                <button type="button" class="btn btn-primary btn-sm float-right next">{{next_text}}</button>
             {% endif %}
         </div>
     </div>

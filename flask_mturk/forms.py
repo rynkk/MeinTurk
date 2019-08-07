@@ -183,5 +183,5 @@ class QualificationCreationForm(FlaskForm):
     name = StringField(lazy_gettext('Name'), validators=[InputRequired(lazy_gettext('Please enter a name!'))])
     desc = StringField(lazy_gettext('Description'), validators=[InputRequired(lazy_gettext('Please enter a description!'))])
     keywords = StringField(lazy_gettext('Keywords'), validators=[Optional()])
-    auto_granted = BooleanField(lazy_gettext('AutoGranted'), validators=[Optional()])
+    auto_granted = BooleanField(lazy_gettext('AutoGranted'), description=lazy_gettext('AutoGranted qualifications are automatically assigned to workers who work on a HIT containing that AutoGranted qualification.'), validators=[Optional()])
     auto_granted_value = IntegerField(lazy_gettext('AutoGranted Value'), validators=[Optional()], default=1, widget=NumberInput(min=0, max=100, step=1))

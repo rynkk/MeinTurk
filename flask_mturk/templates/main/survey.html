@@ -25,14 +25,14 @@
                 {{ macros.render_long_text(form.description) }}
                 {{ macros.render_long_text(form.keywords) }}
                 {{ macros.render_int_unit(form.time_till_expiration) }}
-                {{ macros.render_next_prev(1) }}
+                {{ macros.render_next_prev(1, _('Next') , _('Previous') ) }}
             </div>
             <div id="p2" class="tab-pane">
                 {{ macros.render_int_bool(form.amount_workers, form.minibatch, form.qualification_name, _("Default: project name + date")) }}
                 {{ macros.render_decimal(form.payment_per_worker)}}
                 {{ macros.render_int_unit(form.allotted_time_per_worker, 3) }}
                 {{ macros.render_int_unit(form.accept_pay_worker_after, 3) }}
-                {{ macros.render_next_prev(2) }}
+                {{ macros.render_next_prev(2, _('Next') , _('Previous') ) }}
             </div>
             <div id="p3" class="tab-pane">
                 {{ macros.render_radio(form.must_be_master) }}
@@ -60,55 +60,56 @@
                     </div>
                 </div>
                 {{ macros.render_radio(form.project_visibility, inline=false) }}
-    
-                {{ macros.render_next_prev(3) }}
+                {{ macros.render_next_prev(3, _('Next') , _('Previous') ) }}
             </div>
             <div id="p4" class="tab-pane">
                 {{ form.editor_field}}
-                {{ macros.render_next_prev(4) }}
+                {{ macros.render_next_prev(4, _('Next') , _('Previous') ) }} }}
             </div>
             <div id="p5" class="tab-pane">
                 <h2>{{ _('HIT Overview') }}</h2>
-                <div class="container pt-3 mb-5 ml-1">
-                    <div class="row">
-                            <div class="col-5">{{ _('Project Name') }}</div>
-                            <div id="overview_name" class="col-auto"></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Title') }}</div>
-                            <div id="overview_title" class="col-auto"></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('MiniBatched') }}</div>
-                            <div class="col-auto">{{ _('MiniBatching is') }} <span id="overview_minibatch" ></span></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Amount of HITs') }}</div>
-                            <div class="col-auto"><span id="overview_hits"></span> HIT(s)</div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Amount of Workers') }}</div>
-                            <div class="col-auto"><span id="overview_workers"></span> {{ _('Workers') }}</div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Lifetime of each HIT') }}</div>
-                            <div id="overview_lifetime" class="col-auto"></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Allotted Time per Worker') }}</div>
-                            <div id="overview_allotted_time" class="col-auto"></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Time until automatic approval') }}</div>
-                            <div id="overview_time_approval" class="col-auto"></div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Masters Qualification') }}</div>
-                            <div class="col-auto">{{ _('Masters ') }}<span id="overview_masters"></span> {{ _('necessary') }}</div>
-                    </div>
-                    <div class="row mt-2">
-                            <div class="col-5">{{ _('Qualifications set') }}</div>
-                            <div id="overview_qualifications" class="col-5"></div>
+                <div class="container my-5 ml-1 w-75">
+                    <div class="w-75">
+                        <div class="row pb-2 border-bottom">
+                                <div class="col"><h6>{{ _('Project Name') }}</h6></div>
+                                <div id="overview_name" class="col-5"></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Title') }}</h6></div>
+                                <div id="overview_title" class="col-5"></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('MiniBatched') }}</h6></div>
+                                <div class="col-5">{{ _('MiniBatching is') }} <span id="overview_minibatch" ></span></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Amount of HITs') }}</h6></div>
+                                <div class="col-5"><span id="overview_hits"></span> HIT(s)</div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Amount of Workers') }}</h6></div>
+                                <div class="col-5"><span id="overview_workers"></span> {{ _('Workers') }}</div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Lifetime of each HIT') }}</h6></div>
+                                <div id="overview_lifetime" class="col-5"></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Allotted Time per Worker') }}</h6></div>
+                                <div id="overview_allotted_time" class="col-5"></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Time until automatic approval') }}</h6></div>
+                                <div id="overview_time_approval" class="col-5"></div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Masters Qualification') }}</h6></div>
+                                <div class="col-5">{{ _('Masters ') }}<span id="overview_masters"></span> {{ _('necessary') }}</div>
+                        </div>
+                        <div class="row py-2 border-bottom">
+                                <div class="col"><h6>{{ _('Qualifications set') }}</h6></div>
+                                <div id="overview_qualifications" class="col-5"></div>
+                        </div>
                     </div>
                     <div class="row mt-4">
                         <div class="col-5"><h6>{{ _('Approx. Costs') }}</h6></div>
@@ -141,9 +142,9 @@
                             <div class="col-auto"><h6>$<span id="overview_saved"></span></h6></div>
                     </div>
                 </div>
-                <button type="button" id="previewButton">{{ _('Preview') }}</button>
-                {{ form.submitform }}
-                {{ macros.render_next_prev(5) }}
+                <button type="button" id="previewButton" class="btn btn-info mr-4">{{ _('Preview') }}</button>
+                {{ form.submitform(class='btn btn-success') }}
+                {{ macros.render_next_prev(5, _('Next') , _('Previous') ) }}
             </div>
         </div>
     </form>

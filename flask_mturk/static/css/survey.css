@@ -15,3 +15,7 @@ div#tabs a[data-toggle="tab"]{
     padding-left:5px;
     cursor: pointer;
 }
+
+a.nav-item.error{
+    color: #ee5858;
+}
