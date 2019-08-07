@@ -42,8 +42,8 @@ table.on( 'order.dt search.dt', function () {
 }).draw();
 
 $('#cached_table tbody').on('click', '.delete-cached', async function () {
-    row = $(this).closest("tr")
-    data = table.row(row).data()
+    var row = $(this).closest("tr")
+    var data = table.row(row).data()
 
     $.alert({
         title: _('Archived Batch Deletion!'),

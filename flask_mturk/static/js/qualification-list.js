@@ -50,9 +50,9 @@ table.on( 'order.dt search.dt', function () {
 }).draw();
 
 $('#qualification_table tbody').on('click', '.load-workers', async function () {
-    row = $(this).closest("tr")
+    var row = $(this).closest("tr")
     $(this).text("..........")
-    data = table.row(row).data()
+    var data = table.row(row).data()
     const rawResponse = await fetch('/api/list_workers_with_qualification_type/'+data.QualificationTypeId);
 
     const content = await rawResponse.json();
@@ -60,8 +60,8 @@ $('#qualification_table tbody').on('click', '.load-workers', async function () {
 } );
 
 $('#qualification_table tbody').on('click', '.delete-qualification', async function () {
-    row = $(this).closest("tr")
-    data = table.row(row).data()
+    var row = $(this).closest("tr")
+    var data = table.row(row).data()
 
     $.alert({
         title: _('Qualification Deletion!'),
@@ -90,7 +90,7 @@ $('#qualification_table tbody').on('click', '.delete-qualification', async funct
 function configure_header(){
     $("#qualification_table_length").parent("div").removeClass("col-md-6").addClass("col-md-3")
     $("#qualification_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-3")
-    header_div = $("<div>").addClass("col-sm-12 col-md-6 column-centered")
+    var header_div = $("<div>").addClass("col-sm-12 col-md-6 column-centered")
         .append('<button type="button" class="btn btn-success mr-5" data-toggle="modal" data-target="#qualmodal"><i class="fas no-transform fa-plus-circle fa-lg"></i></button>')
         .append('<div class="form-check form-check-inline ml-5">'+
                     '<label for="hide_batched" class="form-check-label">'+_('Hide Batch qualifications')+'</label>'+
@@ -102,7 +102,7 @@ function configure_header(){
             if($(this).prop("checked")){
                 $.fn.dataTable.ext.search.push(
                 function (settings, data, dataIndex) {
-                    row_data = table.row(dataIndex).data()
+                    var row_data = table.row(dataIndex).data()
                     if(row_data.Description.includes('MiniBatch-Qual'))
                         return false
                     else
@@ -129,8 +129,8 @@ $("#qualform").validate({
     ignore: "",
     submitHandler: function(form){
         (async () => {
-            form = $('#qualform')[0]        
-            formData = new FormData(form);
+            var form = $('#qualform')[0]        
+            var formData = new FormData(form);
     
             const rawResponse = await fetch('/qualifications', { 
                 method: 'POST',

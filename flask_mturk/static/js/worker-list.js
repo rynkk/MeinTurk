@@ -1,5 +1,5 @@
-ban_btn = "<button type='button' class='btn-sm btn-danger softblock'><i class='fas fa-lg fa-ban'></i></button>"
-unban_btn = "<button type='button' class='btn-sm btn-success softblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
+var ban_btn = "<button type='button' class='btn-sm btn-danger softblock'><i class='fas fa-lg fa-ban'></i></button>"
+var unban_btn = "<button type='button' class='btn-sm btn-success softblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
 var table = $('#worker_table').DataTable({
     "language":{
         "url": datatables_translation
@@ -53,13 +53,13 @@ table.on( 'order.dt search.dt', function () {
 $('#worker_table').on('click', '.softblock', async function(){
     $(this).prop('disabled', true)
     $(this).removeClass('btn-success btn-danger').addClass('btn-secondary')
-    parent = $(this).closest('tr')
-    softblock_td = parent.find('.softblock-td')
-    id = table.row(parent).data()['id']
+    var parent = $(this).closest('tr')
+    var softblock_td = parent.find('.softblock-td')
+    var id = table.row(parent).data()['id']
     const rawResponse = await fetch('/db/toggle_softblock/'+id, {
         method: 'PATCH'
     });
-    content = await rawResponse.json()
+    var content = await rawResponse.json()
     if(content.success){
         if(content.status){
             softblock_td.text(_('Yes'))

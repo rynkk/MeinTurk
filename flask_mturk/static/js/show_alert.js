@@ -1,7 +1,7 @@
     var timeout;
 
     function show_alert(heading, message, type){
-            alert_class="alert-"+type+" alert"
+        var alert_class="alert-"+type+" alert"
             clearTimeout(timeout)
             $("#alert").hide()
             $("#alert").removeClass()

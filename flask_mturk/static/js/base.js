@@ -3,7 +3,7 @@ function getCookieValue(a) {
     return b ? b.pop() : '';
 }
 
-language = getCookieValue('language')
+var language = getCookieValue('language')
 if(language == "")
     $('.selectpicker').selectpicker('val', 'en')
 else

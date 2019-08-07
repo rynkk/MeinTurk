@@ -659,12 +659,12 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     if (button.data('batched')){
         var position = button.data("position")
         var id = button.data("id")
-        modal.find(".modal-title").text("Progress for "+position+". HIT")
+        modal.find(".modal-title").text(_("Progress for ")+position+". HIT")
     } else {
         row = button.closest('tr.info-row').prev()
         var row_data = table.row(row).data()
         var id = row_data['HITId']
-        modal.find(".modal-title").text("Progress for HIT "+row_data.Title)
+        modal.find(".modal-title").text(_("Progress for HIT ")+row_data.Title)
     }
     const rawResponse = await fetch("/list_assignments/"+id);
     const data = await rawResponse.json()
@@ -672,9 +672,11 @@ $('#progressmodal').on('show.bs.modal',async function(event){
     all_times = []
     if(data.length == 0){
         row = $('<div class="row p-5">')
-        row.append('<div class="col-lg-12 text-center"><h2>No Results have been submitted</h2></div>')
+        row.append('<div class="col-lg-12 text-center"><h2>' + _('No Results have been submitted') + '</h2></div>')
         modal.find(".info-empty").append(row)
+        $('button.selected-action').hide()
     }else{
+        $('button.selected-action').show()
         tbody = modal.find(".modal-body tbody")
         data.forEach(function(elem, index){
             //could use date to show GMT+2 time
