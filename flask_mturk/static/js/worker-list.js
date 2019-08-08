@@ -47,6 +47,14 @@ var table = $('#worker_table').DataTable({
             "data": null,
             "searchable": false,
             "orderable": false,
+            "render": function(data, type, row){          
+                return "<button type='button' class='btn-sm btn-success' data-toggle='modal' data-target='#qualmodal'><i class='fas fa-plus-circle'></i></button>"
+            },
+        } ,
+        {
+            "data": null,
+            "searchable": false,
+            "orderable": false,
             "render": function(data, type, row){
                 if(row.softblocked)
                     return unban_btn
@@ -97,3 +105,48 @@ $('#worker_table').on('click', '.softblock', async function(){
         show_alert(_('Error'), _('Something went wrong: ')+content.error, 'danger')
     $(this).prop('disabled', false)
 })
+$('#qualmodal').on('hidden.bs.modal', function(event){
+    $("#qualmodal .modal-body input").val("").removeClass('error')
+    $('#qualiderror').text('')
+})
+
+$('#qualmodal').on('show.bs.modal', function(event){
+    var modal = $(this)
+    var button = $(event.relatedTarget)
+    var row = button.closest('tr[role="row"]')
+    var data = table.row(row).data()
+    modal.find(".modal-workerid").text(data.id)
+    global_workerid = data.id
+})
+
+$('#assign-qual').on('click', async function(){
+    // should use wtform validation etc but this will suffice
+    var error = false
+    var qualid = $('#qualid').val()
+    var value = $('#qualvalue').val()
+    if(value == ""){
+        $('#qualvalue').addClass('error')
+        error = true
+    }
+    if(qualid == ""){
+        $('#qualid').addClass('error')
+        error = true
+    }
+    if(!qualid.match(/^[A-Z0-9]*$/)){
+        $('#qualid').addClass('error')
+        $('#qualiderror').text(_('The QualificationID may only contain UpperCase-Letters and Digits'))
+        error = true
+    }
+    if(!error){
+        const rawResponse = await fetch("/api/assign_qualification/"+global_workerid+"/"+qualid+"/"+value, { method: 'PATCH' });
+        const data = await rawResponse.json()
+        if(data.success){
+            show_alert(_('Success'), _('Successfully assigned the qualification!'), 'success')
+        }else{
+            show_alert(_('Error'), data.error, 'danger')
+        }
+    $('#qualmodal').modal('hide')
+    // add csv export with selectable qualifications?
+    }
+})
+

@@ -11,7 +11,7 @@ from flask_babel import gettext as _
 from botocore.exceptions import ClientError
 
 from .api_calls import api
-from .helper import is_number, seconds_from_string
+from .helper import is_number, is_integer, seconds_from_string
 
 
 @babel.localeselector
@@ -315,7 +315,7 @@ def export(id, type_):
     """Route that exports either all or only submitted results of normal and batched HITs"""
 
     batched = is_number(id)
-    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'RejectionMessage', 'Bonus', 'Reason', 'Softblock']
+    fieldnames = ['HITId', 'AssignmentId', 'WorkerId', 'Status', 'Answer', 'TimeTaken', 'Approve', 'Reject', 'RejectionMessage', 'Bonus', 'Reason', 'Softblock', 'FollowUpQualificationID', 'FollowUpValue']
 
     if type_ == 'all':
         assignments = get_assignments(id, batched)  # Add submitted, rejected and approved Assignments to export
@@ -425,6 +425,7 @@ def upload():
         csvreader = csv.DictReader(csvdata)
         # checking if the csv contains valid data
         errors = {}
+        checked_fuquals = []
         assignments = get_assignments(form.hit_identifier.data, form.hit_batched.data)  # maybe make status Submitted
         if not assignments:
             return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': _('No Assignments found.')}}), 404, {'ContentType': 'application/json'}
@@ -440,6 +441,8 @@ def upload():
                 bonus = row['Bonus']
                 reason = row['Reason']
                 row['Softblock']
+                fuqual = row['FollowUpQualificationID']
+                fuvalue = row['FollowUpValue']
             except KeyError as e:
                 return json.dumps({'success': False, 'errortype': 'main', 'errors': {'main': _('CSV header not formatted properly: </br> Missing header %s') % e}}), 422, {'ContentType': 'application/json'}
 
@@ -470,6 +473,15 @@ def upload():
                 errors.setdefault(index, []).append(_('Bonus is too high. MAX: %s.') % app.config.get('MAX_BONUS'))
             if bonus and not reason:
                 errors.setdefault(index, []).append(_('Bonus assigned but no reason given.'))
+            if fuqual and fuqual not in checked_fuquals:
+                checked_fuquals.append(fuqual)
+                error = api.get_qualification_type(fuqual)
+                if error is not None:
+                    errors.setdefault(index, []).append(_('Could not get Qualification %s, are you sure that is the right ID?') % fuqual)
+            if fuvalue and not is_integer(fuvalue):
+                errors.setdefault(index, []).append(_('FollowUpQualifications Value must be an integer!') % fuvalue)
+            if fuvalue and is_integer(fuvalue) and int(fuvalue) < 0:
+                errors.setdefault(index, []).append(_('FollowUpQualifications Value must be greater than or equal to 0!') % fuvalue)
 
         if errors:
             return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
@@ -496,6 +508,8 @@ def upload():
             bonus = row['Bonus']
             reason = row['Reason']
             softblock = row['Softblock']
+            fuqual = row['FollowUpQualificationID']
+            fuvalue = row['FollowUpValue']
             unique_token_bonus = assignmentid + workerid
 
             worker = Worker.query.filter(Worker.id == workerid).one_or_none()
@@ -536,9 +550,21 @@ def upload():
             if softblock:
                 # errorhandling for softblock
                 softblock_id = app.config.get('SOFTBLOCK_QUALIFICATION_ID')
-                api.associate_qualification_with_worker(workerid, softblock_id)
-                total_softblocked += 1
-                worker.softblocked = True
+                error = api.associate_qualification_with_worker(workerid, softblock_id)
+                if error is None:
+                    total_softblocked += 1
+                    worker.softblocked = True
+                else:
+                    warnings.setdefault(index, []).append(_('Could not send softblock worker %s, you will have to do it manually now.') % workerid)
+
+            if fuqual:
+                if not fuvalue:
+                    warnings.setdefault(index, []).append(_('FollowUpValue not specified, setting it to 1.'))
+                    fuvalue = 1
+
+                error = api.associate_qualification_with_worker(workerid, fuqual, int(fuvalue))
+                if error is not None:
+                    warnings.setdefault(index, []).append(_('Could not send softblock worker %s, you will have to do it manually now.') % workerid)
 
         db.session.commit()
 
@@ -707,7 +733,7 @@ def page_not_found(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    return error
+    return jsonify({'success': False, 'error': error})
 
 
 def create_qualification_object(id, comparator, value, restriction):

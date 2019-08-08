@@ -27,6 +27,13 @@ class Api:
             QualificationTypeId=qualificationid
         )
 
+    def get_qualification_type(self, qualificationid):
+        try:
+            self.client.get_qualification_type(QualificationTypeId=qualificationid)
+            return None
+        except ClientError as ce:
+            return ce.response['Error']['Message']
+
     # not needed for now
     def get_qualification_score(self, workerid, qualificationid):
         return self.client.get_qualification_score(
@@ -60,12 +67,12 @@ class Api:
         else:
             raise ValueError('Tried to delete Softblock-Qualification')
 
-    def associate_qualification_with_worker(self, worker_id, qualification_id):
+    def associate_qualification_with_worker(self, worker_id, qualification_id, val=1):
         try:
             client.associate_qualification_with_worker(
                 QualificationTypeId=qualification_id,
                 WorkerId=worker_id,
-                IntegerValue=1,
+                IntegerValue=val,
                 SendNotification=False,
             )
             return None
@@ -266,3 +273,12 @@ def softblock_route(workerid):
         return jsonify({'success': True})
     else:
         return jsonify({'success': False, 'error': response})
+
+
+@app.route('/api/assign_qualification/<awsid:workerid>/<awsid:qualificationid>/<int:val>', methods=['PATCH'])
+def assign_route(workerid, qualificationid, val):
+    error = api.associate_qualification_with_worker(workerid, qualificationid, val)
+    if error is None:
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'error': error}), 400
