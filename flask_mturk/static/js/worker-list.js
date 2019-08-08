@@ -63,8 +63,17 @@ var table = $('#worker_table').DataTable({
             },
         } ,
     ],
-    "order": [[ 5, 'desc' ]]
+    "order": [[ 5, 'desc' ]],
+    "initComplete": function( settings, json ) {
+        $("#worker_table_length").parent("div").removeClass("col-md-6").addClass("col-md-4")
+        $("#worker_table_filter").parent("div").removeClass("col-md-6").addClass("col-md-4")
+        var check_div = $("<div>").addClass("col-md-4")
+            .append('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>')
+        $("#worker_table_length").parent("div").after(check_div)
+    }
 });
+
+$('#multiselect').selectpicker()
 
 table.on( 'order.dt search.dt', function () {
     table.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
@@ -106,8 +115,8 @@ $('#worker_table').on('click', '.softblock', async function(){
     $(this).prop('disabled', false)
 })
 $('#qualmodal').on('hidden.bs.modal', function(event){
-    $("#qualmodal .modal-body input").val("").removeClass('error')
-    $('#qualiderror').text('')
+    $("#qualmodal .modal-body input").val(1).removeClass('error')
+    $('#qualmodal label.error').text('')
 })
 
 $('#qualmodal').on('show.bs.modal', function(event){
@@ -119,34 +128,132 @@ $('#qualmodal').on('show.bs.modal', function(event){
     global_workerid = data.id
 })
 
+function isPositiveInteger(s) {
+    return /^\+?[0-9][\d]*$/.test(s);
+}
+
 $('#assign-qual').on('click', async function(){
-    // should use wtform validation etc but this will suffice
-    var error = false
-    var qualid = $('#qualid').val()
-    var value = $('#qualvalue').val()
-    if(value == ""){
-        $('#qualvalue').addClass('error')
-        error = true
+    var value = $('#value').removeClass('error')
+    $('#invalid_qualval').text('')
+    var qualid = $('#select').val()
+    var value = $('#value').val()
+    if(!(isPositiveInteger(value))){
+        var value = $('#value').addClass('error')
+        $('#invalid_qualval').text('Please enter an Integer geq 0.')
+        return
     }
-    if(qualid == ""){
-        $('#qualid').addClass('error')
-        error = true
-    }
-    if(!qualid.match(/^[A-Z0-9]*$/)){
-        $('#qualid').addClass('error')
-        $('#qualiderror').text(_('The QualificationID may only contain UpperCase-Letters and Digits'))
-        error = true
-    }
-    if(!error){
-        const rawResponse = await fetch("/api/assign_qualification/"+global_workerid+"/"+qualid+"/"+value, { method: 'PATCH' });
-        const data = await rawResponse.json()
-        if(data.success){
-            show_alert(_('Success'), _('Successfully assigned the qualification!'), 'success')
-        }else{
-            show_alert(_('Error'), data.error, 'danger')
-        }
-    $('#qualmodal').modal('hide')
-    // add csv export with selectable qualifications?
+    const rawResponse = await fetch("/api/assign_qualification/"+global_workerid+"/"+qualid+"/"+value, { method: 'PATCH' });
+    const data = await rawResponse.json()
+    if(data.success){
+        show_alert(_('Success'), _('Successfully assigned the qualification!'), 'success')
+    }else{
+        show_alert(_('Error'), data.error, 'danger')
     }
 })
 
+$('#exportcsv').on('click', async function(){
+    $('button[data-id="multiselect"]').removeClass('error')
+    $("#fileerror").text('')
+    if($('#multiselect').val().length == 0){
+        $('button[data-id="multiselect"]').addClass('error')
+        $("#fileerror").text(_('This field is required.'))
+        return
+    }
+    var form = $('#downloadform')[0]
+    var formData = new FormData(form);
+
+    const rawResponse = await fetch('/export_workers', { 
+        method: 'POST',
+        body: formData
+    })
+    if(rawResponse.status == 200){
+        const data = await rawResponse.blob()
+        download(data, "worker_export.csv", "text/csv");
+        show_alert(_('Success'),_('Successfully downloaded the CSV.'), 'success')
+    }else if(rawResponse.status == 500){
+        const data = await rawResponse.text()
+        show_alert(_('Internal Server Error'),_('Something went terribly wrong: ') + data, 'danger')
+    }else{       
+        const data = await rawResponse.json()
+        show_alert(_('Error'), data.error, 'danger')
+    }
+})
+
+$('#csvmodal').on('hidden.bs.modal', function(event){
+    var modal = $(this)
+    $("#uploadform #file").val('').removeClass("error")
+    $("#multiselect").val('').selectpicker("refresh");
+    modal.find("button.error").removeClass('error')
+    modal.find("label.error, div.error").empty()
+})
+
+$("#uploadcsv").on("click", async function(){
+    $("#uploadform label.error").empty()
+    $("#uploadform div.error").empty()
+    $("#uploadform div.success").empty()
+    $("#uploadform #file").removeClass("error")
+    if(!$("#uploadform #file").val()){
+        $("#uploadform label.error").append(_("This field is required."))
+        $("#uploadform #file").addClass("error")
+        return
+    }
+
+    var form = $('#uploadform')[0]
+    var formData = new FormData(form);
+
+    $('body').addClass("loading")
+
+    const rawResponse = await fetch('/upload_workers', { 
+        method: 'POST',
+        body: formData
+        })
+    $('body').removeClass("loading")
+    if (rawResponse.status == 500){
+        const text = await rawResponse.text()
+        show_alert(_('Internal Server Error'), _('Something went wrong:')+text, 'danger')
+        return;
+    }
+    const json = await rawResponse.json()
+    if(json.success){     
+        
+        // Adding warnings if any
+        // Why do Dicts in JS not have an inbuilt method to check if empty, or atleast a length?
+        if(Object.keys(json.warnings).length > 0){
+            show_alert(_('Some Success'), _('Successfully completed the request, but there were some errors caught!'), 'warning')   
+            $("#uploadform div.error").append('<h4>'+_('Warnings')+':<h4>')
+            for(let i in json.warnings){
+                var li = $('<li>').text(_("Row ")+i)
+                var ul = $('<ul>')
+                for(let j in json.warnings[i]){
+                    var row_li = $('<li>').text(json.warnings[i][j])
+                    ul.append(row_li)
+                }
+                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))                                
+            }
+        }else{            
+            show_alert(_('Success'), _('Successfully assigned the specified qualifications'), 'success')   
+        }
+    }else{
+        $("#uploadform label.error").empty()
+        $("#uploadform div.error").empty()
+        $("#uploadform #file").addClass("error")
+        if(json.errortype == 'main'){
+            $("#uploadform div.error").append('<h4>'+json.errors.main+'</h4>')
+        }else if(json.errortype == 'document'){
+            $("#uploadform div.error").append('<h4>'+_('Logic-error in CSV')+'<h4>')
+            for(let i in json.errors){
+                var li = $('<li>').text(_("Row ")+i)
+                var ul = $('<ul>')
+                for(let j in json.errors[i]){
+                    var row_li = $('<li>').text(json.errors[i][j])
+                    ul.append(row_li)
+                }
+                $("#uploadform div.error").append($('<ul>').append(li.append(ul)))
+                
+            }
+        }else if(json.errortype == 'form'){
+            for(let i in json.errors)
+                $("#uploadform label.error").append(json.errors[i]+'<br/>')
+        }
+    }
+})        

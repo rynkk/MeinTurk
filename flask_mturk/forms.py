@@ -3,7 +3,7 @@ from flask_wtf.file import FileRequired, FileAllowed
 from flask_ckeditor import CKEditorField
 from flask_babel import lazy_gettext
 from wtforms import FormField, StringField, BooleanField, DecimalField, RadioField
-from wtforms import SelectField, IntegerField, SubmitField, FieldList, FileField
+from wtforms import SelectField, SelectMultipleField, IntegerField, SubmitField, FieldList, FileField
 from wtforms.validators import Optional, InputRequired, ValidationError, Regexp
 from wtforms.widgets import HiddenInput
 from wtforms.widgets.html5 import NumberInput
@@ -185,3 +185,19 @@ class QualificationCreationForm(FlaskForm):
     keywords = StringField(lazy_gettext('Keywords'), validators=[Optional()])
     auto_granted = BooleanField(lazy_gettext('AutoGranted'), description=lazy_gettext('AutoGranted qualifications are automatically assigned to workers who work on a HIT containing that AutoGranted qualification.'), validators=[Optional()])
     auto_granted_value = IntegerField(lazy_gettext('AutoGranted Value'), validators=[Optional()], default=1, widget=NumberInput(min=0, max=100, step=1))
+
+
+class QualificationsMultiselect(FlaskForm):
+    multiselect = SelectMultipleField(lazy_gettext('Qualifications'), validators=[InputRequired(lazy_gettext('At least select one qualification!'))])
+
+
+class UploadWorkerForm(FlaskForm):
+    file = FileField('file', validators=[
+        FileRequired(),
+        FileAllowed(['csv', 'xlsx', 'txt'], lazy_gettext('Only CSV-Files are allowed!'))
+    ])
+
+
+class SingleQualToWorkerForm(FlaskForm):
+    select = SelectField(lazy_gettext('Qualification'), validators=[InputRequired(lazy_gettext('Please select a qualification!'))])
+    value = IntegerField(lazy_gettext('Qualification Value'), validators=[InputRequired('Please select a value')], default=1, widget=NumberInput(min=0, step=1))

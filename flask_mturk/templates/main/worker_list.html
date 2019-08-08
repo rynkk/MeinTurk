@@ -3,6 +3,7 @@
 {% block head %}
 <title>{{ title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}" >
+<link rel="stylesheet" href="{{ url_for('static', filename='css/worker.css') }}" >
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}" >
 {% endblock head %}
 
@@ -16,23 +17,75 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="container">
+            <div class="modal-body">                
+                <form method="POST" id="qualform" novalidate="novalidate" enctype="multipart/form-data">
+                    {{ singleselect.hidden_tag() }}
+                <div class="container mt-2 mb-5">
                     <div class="row">
                         <div class="col-7">
-                            <label for="qualid">{{ _("Qualification ID") }}</label>
-                            <input type="text" class="form-control" id="qualid" placeholder="{{ _('Enter Qualification ID') }}">
-                            <label class="error" id="qualiderror"></label>
+                            {{ singleselect.select.label }}
+                            {{ singleselect.select(class="form-control") }}
                         </div>
                         <div class="col-5">
-                            <label for="qualvalue">Qualification Value</label>
-                            <input type="number" class="form-control" id="qualvalue" min="0" step="1" placeholder="{{ _('Enter a Value >= 0') }}">
+                            {{ singleselect.value.label }}
+                            {{ singleselect.value(class="form-control") }}
+                            <label class="error" id="invalid_qualval"></label>
                         </div>
                     </div>
                 </div>
+            </form>
             </div>
             <div class="modal-footer">
                 <button id="assign-qual" type="button" class="btn btn-primary">{{ _('Assign') }}</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="csvmodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('CSV-Actions') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>            
+            <div class="modal-body" style="padding:2rem 1rem">
+                <div class="container-small">
+                    <h6>{{ _('Here you can either download or upload a CSV containing all workers displayed on this page and your chosen Qualifications.') }}</h6>
+                    <br>
+                    <h6>{{ _('Note: You can not only add Values but also Worker- and QualificationIDs to the exported CSV, just make sure they are valid.
+                              You can correct the CSV and resubmit it in case of Errors (or Warnings).') }}</h6>
+                </div>
+                <hr class="mb-3">
+                <h5>{{ _('Export') }}</h5>
+                <div class="container-small">
+                        <form method="POST" id="downloadform" novalidate="novalidate">
+                            {{ multiselect.hidden_tag() }}
+                            <p class="font-weight-light">{{ _('First select the qualifications you want to associate/change') }}</p>
+                            {{ multiselect.multiselect(data_live_search="true", style="border-color: darkgray") }}
+                            <label id="fileerror" class="error"></label>
+                        </form>
+                </div>
+                <div class="container-small">
+                    <p class="font-weight-light">{{ _('Then just click here to download the CSV') }}</p>
+                    <button id="exportcsv" class="btn btn-primary export-btn" type="button" download>{{ _('Export CSV') }}</button>
+                </div>
+                <hr>
+                <h5>{{ _('Import') }}</h5>
+                <div class="container-small">
+                    <form method="POST" id="uploadform" novalidate="novalidate" enctype="multipart/form-data">
+                        <p class="font-weight-light">{{ _('Once you put all necessary data into the CSV select it here and hit the upload button!') }}</p>
+                        {{ fileselect.hidden_tag() }}
+                        {{ fileselect.file(class="form-control-file") }}
+                        <label class="error"></label>
+                        <div class="error"></div>
+                    </form>
+                    <button id="uploadcsv" type="button" class="btn btn-primary">{{ _('Upload CSV') }}</button>
+                </div>
+            </div>
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
@@ -63,6 +116,7 @@
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/download.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/worker-list.js') }}"></script>
 
 {% endblock scripts %}

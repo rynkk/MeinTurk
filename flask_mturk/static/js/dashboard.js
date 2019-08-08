@@ -673,7 +673,7 @@ $('#progressmodal').on('change', '.checkbox-group', function(){
         $('button.selected-action').prop('disabled', true)
 })
 
-$('#progressmodal').on('show.bs.modal',async function(event){
+$('#progressmodal').on('show.bs.modal', async function(event){
     var modal = $(this)
     var button = $(event.relatedTarget)
     if (button.data('batched')){

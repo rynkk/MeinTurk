@@ -138,7 +138,7 @@ body.loading > .loading-modal{
     word-break:break-word
 }
 
-input.error, select.error{
+input.error, select.error, button.error{
     -moz-box-shadow: 0 0 3px 0 red!important;
     -webkit-box-shadow: 0 0 3px 0 red!important;
     box-shadow: 0 0 3px 0 red!important;
@@ -156,6 +156,10 @@ label.error{
   font-size: 12px;
   line-height: 15px;
   margin: 5px 0 0;
+}
+
+.z-5000{
+    z-index: 5000 !important;
 }
 
 @media (min-width: 768px) {

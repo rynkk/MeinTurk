@@ -5,7 +5,7 @@ import io
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
 from flask_mturk import app, db, babel, ISO3166, SYSTEM_QUALIFICATION
-from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm
+from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm, QualificationsMultiselect, UploadWorkerForm, SingleQualToWorkerForm
 from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer, Worker
 from flask_babel import gettext as _
 from botocore.exceptions import ClientError
@@ -199,7 +199,7 @@ def qualifications_page():
 
 @app.route("/worker")
 def worker_page():
-    """Route for the worker page where you can see all workers that worked for you and softblock them"""
+    """Route for the worker page where you can see all workers that worked for you, assign qualifications and softblock them """
 
     locale = get_locale()
     balance = api.get_balance()
@@ -217,7 +217,103 @@ def worker_page():
 
         workers.append(worker)
 
-    return render_template('main/worker_list.html', title=_('Workers'), locale=locale, balance=balance, workers=workers)
+    qualifications = api.list_custom_qualifications()
+    selector_choices = [(q['QualificationTypeId'], q["Name"]) for q in qualifications if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
+
+    qual_select = QualificationsMultiselect()
+    qual_select.multiselect.choices = selector_choices
+
+    single_qual = SingleQualToWorkerForm()
+    single_qual.select.choices = selector_choices
+    fileselect = UploadWorkerForm()
+    return render_template('main/worker_list.html', title=_('Workers'), locale=locale, balance=balance, workers=workers, singleselect=single_qual, multiselect=qual_select, fileselect=fileselect)
+
+
+@app.route("/export_workers", methods=['POST'])
+def worker_export():
+    """Route to provide a CSV with the necessary Worker and Qualification Fields"""
+
+    form = QualificationsMultiselect()
+    qualifications = api.list_custom_qualifications()
+    selector_choices = [(q['QualificationTypeId'], q["Name"]) for q in qualifications if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
+    form.multiselect.choices = selector_choices
+    if form.validate_on_submit():
+        fieldnames = ['WorkerId']
+        for q in form.multiselect.data:
+            fieldnames.append(q)
+
+        si = io.StringIO()
+        csv_writer = csv.DictWriter(si, fieldnames)
+        csv_writer.writeheader()
+
+        workers = Worker.query.all()
+        for worker in workers:
+            row = {'WorkerId': worker.id}
+            csv_writer.writerow(row)
+
+        return Response(si.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=worker_export"})
+    return jsonify({'success': False, 'error': _('Could not validate the selected Qualifications! Did you delete any of them before trying to export the CSV?')}), 400
+
+
+@app.route("/upload_workers", methods=['POST'])
+def upload_workers():
+    """Route to provide a CSV with the necessary Worker and Qualification Fields"""
+
+    form = UploadWorkerForm()
+
+    if form.validate_on_submit():
+        csvfile = form.file.data
+        csvdata = io.StringIO(csvfile.read().decode('utf-8'))
+
+        csvreader = csv.DictReader(csvdata)
+        # checking if the csv contains valid data
+        errors = {}
+        data_exists = False
+        for index, row in enumerate(csvreader, 1):
+            try:
+                row['WorkerId']
+            except KeyError as e:
+                return jsonify({'success': False, 'errortype': 'main', 'errors': {'main': _('CSV header not formatted properly: </br> Missing header %s') % e}}), 422
+
+            qualifications = iter(row)
+            # skipping workerid
+            next(qualifications)
+            for q in qualifications:
+                value = row[q]
+                if value and not is_integer(value):
+                    errors.setdefault(index, []).append(_('Qualification Values must be Integers; "%s" was entered!') % value)
+                elif is_integer(value) and int(value) < 0:
+                    errors.setdefault(index, []).append(_('Qualification Values must be positive (or 0); "%s" was entered!') % value)
+                elif is_integer(value) and int(value) >= 0:
+                    # All ok
+                    data_exists = True
+
+        if errors:
+            return json.dumps({'success': False, 'errortype': 'document', 'errors': errors}), 422, {'ContentType': 'application/json'}
+
+        if not data_exists:
+            return jsonify({'success': False, 'errortype': 'main', 'errors': {'main': _('No processable Data in CSV!')}})
+
+        warnings = {}
+        csvdata.seek(0)
+        csvreader = csv.DictReader(csvdata)
+        for index, row in enumerate(csvreader, 1):
+            workerid = row['WorkerId']
+
+            qualifications = iter(row)
+            # skipping workerid
+            next(qualifications)
+            for q in qualifications:
+                value = row[q]
+                if is_integer(value) and int(value) >= 0:
+                    error = api.associate_qualification_with_worker(workerid, q, int(value))
+                    if error is not None:
+                        warnings.setdefault(index, []).append(_('Could not associate qualification: %s') % error)
+                elif value:
+                    warnings.setdefault(index, []).append(_('Qualification Values must be Integers and positive (or 0); "%s" was entered!') % value)
+
+        return jsonify({'success': True, 'warnings': warnings})
+    return jsonify({'success': False, 'errortype': 'form', 'errors': form.errors}), 400
 
 
 @app.route("/cached")
@@ -266,7 +362,6 @@ def cache_batch(batchid):
         assignments = get_assignments(hit.id, False)
         bonus_payments = api.list_bonus_payments_for_hit(hit.id)
         for a in assignments:
-            print(a)
             approved = True if a['AssignmentStatus'] == 'Approved' else False
             bonus_obj = next((payment for payment in bonus_payments if payment['WorkerId'] == a['WorkerId'] and payment['AssignmentId'] == a['AssignmentId']), None)
 
@@ -336,7 +431,6 @@ def export(id, type_):
                'Status': a['AssignmentStatus'], 'Answer': a['Answer']}
         time_taken = int((a['SubmitTime'] - a['AcceptTime']).total_seconds())
         row['TimeTaken'] = time_taken
-        print(a)
         if 'RequesterFeedback' in a:
             row['RejectionMessage'] = a['RequesterFeedback']
         else:
@@ -766,7 +860,6 @@ def flash_errors(form):
     """ Simple script to flash form errors to the frontend """
 
     for field, errors in form.errors.items():
-        print(errors)
         for error in errors:
             flash(u"Error in the %s field - %s" % (
                 getattr(form, field).short_name,
