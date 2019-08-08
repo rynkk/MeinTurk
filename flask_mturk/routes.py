@@ -236,11 +236,13 @@ def worker_export():
     form = QualificationsMultiselect()
     qualifications = api.list_custom_qualifications()
     selector_choices = [(q['QualificationTypeId'], q["Name"]) for q in qualifications if not (q['QualificationTypeId'] == app.config.get('SOFTBLOCK_QUALIFICATION_ID'))]
+    print(selector_choices)
     form.multiselect.choices = selector_choices
     if form.validate_on_submit():
         fieldnames = ['WorkerId']
         for q in form.multiselect.data:
-            fieldnames.append(q)
+            name = [quals[1] for quals in selector_choices if quals[0] == q][0]
+            fieldnames.append(q + "#" + name)
 
         si = io.StringIO()
         csv_writer = csv.DictWriter(si, fieldnames)
@@ -279,6 +281,8 @@ def upload_workers():
             # skipping workerid
             next(qualifications)
             for q in qualifications:
+                if not q:
+                    errors.setdefault(index, []).append(_('Qualification Header missing'))
                 value = row[q]
                 if value and not is_integer(value):
                     errors.setdefault(index, []).append(_('Qualification Values must be Integers; "%s" was entered!') % value)
@@ -305,8 +309,9 @@ def upload_workers():
             next(qualifications)
             for q in qualifications:
                 value = row[q]
+                qualid = q.split('#')[0]
                 if is_integer(value) and int(value) >= 0:
-                    error = api.associate_qualification_with_worker(workerid, q, int(value))
+                    error = api.associate_qualification_with_worker(workerid, qualid, int(value))
                     if error is not None:
                         warnings.setdefault(index, []).append(_('Could not associate qualification: %s') % error)
                 elif value:
