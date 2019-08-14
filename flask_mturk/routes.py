@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import render_template, url_for, flash, redirect, jsonify, json, request, Response
 from flask_mturk import app, db, babel, ISO3166, SYSTEM_QUALIFICATION
 from flask_mturk.forms import SurveyForm, UploadForm, QualificationCreationForm, QualificationsMultiselect, UploadWorkerForm, SingleQualToWorkerForm
-from flask_mturk.models import MiniGroup, MiniHIT, HiddenHIT, CachedAnswer, Worker
+from flask_mturk.models import MiniGroup, MiniHIT, TrackedHIT, CachedAnswer, Worker
 from flask_babel import gettext as _
 from botocore.exceptions import ClientError
 
@@ -41,7 +41,7 @@ def dashboard():
         if new_hit not in hits:
             hits.append(new_hit)
 
-    hidden_hits = db.session.query(HiddenHIT.id).all()
+    hidden_hits = db.session.query(TrackedHIT.id).filter(TrackedHIT.hidden.is_(True)).all()
 
     for group in groups:
         batch = {'batch_id': group.id, 'batch_name': group.project_name, 'batch_goal': group.assignments_goal, 'batch_status': group.status, 'hidden': group.hidden, 'hits': []}
@@ -162,6 +162,9 @@ def survey():
             hit = api.create_hit(amount_workers, accept_pay_worker_after, time_till_expiration, allotted_time_per_worker, payment_per_worker, title, keywords, description, html_question_value, qualifications)
             hit_type_id = hit['HITTypeId']
             hit_id = hit['HITId']
+            tracked_hit = TrackedHIT(id=hit_id, hidden=False, active=True)
+            db.session.add(tracked_hit)
+            db.session.commit()
 
         return redirect(url_for('dashboard', createdhit=hit_id))
     else:
@@ -692,15 +695,13 @@ def toggle_hit_visibility(id, batched=False):
         else:
             return json.dumps({'success': False, 'error': _('No Batch with ID %s.') % id}), 404, {'ContentType': 'application/json'}
     else:
-        hit = HiddenHIT.query.filter(HiddenHIT.id == id).one_or_none()
+        hit = TrackedHIT.query.filter(TrackedHIT.id == id).one_or_none()
         if hit is None:
-            hit = HiddenHIT(id=id)
-            db.session.add(hit)
-            hidden = True
+            return jsonify({'success': False, 'error': _('No HIT with ID %s exists in Database.') % id}), 404
         else:
-            db.session.delete(hit)
-            hidden = False
-
+            hidden = not hit.hidden
+            hit.hidden = not hit.hidden
+    
     db.session.commit()
     return json.dumps({'success': True, 'hidden': hidden}), 200, {'ContentType': 'application/json'}
 
@@ -1008,12 +1009,39 @@ def update_mini_hits() -> None:
     db.session.commit()
 
 
+def check_tracked_hits():
+    query = db.session.query(TrackedHIT)\
+        .filter(TrackedHIT.active.is_(True)).all()
+
+    for thit in query:
+        hit = api.get_hit(thit.id)
+        if hit['HITStatus'] != 'Reviewable':
+            continue
+
+        thit.active = False
+        assignments = api.list_assignments_for_hit(thit.id)
+        for a in assignments:
+            worker = Worker.query.filter(Worker.id == a['WorkerId']).one_or_none()
+
+            if worker is None:
+                worker = Worker(id=a['WorkerId'])
+                if a['AssignmentStatus'] == 'Approved':
+                    worker.no_approved = 1
+                elif a['AssignmentStatus'] == 'Rejected':
+                    worker.no_rejected = 1
+                db.session.add(worker)
+            else:
+                worker.no_assignments += 1
+    db.session.commit()
+
+
 db.create_all()
 
 import os
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Make Scheduler be created once, else it will run twice which will screw up the database
     scheduler = BackgroundScheduler()
     scheduler.add_job(update_mini_hits, 'interval', seconds=15)
+    scheduler.add_job(check_tracked_hits, 'interval', seconds=15)
     scheduler.start()
 
 
@@ -1035,7 +1063,7 @@ def approve_route(assignmentid, workerid):
         return jsonify({'success': False, 'error': response}), 423
 
 
-@app.route('/reject_assignment/<awsid:assignmentid>', methods=['PATCH'])
+@app.route('/reject_assignment/<awsid:assignmentid>/<awsid:workerid>', methods=['PATCH'])
 def reject_route(assignmentid, workerid):
     response = api.reject_assignment(assignmentid, app.config.get('DEFAULT_REJECTION_MESSAGE'))
     if response is None:
@@ -1053,6 +1081,20 @@ def reject_route(assignmentid, workerid):
         return jsonify({'success': False, 'error': response}), 423
 
 
+@app.route('/delete_hit/<awsid:hitid>', methods=['DELETE'])
+def delete_route(hitid):
+    resp = jsonify(api.delete_hit(hitid))
+    if resp.success:
+        tracked_hit = TrackedHIT.query.filter(TrackedHIT.id == hitid)
+        db.session.remove(tracked_hit)
+    return resp
+
+
+######################################################################
+#                          DEBUGGING ROUTES                          #
+######################################################################
+
+
 @app.route('/approve_all/<awsid:hitid>', methods=['PATCH'])
 def approve_all_route(hitid):
     assignments = api.list_assignments_for_hit(hitid)
@@ -1066,15 +1108,6 @@ def approve_all_route(hitid):
         return jsonify({'success': True}), 200
     else:
         return jsonify({'success': False, 'error': errors}), 423
-
-
-######################################################################
-#                          DEBUGGING ROUTES                          #
-######################################################################
-
-@app.route('/delete_hit/<awsid:hitid>')
-def delete_route(hitid):
-    return api.delete_hit(hitid)
 
 
 import time
@@ -1114,9 +1147,11 @@ def clear_all(secretkey, hits=None):
     if secretkey != app.config.get('SECRET_KEY'):
         return "403 Forbidden"
     hits = api.list_all_hits()
-    for i in range(5):  # try to delete all hits 5 times
-        if hits:  # if hits is not empty
-            hits = delete_hits(hits)
+    for hit in hits:
+        try:
+            api.forcedelete_hit(hit['HITId'])
+        except api.client.exceptions.ClientError:
+            pass
     db.drop_all()
     db.create_all()
     return jsonify(api.list_all_hits())

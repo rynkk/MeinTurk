@@ -70,7 +70,7 @@ from flask_mturk import routes
 
 __all__ = ['routes', ]
 
-from flask_mturk.models import MiniHIT, MiniGroup, HiddenHIT, CachedAnswer, Worker
+from flask_mturk.models import MiniHIT, MiniGroup, TrackedHIT, CachedAnswer, Worker
 
 admin = Admin(app, 'Database')
 
@@ -85,9 +85,9 @@ class GroupView(ModelView):
     column_display_pk = True
 
 
-class HiddenView(ModelView):
+class TrackedView(ModelView):
     column_display_pk = True
-    form_columns = ('id',)
+    form_columns = ('id', 'active', 'hidden')
 
 
 class AnswerView(ModelView):
@@ -101,5 +101,5 @@ class WorkerView(ModelView):
 admin.add_view(WorkerView(Worker, db.session, 'Worker'))
 admin.add_view(HITView(MiniHIT, db.session, 'MiniHIT'))
 admin.add_view(GroupView(MiniGroup, db.session, 'MiniGroup'))
-admin.add_view(HiddenView(HiddenHIT, db.session, 'HiddenHIT'))
+admin.add_view(TrackedView(TrackedHIT, db.session, 'TrackedHIT'))
 admin.add_view(AnswerView(CachedAnswer, db.session, 'CachedAnswer'))

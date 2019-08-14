@@ -261,11 +261,6 @@ def list_payments(id):
     return jsonify(payments)
 
 
-@app.route('/delete_hit/<awsid:id>', methods=['DELETE'])
-def delete_hit(id):
-    return jsonify(api.delete_hit(id))
-
-
 @app.route('/api/softblock/<awsid:workerid>', methods=['PATCH'])
 def softblock_route(workerid):
     response = api.associate_qualification_with_worker(workerid, app.config.get('SOFTBLOCK_QUALIFICATION_ID'))

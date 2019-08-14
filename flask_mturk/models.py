@@ -13,9 +13,11 @@ class Worker(db.Model):
     last_completed = db.Column(db.String, default=datetime.datetime.now(datetime.timezone.utc))
 
 
-class HiddenHIT(db.Model):
+class TrackedHIT(db.Model):
     __tablename__ = 'hidden_hit'
     id = db.Column(db.String, primary_key=True)
+    hidden = db.Column(db.Boolean, default=False, nullable=False)
+    active = db.Column(db.Boolean, default=False, nullable=False)
 
 
 class MiniGroup(db.Model):
