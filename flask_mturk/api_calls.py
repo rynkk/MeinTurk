@@ -1,9 +1,12 @@
 import time
 from datetime import datetime
+import logging
 
 from flask import jsonify
 from flask_mturk import client, app
 from botocore.exceptions import ClientError
+
+logger = logging.getLogger('apiCalls')
 
 
 class Api:
@@ -13,13 +16,22 @@ class Api:
     # ## ### Elementary functions ### ## #
 
     def get_hit(self, hitid):
-        return self.client.get_hit(HITId=hitid)['HIT']
+        try:
+            return self.client.get_hit(HITId=hitid)['HIT']
+        except ClientError:
+            logger.exception('An Error occured trying to get the HIT %s' % hitid)
 
     def expire_hit(self, hit_id):
-        return self.client.update_expiration_for_hit(HITId=hit_id, ExpireAt=datetime(2015, 1, 1))
+        try:
+            return self.client.update_expiration_for_hit(HITId=hit_id, ExpireAt=datetime(2015, 1, 1))
+        except ClientError:
+            logger.exception('An Error occured trying to expire HIT %s' % hit_id)
 
     def get_balance(self):
-        return self.client.get_account_balance()['AvailableBalance']
+        try:
+            return self.client.get_account_balance()['AvailableBalance']
+        except ClientError:
+            logger.exception('An Error occured trying to get the balance')
 
     def disassociate_qualification_from_worker(self, workerid, qualificationid):
         return self.client.disassociate_qualification_from_worker(
@@ -32,6 +44,7 @@ class Api:
             self.client.get_qualification_type(QualificationTypeId=qualificationid)
             return None
         except ClientError as ce:
+            logger.exception('An Error occured trying to get the qualification %s' % qualificationid)
             return ce.response['Error']['Message']
 
     # not needed for now
@@ -45,6 +58,7 @@ class Api:
         try:
             return {'success': True, 'data': self.client.delete_hit(HITId=hit_id)}
         except ClientError as ce:
+            logger.exception('An Error occured trying to delete the HIT %s' % hit_id)
             return {'success': False, 'error': ce.response['Error']['Message']}
 
     def approve_assignment(self, assignment_id):
@@ -52,6 +66,7 @@ class Api:
             client.approve_assignment(AssignmentId=assignment_id)
             return None
         except ClientError as ce:
+            logger.exception('An Error occured trying to approve the Assignment %s' % assignment_id)
             return ce.response['Error']['Message']
 
     def reject_assignment(self, assignment_id, reason):
@@ -59,12 +74,17 @@ class Api:
             client.reject_assignment(AssignmentId=assignment_id, RequesterFeedback=reason)
             return None
         except ClientError as ce:
+            logger.exception('An Error occured trying to reject the Assignment %s' % assignment_id)
             return ce.response['Error']['Message']
 
     def delete_qualification_type(self, qualification_id):
         if(qualification_id != app.config.get('SOFTBLOCK_QUALIFICATION_ID')):
-            return client.delete_qualification_type(QualificationTypeId=qualification_id)
+            try:
+                return client.delete_qualification_type(QualificationTypeId=qualification_id)
+            except ClientError:
+                logger.exception('An error occured trying to delete the qualification %s' % qualification_id)
         else:
+            logger.critical('Tried to delete the softblock-qualification')
             raise ValueError('Tried to delete Softblock-Qualification')
 
     def associate_qualification_with_worker(self, worker_id, qualification_id, val=1):
@@ -77,6 +97,7 @@ class Api:
             )
             return None
         except ClientError as ce:
+            logger.exception('An error occured trying to associate the qualification %s to the worker' % (qualification_id, worker_id))
             return ce.response['Error']['Message']
 
     def send_bonus(self, worker_id, assignment_id, bonus_amount, reason, token):
@@ -90,63 +111,72 @@ class Api:
             )
             return None
         except ClientError as ce:
+            logger.exception('An error occured trying to send a bonus to the worker %s' % worker_id)
             return ce.response['Error']['Message']
 
     def create_hit(self, max, autoacc, lifetime, duration, reward, title, keywords, desc, question, qualreq):
-        response = self.client.create_hit(
-            MaxAssignments=max,
-            AutoApprovalDelayInSeconds=autoacc,
-            LifetimeInSeconds=lifetime,
-            AssignmentDurationInSeconds=duration,
-            Reward=reward,
-            Title=title,
-            Keywords=keywords,
-            Description=desc,
-            Question=question,
-            QualificationRequirements=qualreq
-        )['HIT']
-        return response
+        try:
+            return self.client.create_hit(
+                MaxAssignments=max,
+                AutoApprovalDelayInSeconds=autoacc,
+                LifetimeInSeconds=lifetime,
+                AssignmentDurationInSeconds=duration,
+                Reward=reward,
+                Title=title,
+                Keywords=keywords,
+                Description=desc,
+                Question=question,
+                QualificationRequirements=qualreq
+            )['HIT']
+        except ClientError:
+            logger.exception('An error occured trying to create a HIT')
 
     def create_hit_with_type(self, hittypeid, question, lifetime, max, reqanno=""):
-        response = self.client.create_hit_with_hit_type(
-            HITTypeId=hittypeid,
-            MaxAssignments=max,
-            LifetimeInSeconds=lifetime,
-            Question=question,
-            RequesterAnnotation=reqanno
-        )['HIT']
-        return response
+        try:
+            return self.client.create_hit_with_hit_type(
+                HITTypeId=hittypeid,
+                MaxAssignments=max,
+                LifetimeInSeconds=lifetime,
+                Question=question,
+                RequesterAnnotation=reqanno
+            )['HIT']
+        except ClientError:
+            logger.exception('An error occured trying to create a HIT with Type %s' % hittypeid)
 
     def create_hit_type(self, autoapp, duration, reward, title, keywords, desc, qualreq):
-        response = self.client.create_hit_type(
-            AutoApprovalDelayInSeconds=autoapp,
-            AssignmentDurationInSeconds=duration,
-            Reward=reward,
-            Title=title,
-            Keywords=keywords,
-            Description=desc,
-            QualificationRequirements=qualreq
-        )
-        return response['HITTypeId']
+        try:
+            return self.client.create_hit_type(
+                AutoApprovalDelayInSeconds=autoapp,
+                AssignmentDurationInSeconds=duration,
+                Reward=reward,
+                Title=title,
+                Keywords=keywords,
+                Description=desc,
+                QualificationRequirements=qualreq
+            )['HITTypeId']
+        except ClientError:
+            logger.exception('An error occured trying to create a HITType')
 
     def create_qualification_type(self, name, keywords, description, autogrant=False, autograntvalue=None):
-        if not autogrant:
-            response = client.create_qualification_type(
-                Name=name,
-                Keywords=keywords,
-                Description=description,
-                QualificationTypeStatus='Active',
-            )['QualificationType']
-        else:
-            response = client.create_qualification_type(
-                Name=name,
-                Keywords=keywords,
-                Description=description,
-                QualificationTypeStatus='Active',
-                AutoGranted=autogrant,
-                AutoGrantedValue=autograntvalue
-            )['QualificationType']
-        return response
+        try:
+            if not autogrant:
+                return client.create_qualification_type(
+                    Name=name,
+                    Keywords=keywords,
+                    Description=description,
+                    QualificationTypeStatus='Active',
+                )['QualificationType']
+            else:
+                return client.create_qualification_type(
+                    Name=name,
+                    Keywords=keywords,
+                    Description=description,
+                    QualificationTypeStatus='Active',
+                    AutoGranted=autogrant,
+                    AutoGrantedValue=autograntvalue
+                )['QualificationType']
+        except ClientError:
+            logger.exception('An error occured trying to create a qualification')
 
     # ## ### Paginated functions ### ## #
 
