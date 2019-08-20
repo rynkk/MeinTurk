@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-02 18:07+0200\n"
+"POT-Creation-Date: 2019-08-20 15:37+0200\n"
 "PO-Revision-Date: 2019-07-28 12:08+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -47,7 +47,7 @@ msgstr "Projektname"
 msgid "Name of the project. (Not visible to workers)"
 msgstr "Name des Projekts. (Nicht sichtbar für Arbeiter)"
 
-#: forms.py:136 static/js/dashboard.js:900 templates/main/survey.html:74
+#: forms.py:136 static/js/dashboard.js:1014 templates/main/survey.html:78
 msgid "Title"
 msgstr "Titel"
 
@@ -55,8 +55,8 @@ msgstr "Titel"
 msgid "Survey title being displayed to workers."
 msgstr "Der Titel der Umfrage der den Arbeitern angezeigt wird."
 
-#: forms.py:137 forms.py:184 static/js/dashboard.js:908
-#: static/js/dashboard.js:940 templates/main/qualification_list.html:68
+#: forms.py:137 forms.py:184 static/js/dashboard.js:1022
+#: static/js/dashboard.js:1054 templates/main/qualification_list.html:70
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -64,14 +64,14 @@ msgstr "Beschreibung"
 msgid "Comprehensive description of your survey."
 msgstr "Umfassende Beschreibung Ihrer Umfrage."
 
-#: forms.py:138 forms.py:185 static/js/dashboard.js:916
-#: static/js/dashboard.js:948
+#: forms.py:138 forms.py:185 static/js/dashboard.js:1030
+#: static/js/dashboard.js:1062
 msgid "Keywords"
 msgstr "Schlagwörter"
 
 #: forms.py:138
 msgid "Keywords which either you or the workers can search for. (optional)"
-msgstr "Schlagwörter, nach denen Sie oder die Arbeiter suchen können. (wahlweise)"
+msgstr "Schlagwörter, nach denen Sie oder die Arbeiter suchen können. (optional)"
 
 #: forms.py:139
 msgid "Time till expiration"
@@ -81,9 +81,7 @@ msgstr "Zeit bis zum Ablauf"
 msgid ""
 "Time until the survey expires and becomes unavailable to workers. "
 "MINIBATCHING: This will be assigned to each MiniHIT of the batch!"
-msgstr ""
-"Zeit bis die Umfrage abläuft und für Arbeitnehmer nicht mehr verfügbar "
-"ist. MINIBATCHING: Dies wird jedem MiniHIT des Batches zugewiesen!"
+msgstr "Zeit bis die Umfrage abläuft und für Arbeitnehmer nicht mehr verfügbar ist. MINIBATCHING: Dies wird jedem MiniHIT des Batches zugewiesen!"
 
 #: forms.py:142
 msgid "Amount workers"
@@ -93,10 +91,7 @@ msgstr "Anzahl Arbeiter"
 msgid ""
 "The amount of workers that can work on your survey. MINIBATCHING: MiniHIT"
 " will automatically be generated to reach this amount of submissions!"
-msgstr ""
-"Die Anzahl der Arbeiter, die an Ihrer Umfrage arbeiten können. "
-"MINIBATCHING: MiniHITs werden automatisch generiert, um diese Anzahl von "
-"Einsendungen zu erreichen!"
+msgstr "Die Anzahl der Arbeiter, die an Ihrer Umfrage arbeiten können. MINIBATCHING: MiniHITs werden automatisch generiert, um diese Anzahl von Einsendungen zu erreichen!"
 
 #: forms.py:143
 msgid "MiniBatching"
@@ -106,9 +101,7 @@ msgstr "MiniBatching"
 msgid ""
 "MiniBatching will divide your survey into multiple smaller surveys with "
 "max. 9 workers each to save fees."
-msgstr ""
-"MiniBatching unterteilt Ihre Umfrage in mehrere kleinere Umfragen mit je "
-"max. 9 Arbeiter, um Gebühren zu sparen."
+msgstr "MiniBatching unterteilt Ihre Umfrage in mehrere kleinere Umfragen mit je max. 9 Arbeiter, um Gebühren zu sparen."
 
 #: forms.py:144
 msgid "MiniBatching-Qualification name"
@@ -119,11 +112,7 @@ msgid ""
 "This will be the name under which the qualification for this batch will "
 "be saved. This qualification will prevent multiple submissions from the "
 "same worker within this batch."
-msgstr ""
-"Dies ist der Name, unter dem die Qualifikation für diesen Batch "
-"gespeichert wird. Durch diese Qualifikation wird verhindert, dass "
-"innerhalb dieses Batches mehrere Einreichungen desselben Arbeiters "
-"erfolgen."
+msgstr "Dies ist der Name, unter dem die Qualifikation für diesen Batch gespeichert wird. Durch diese Qualifikation wird verhindert, dass innerhalb dieses Batches mehrere Einreichungen desselben Arbeiters erfolgen."
 
 #: forms.py:147
 msgid "Allotted time"
@@ -149,16 +138,14 @@ msgstr "Arbeiter müssen Master sein"
 msgid ""
 "Master are workers with disinguished submission-quality. This will create"
 " additional fees."
-msgstr ""
-"Master sind Arbeiter mit außergewöhnlicher Abgabequalität. Hierdurch "
-"entstehen zusätzliche Gebühren."
+msgstr "Master sind Arbeiter mit außergewöhnlicher Abgabequalität. Hierdurch entstehen zusätzliche Gebühren."
 
-#: forms.py:151 static/js/worker-list.js:29 static/js/worker-list.js:65
+#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:106
 msgid "Yes"
 msgstr "Ja"
 
-#: forms.py:151 static/js/dashboard.js:967 static/js/worker-list.js:29
-#: static/js/worker-list.js:69
+#: forms.py:151 static/js/dashboard.js:1081 static/js/worker-list.js:44
+#: static/js/worker-list.js:110
 msgid "No"
 msgstr "Nein"
 
@@ -170,9 +157,7 @@ msgstr "Wählen Sie alle erforderlichen Qualifikationen für diese Umfrage aus."
 msgid ""
 "Workers that do not have the chosen qualifications will be unable to "
 "participate in the survey."
-msgstr ""
-"Arbeitnehmer, die nicht über die gewählten Qualifikationen verfügen, "
-"können an der Umfrage nicht teilnehmen."
+msgstr "Arbeitnehmer, die nicht über die gewählten Qualifikationen verfügen, können an der Umfrage nicht teilnehmen."
 
 #: forms.py:154
 msgid "Project contains adult content"
@@ -182,9 +167,7 @@ msgstr "Das Projekt enthält nicht jugendfreie Inhalte"
 msgid ""
 "Workers unwilling or not allowed to see adult content will be excluded "
 "from the survey if this is checked."
-msgstr ""
-"Arbeitnehmer, die solche Inhalte nicht sehen wollen oder dürfen, werden "
-"von der Umfrage ausgeschlossen, wenn dies aktiviert ist."
+msgstr "Arbeitnehmer, die solche Inhalte nicht sehen wollen oder dürfen, werden von der Umfrage ausgeschlossen, wenn dies aktiviert ist."
 
 #: forms.py:156
 msgid "Visibility"
@@ -196,12 +179,7 @@ msgid ""
 "Private: Cannot accept nor preview without the right qualifications.; "
 "Hidden: Cannot accept, preview nor see the survey without the right "
 "qualifications."
-msgstr ""
-"Öffentlich: Kann die Umfrage ohne die richtigen Qualifikationen nicht "
-"annehmen .; Privat: Kann ohne die richtigen Qualifikationen weder "
-"annehmen noch eine Vorschau anzeigen .; Ausgeblendet: Die Umfrage kann "
-"ohne die richtigen Qualifikationen nicht angenommen, in der Vorschau "
-"angezeigt oder angezeigt werden."
+msgstr "Öffentlich: Kann die Umfrage ohne die richtigen Qualifikationen nicht annehmen .; Privat: Kann ohne die richtigen Qualifikationen weder annehmen noch eine Vorschau anzeigen .; Versteckt: Die Umfrage kann ohne die richtigen Qualifikationen nicht angenommen, in der Vorschau angezeigt oder angezeigt werden."
 
 #: forms.py:157
 msgid "Public"
@@ -227,8 +205,8 @@ msgstr "Allgemeines"
 msgid "Worker"
 msgstr "Arbeiter"
 
-#: forms.py:166 routes.py:183 static/js/dashboard.js:924
-#: static/js/dashboard.js:964 templates/base.html:35
+#: forms.py:166 forms.py:191 routes.py:201 static/js/dashboard.js:1038
+#: static/js/dashboard.js:1078 templates/base.html:35
 msgid "Qualifications"
 msgstr "Qualifikationen"
 
@@ -244,9 +222,7 @@ msgstr "Fertig"
 msgid ""
 "Stop trying to trick the validation! You can only minibatch with more "
 "that 9 workers!"
-msgstr ""
-"Hör auf zu versuchen, die Validierung auszutricksen! Sie können nur mit "
-"mehr als 9 Arbeitern minibatchen!"
+msgstr "Hör auf zu versuchen, die Validierung auszutricksen! Sie können nur mit mehr als 9 Arbeitern minibatchen!"
 
 #: forms.py:174
 msgid "Could not set if HIT batched or not!"
@@ -256,13 +232,13 @@ msgstr "Konnte nicht prüfen, ob HIT gebatcht ist oder nicht!"
 msgid "Could not set HIT-Id!"
 msgstr "HIT-ID konnte nicht gesetzt werden!"
 
-#: forms.py:178
+#: forms.py:178 forms.py:197
 msgid "Only CSV-Files are allowed!"
 msgstr "Es sind nur CSV-Dateien erlaubt!"
 
 #: forms.py:183 templates/main/cached_list.html:15
-#: templates/main/dashboard.html:97 templates/main/dashboard.html:119
-#: templates/main/qualification_list.html:64
+#: templates/main/dashboard.html:98 templates/main/dashboard.html:120
+#: templates/main/qualification_list.html:66
 msgid "Name"
 msgstr "Name"
 
@@ -278,136 +254,215 @@ msgstr "Bitte geben Sie eine Beschreibung ein!"
 msgid "AutoGranted"
 msgstr "AutoGranted"
 
+#: forms.py:186
+msgid ""
+"AutoGranted qualifications are automatically assigned to workers who work"
+" on a HIT containing that AutoGranted qualification."
+msgstr "AutoGranted-Qualifikationen werden automatisch Mitarbeitern zugewiesen, die an einem HIT mit dieser AutoGranted-Qualifikation arbeiten."
+
 #: forms.py:187
 msgid "AutoGranted Value"
 msgstr "AutoGranted Value"
 
-#: routes.py:55 templates/base.html:28
+#: forms.py:191
+msgid "At least select one qualification!"
+msgstr "Wählen Sie mindestens eine Qualifikation aus!"
+
+#: forms.py:202
+msgid "Qualification"
+msgstr "Qualifikation"
+
+#: forms.py:202
+msgid "Please select a qualification!"
+msgstr "Bitte wählen Sie eine Qualifikation aus!"
+
+#: forms.py:203
+msgid "Qualification Value"
+msgstr "Qualifikationswert"
+
+#: routes.py:57 templates/base.html:28
 msgid "Dashboard"
 msgstr "Übersicht"
 
-#: routes.py:169
+#: routes.py:186
 msgid "New Survey"
 msgstr "Neue Umfrage"
 
-#: routes.py:220 templates/base.html:36 templates/main/survey.html:87
+#: routes.py:251 templates/base.html:36 templates/main/survey.html:91
 msgid "Workers"
 msgstr "Arbeiter"
 
-#: routes.py:235
-msgid "Cached Batches"
-msgstr "Gespeicherte Batches"
+#: routes.py:278
+msgid ""
+"Could not validate the selected Qualifications! Did you delete any of "
+"them before trying to export the CSV?"
+msgstr "Die ausgewählten Qualifikationen konnten nicht validiert werden! Haben Sie eine davon gelöscht, bevor Sie versucht haben, die CSV-Datei zu exportieren?"
 
-#: routes.py:247
-msgid "Not found"
-msgstr "Nicht Gefunden"
-
-#: routes.py:261
-msgid "Batch still has pending assignments."
-msgstr "Batch hat noch ausstehende Abgaben."
-
-#: routes.py:263
-msgid "Batch still has non-completed assignments."
-msgstr "Batch hat noch nicht abgeschlossene Abgaben."
-
-#: routes.py:265
-msgid "Cannot cache Batch with active HITs."
-msgstr "Batch mit aktiven HITs kann nicht zwischengespeichert werden."
-
-#: routes.py:302
-#, python-format
-msgid "Could not find Batch with id %s."
-msgstr "Batch mit der ID %s konnte nicht gefunden werden."
-
-#: routes.py:424
-msgid "No Assignments found."
-msgstr "Keine Abgaben gefunden."
-
-#: routes.py:437
+#: routes.py:300 routes.py:572
 #, python-format
 msgid "CSV header not formatted properly: </br> Missing header %s"
 msgstr "CSV-Header nicht richtig formatiert: </br> Fehlender Header %s"
 
-#: routes.py:440
+#: routes.py:307
+msgid "Qualification Header missing"
+msgstr "Qualifikationsheader fehlt"
+
+#: routes.py:310
+#, python-format
+msgid "Qualification Values must be Integers; \"%s\" was entered!"
+msgstr "Qualifikationswerte müssen Ganzzahlen sein; \ " %s \" wurde eingegeben!"
+
+#: routes.py:312
+#, python-format
+msgid "Qualification Values must be positive (or 0); \"%s\" was entered!"
+msgstr "Qualifikationswerte müssen positiv sein (oder 0); \ " %s \" wurde eingegeben!"
+
+#: routes.py:321
+msgid "No processable Data in CSV!"
+msgstr "Keine verarbeitbaren Daten in CSV!"
+
+#: routes.py:338
+#, python-format
+msgid "Could not associate qualification: %s"
+msgstr "Qualifikation konnte nicht zugeordnet werden: %s"
+
+#: routes.py:340
+#, python-format
+msgid ""
+"Qualification Values must be Integers and positive (or 0); \"%s\" was "
+"entered!"
+msgstr "Qualifikationswerte müssen Ganzzahlen und positiv (oder 0) sein; \ " %s \" wurde eingegeben!"
+
+#: routes.py:358
+msgid "Cached Batches"
+msgstr "Gespeicherte Batches"
+
+#: routes.py:370
+msgid "Not found"
+msgstr "Nicht Gefunden"
+
+#: routes.py:384
+msgid "Batch still has pending assignments."
+msgstr "Batch hat noch ausstehende Abgaben."
+
+#: routes.py:386
+msgid "Batch still has non-completed assignments."
+msgstr "Batch hat noch nicht abgeschlossene Abgaben."
+
+#: routes.py:388
+msgid "Cannot cache Batch with active HITs."
+msgstr "Batch mit aktiven HITs kann nicht zwischengespeichert werden."
+
+#: routes.py:424
+#, python-format
+msgid "Could not find Batch with id %s."
+msgstr "Batch mit der ID %s konnte nicht gefunden werden."
+
+#: routes.py:555
+msgid "No Assignments found."
+msgstr "Keine Abgaben gefunden."
+
+#: routes.py:575
 msgid "Approve and Reject are both set."
 msgstr "Annehmen und Ablehnen sind gleichzeitig gesetzt."
 
-#: routes.py:442
+#: routes.py:577
 msgid "Approve and Reject are both not set."
 msgstr "Annehmen und Ablehnen sind beide nicht gesetzt."
 
-#: routes.py:453
+#: routes.py:588
 msgid "Duplicate HIT/Assignment/Worker combination."
 msgstr "Doppelte HIT- / Abgaben- / Arbeiterkombination."
 
-#: routes.py:457
+#: routes.py:592
 #, python-format
 msgid "Non-valid Assignment status: \"%s\"."
 msgstr "Ungültiger Abgabenstatus: \" %s \"."
 
-#: routes.py:459
+#: routes.py:594
 msgid "Non-valid HIT/Assignment/Worker combination."
 msgstr "Ungültige HIT- / Abgaben- / Arbeiterkombination."
 
-#: routes.py:461
+#: routes.py:596
 msgid "Bonus not a valid number."
 msgstr "Bonus ist kein gültiger Betrag."
 
-#: routes.py:463
+#: routes.py:598
 #, python-format
 msgid "Bonus is too high. MAX: %s."
 msgstr "Der Bonus ist zu hoch. MAX: %s ."
 
-#: routes.py:465
+#: routes.py:600
 msgid "Bonus assigned but no reason given."
 msgstr "Bonus zugewiesen, aber keinen Grund angegeben."
 
-#: routes.py:507
+#: routes.py:605
+#, python-format
+msgid "Could not get Qualification %s, are you sure that is the right ID?"
+msgstr "Die Qualifikation %s konnte nicht abgerufen werden. Sind Sie sicher, dass dies der richtige Ausweis ist?"
+
+#: routes.py:607
+msgid "FollowUpQualifications Value must be an integer!"
+msgstr "FollowUpQualifications Wert muss eine ganze Zahl sein!"
+
+#: routes.py:609
+msgid "FollowUpQualifications Value must be greater than or equal to 0!"
+msgstr "FollowUpQualifications Wert muss größer oder gleich 0 sein!"
+
+#: routes.py:659
 msgid "Could not approve assignment, maybe it was auto-approved already?"
-msgstr ""
-"Abgabe konnte nicht genehmigt werden, wurde sie möglicherweise bereits "
-"automatisch genehmigt?"
+msgstr "Abgabe konnte nicht genehmigt werden, wurde sie möglicherweise bereits automatisch genehmigt?"
 
-#: routes.py:515
+#: routes.py:671
 msgid "Could not reject assignment, maybe it was auto-approved already?"
-msgstr ""
-"Abgabe konnte nicht abgelehnt werden, wurde sie möglicherweise bereits "
-"automatisch genehmigt?"
+msgstr "Abgabe konnte nicht abgelehnt werden, wurde sie möglicherweise bereits automatisch genehmigt?"
 
-#: routes.py:522
+#: routes.py:679
 msgid "Could not send bonus. You can only send one bonus per Assignment!"
-msgstr ""
-"Bonus konnte nicht gesendet werden. Du kannst nur einen Bonus pro Abgabe "
-"senden!"
+msgstr "Bonus konnte nicht gesendet werden. Du kannst nur einen Bonus pro Abgabe senden!"
 
-#: routes.py:556
+#: routes.py:690 routes.py:699
+#, python-format
+msgid "Could not send softblock worker %s, you will have to do it manually now."
+msgstr "Der Softblock-Worker %s konnte nicht gesendet werden. Sie müssen ihn jetzt manuell ausführen."
+
+#: routes.py:694
+msgid "FollowUpValue not specified, setting it to 1."
+msgstr "FollowUpValue wurde nicht angegeben und auf 1 gesetzt."
+
+#: routes.py:729
 #, python-format
 msgid "No Batch with ID %s."
 msgstr "Kein Batch mit ID %s ."
 
-#: routes.py:613
+#: routes.py:735
+#, python-format
+msgid "No HIT with ID %s exists in Database."
+msgstr "In der Datenbank ist kein HIT mit der ID %s vorhanden."
+
+#: routes.py:789
 #, python-format
 msgid "No MiniHIT at position %s of Group %s found!"
 msgstr "Kein MiniHIT an Position %s des Batches %s gefunden!"
 
-#: routes.py:626
+#: routes.py:802
 #, python-format
 msgid "MiniHIT at position %s of Group %s was already published!"
 msgstr "MiniHIT an Position %s des Batches %s wurde bereits veröffentlicht!"
 
-#: routes.py:657
+#: routes.py:834
 msgid "Something weird happened."
 msgstr "Es ist etwas Seltsames passiert."
 
-#: routes.py:666
+#: routes.py:846
 msgid "No Batch with ID."
 msgstr "Kein Batch mit ID."
 
-#: routes.py:668
+#: routes.py:849
 msgid "Batch is not cached."
 msgstr "Der Batch ist nicht zwischengespeichert."
 
-#: routes.py:681
+#: routes.py:866
 msgid "Group does not exist."
 msgstr "Gruppe existiert nicht."
 
@@ -423,31 +478,32 @@ msgstr "Möchten Sie den archivierten Batch \"%1\" wirklich löschen?"
 msgid "This is non reversable and all data will be lost!"
 msgstr "Dies ist nicht umkehrbar und alle Daten gehen verloren!"
 
-#: static/js/cached-list.js:53 static/js/dashboard.js:370
-#: static/js/dashboard.js:484 static/js/qualification-list.js:71
+#: static/js/cached-list.js:53 static/js/dashboard.js:378
+#: static/js/dashboard.js:495 static/js/qualification-list.js:86
 msgid "confirm"
 msgstr "bestätigen"
 
-#: static/js/cached-list.js:57 static/js/dashboard.js:374
-#: static/js/dashboard.js:488
+#: static/js/cached-list.js:57 static/js/dashboard.js:382
+#: static/js/dashboard.js:499
 msgid "Really?"
 msgstr "Wirklich?"
 
-#: static/js/cached-list.js:58 static/js/dashboard.js:375
-#: static/js/dashboard.js:489
+#: static/js/cached-list.js:58 static/js/dashboard.js:383
+#: static/js/dashboard.js:500
 msgid "Are you sure?"
 msgstr "Bist du sicher?"
 
-#: static/js/cached-list.js:61 static/js/dashboard.js:378
-#: static/js/dashboard.js:492
+#: static/js/cached-list.js:61 static/js/dashboard.js:386
+#: static/js/dashboard.js:503
 msgid "yes"
 msgstr "Ja"
 
-#: static/js/cached-list.js:71 static/js/dashboard.js:345
-#: static/js/dashboard.js:389 static/js/dashboard.js:500
-#: static/js/dashboard.js:545 static/js/dashboard.js:579
-#: static/js/qualification-list.js:80 static/js/qualification-list.js:141
-#: static/js/worker-list.js:72
+#: static/js/cached-list.js:71 static/js/dashboard.js:353
+#: static/js/dashboard.js:400 static/js/dashboard.js:511
+#: static/js/dashboard.js:611 static/js/dashboard.js:667
+#: static/js/qualification-list.js:95 static/js/qualification-list.js:156
+#: static/js/worker-list.js:113 static/js/worker-list.js:149
+#: static/js/worker-list.js:173 static/js/worker-list.js:237
 msgid "Success"
 msgstr "Erfolg"
 
@@ -455,352 +511,422 @@ msgstr "Erfolg"
 msgid "Successfully deleted archived Batch \"%1\""
 msgstr "Archivierter Stapel \"%1\" erfolgreich gelöscht"
 
-#: static/js/cached-list.js:73 static/js/dashboard.js:356
-#: static/js/dashboard.js:391 static/js/dashboard.js:505
-#: static/js/dashboard.js:551 static/js/dashboard.js:585
-#: static/js/qualification-list.js:144 static/js/worker-list.js:74
+#: static/js/cached-list.js:73 static/js/dashboard.js:364
+#: static/js/dashboard.js:402 static/js/dashboard.js:516
+#: static/js/dashboard.js:617 static/js/dashboard.js:673
+#: static/js/qualification-list.js:159 static/js/worker-list.js:115
+#: static/js/worker-list.js:151 static/js/worker-list.js:179
 msgid "Error"
 msgstr "Fehler"
 
-#: static/js/cached-list.js:73 static/js/dashboard.js:391
-#: static/js/worker-list.js:74
+#: static/js/cached-list.js:73 static/js/dashboard.js:402
+#: static/js/worker-list.js:115
 msgid "Something went wrong: "
 msgstr "Etwas ist schiefgelaufen: "
 
-#: static/js/cached-list.js:78 static/js/dashboard.js:396
-#: static/js/dashboard.js:510
+#: static/js/cached-list.js:78 static/js/dashboard.js:407
+#: static/js/dashboard.js:521
 msgid "no"
 msgstr "Nein"
 
-#: static/js/cached-list.js:89 static/js/dashboard.js:407
-#: static/js/dashboard.js:520 static/js/qualification-list.js:84
+#: static/js/cached-list.js:89 static/js/dashboard.js:418
+#: static/js/dashboard.js:531 static/js/qualification-list.js:99
 msgid "cancel"
 msgstr "zurück"
 
-#: static/js/dashboard.js:216
+#: static/js/dashboard.js:110
+msgid "TBD"
+msgstr "TBD"
+
+#: static/js/dashboard.js:224
 msgid "Show hidden"
 msgstr "Versteckte zeigen"
 
-#: static/js/dashboard.js:220
+#: static/js/dashboard.js:228
 msgid "Show nonbatched"
 msgstr "Nicht gebatchte zeigen"
 
-#: static/js/dashboard.js:345
+#: static/js/dashboard.js:353
 msgid "Successfully deleted queued HIT from Database."
-msgstr ""
-"In der Warteschlange befindlicher HIT wurde erfolgreich aus der Datenbank"
-" gelöscht."
+msgstr "In der Warteschlange befindlicher HIT wurde erfolgreich aus der Datenbank gelöscht."
 
-#: static/js/dashboard.js:366
+#: static/js/dashboard.js:374
 msgid "Archiving Batch!"
 msgstr "Batch Archivierung!"
 
-#: static/js/dashboard.js:367
+#: static/js/dashboard.js:375
 msgid "Are you sure you want to archive the Batch \"%1\"?"
 msgstr "Möchten Sie den Batch\"%1\" wirklich archivieren?"
 
-#: static/js/dashboard.js:367
+#: static/js/dashboard.js:375
 msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
-msgstr ""
-"Dies verkürzt die Ladezeiten, ist jedoch nicht umkehrbar und Sie können "
-"den Batch nicht mehr modifizieren!"
+msgstr "Dies verkürzt die Ladezeiten, ist jedoch nicht umkehrbar und Sie können den Batch nicht mehr modifizieren!"
 
-#: static/js/dashboard.js:389
+#: static/js/dashboard.js:395
+msgid ""
+"Archiving Batch. This may take some time depending on the size of the "
+"batch!"
+msgstr "Archiviere Batch. Dies kann je nach Größe des Batches einige Zeit in Anspruch nehmen!"
+
+#: static/js/dashboard.js:400
 msgid "Successfully archived Batch \"%1\""
 msgstr "Erfolgreich Batch \"%1\" archiviert"
 
-#: static/js/dashboard.js:423 static/js/dashboard.js:896
+#: static/js/dashboard.js:434 static/js/dashboard.js:1010
 msgid "Pause"
 msgstr "Pausieren"
 
-#: static/js/dashboard.js:423 static/js/dashboard.js:896
+#: static/js/dashboard.js:434 static/js/dashboard.js:1010
 msgid "Continue"
 msgstr "Fortsetzen"
 
-#: static/js/dashboard.js:424 static/js/dashboard.js:898
+#: static/js/dashboard.js:435 static/js/dashboard.js:1012
 msgid "Active"
 msgstr "Aktiv"
 
-#: static/js/dashboard.js:424 static/js/dashboard.js:898
+#: static/js/dashboard.js:435 static/js/dashboard.js:1012
 msgid "Paused"
 msgstr "Angehalten"
 
-#: static/js/dashboard.js:450 static/js/dashboard.js:892
-#: static/js/dashboard.js:933
+#: static/js/dashboard.js:461 static/js/dashboard.js:1006
+#: static/js/dashboard.js:1047
 msgid "Show"
 msgstr "Zeigen"
 
-#: static/js/dashboard.js:450 static/js/dashboard.js:892
-#: static/js/dashboard.js:933
+#: static/js/dashboard.js:461 static/js/dashboard.js:1006
+#: static/js/dashboard.js:1047
 msgid "Hide"
 msgstr "Verstecken"
 
-#: static/js/dashboard.js:480
+#: static/js/dashboard.js:491
 msgid "HIT Deletion!"
 msgstr "HIT-Löschung!"
 
-#: static/js/dashboard.js:481
+#: static/js/dashboard.js:492
 msgid "Are you sure that you want to <b>delete</b> the HIT \"%1\"?"
 msgstr "Möchten Sie den HIT \"%1\" wirklich <b>löschen</b>?"
 
-#: static/js/dashboard.js:481
+#: static/js/dashboard.js:492
 msgid "Make sure to create a backup of your results first."
-msgstr ""
-"Stellen Sie sicher, dass Sie zuerst eine Sicherungskopie Ihrer Ergebnisse"
-" erstellen."
+msgstr "Stellen Sie sicher, dass Sie zuerst eine Sicherungskopie Ihrer Ergebnisse erstellen."
 
-#: static/js/dashboard.js:500
+#: static/js/dashboard.js:511
 msgid "The HIT was deleted successfully!"
 msgstr "Der HIT wurde erfolgreich gelöscht!"
 
-#: static/js/dashboard.js:545
+#: static/js/dashboard.js:611
 msgid "The selected assignments were successfully rejected!"
 msgstr "Die ausgewählten Abgaben wurden erfolgreich abgelehnt!"
 
-#: static/js/dashboard.js:547 static/js/dashboard.js:581
+#: static/js/dashboard.js:613 static/js/dashboard.js:669
 msgid "The following errors occured:"
 msgstr "Folgende Fehler sind aufgetreten:"
 
-#: static/js/dashboard.js:549 static/js/dashboard.js:583
+#: static/js/dashboard.js:615 static/js/dashboard.js:671
 msgid "AssignmentId %1: %2"
 msgstr "Zuweisungs-ID %1:%2"
 
-#: static/js/dashboard.js:579
+#: static/js/dashboard.js:631
+msgid "Approving Assignment "
+msgstr "Abgabe annehmen "
+
+#: static/js/dashboard.js:634
+msgid "Softblocking Worker"
+msgstr "Softblocke Worker"
+
+#: static/js/dashboard.js:667
 msgid "The selected assignments were successfully approved!"
 msgstr "Die ausgewählten Abgaben wurden erfolgreich angenommen!"
 
-#: static/js/dashboard.js:605 static/js/dashboard.js:726
+#: static/js/dashboard.js:691 static/js/dashboard.js:833
 #: templates/main/dashboard.html:15 templates/main/dashboard.html:50
-#: templates/main/dashboard.html:87
+#: templates/main/dashboard.html:88
 msgid "Loading"
 msgstr "Laden.."
 
-#: static/js/dashboard.js:712
+#: static/js/dashboard.js:715
+msgid "Progress for "
+msgstr "Fortschritt für "
+
+#: static/js/dashboard.js:720
+msgid "Progress for HIT "
+msgstr "Fortschritt für HIT "
+
+#: static/js/dashboard.js:728
+msgid "No Results have been submitted"
+msgstr "Es wurden keine Ergebnisse abgeschickt"
+
+#: static/js/dashboard.js:819
 msgid "CSV Actions for "
 msgstr "CSV-Aktionen für "
 
-#: static/js/dashboard.js:735
+#: static/js/dashboard.js:842
 msgid "Qualifications for "
 msgstr "Qualifikationen für "
 
-#: static/js/dashboard.js:741
+#: static/js/dashboard.js:848
 msgid "No Qualifications are assigned to this HIT"
 msgstr "Diesem HIT sind keine Qualifikationen zugeordnet"
 
-#: static/js/dashboard.js:765
+#: static/js/dashboard.js:872
 msgid "Batch-Qualification, reload the Page to show the actual Name"
 msgstr "Laden Sie die Seite erneut, um den tatsächlichen Namen anzuzeigen"
 
-#: static/js/dashboard.js:772
+#: static/js/dashboard.js:879
 msgid "Masters"
 msgstr "Master"
 
-#: static/js/dashboard.js:774
+#: static/js/dashboard.js:881
 msgid "Masters Sandbox"
 msgstr "Master Sandbox"
 
-#: static/js/dashboard.js:776
+#: static/js/dashboard.js:883
 msgid "Adult Content"
 msgstr "Nicht jugendfreier Inhalt"
 
-#: static/js/dashboard.js:798
+#: static/js/dashboard.js:905 static/js/worker-list.js:160
+#: static/js/worker-list.js:197
 msgid "This field is required."
 msgstr "Dieses Feld wird benötigt."
 
-#: static/js/dashboard.js:821
+#: static/js/dashboard.js:928
 msgid "Approved"
 msgstr "Angenommen"
 
-#: static/js/dashboard.js:823
+#: static/js/dashboard.js:930
 msgid "Rejected"
 msgstr "Abgelehnt"
 
-#: static/js/dashboard.js:827 templates/main/dashboard.html:63
+#: static/js/dashboard.js:934 templates/main/dashboard.html:63
 msgid "Bonus paid"
 msgstr "Gezahlter Bonus"
 
-#: static/js/dashboard.js:829 templates/main/worker_list.html:20
+#: static/js/dashboard.js:936 templates/main/worker_list.html:104
 msgid "Softblocked"
 msgstr "Gesoftblockt"
 
-#: static/js/dashboard.js:839
+#: static/js/dashboard.js:946 static/js/worker-list.js:226
 msgid "Warnings"
 msgstr "Warnungen"
 
-#: static/js/dashboard.js:842 static/js/dashboard.js:860
+#: static/js/dashboard.js:949 static/js/dashboard.js:967
+#: static/js/worker-list.js:228 static/js/worker-list.js:248
 msgid "Row "
 msgstr "Reihe "
 
-#: static/js/dashboard.js:858
+#: static/js/dashboard.js:965 static/js/worker-list.js:246
 msgid "Logic-error in CSV"
 msgstr "Logikfehler in CSV"
 
-#: static/js/dashboard.js:891 static/js/dashboard.js:932
+#: static/js/dashboard.js:1005 static/js/dashboard.js:1046
 msgid "CLICK"
 msgstr "KLICK"
 
-#: static/js/dashboard.js:893 static/js/dashboard.js:934
+#: static/js/dashboard.js:1007 static/js/dashboard.js:1048
+#: static/js/worker-list.js:72 templates/main/worker_list.html:49
 msgid "CSV-Actions"
 msgstr "CSV-Aktionen"
 
-#: static/js/dashboard.js:897
+#: static/js/dashboard.js:1011
 msgid "Archive"
 msgstr "Archivieren"
 
-#: static/js/dashboard.js:902 static/js/dashboard.js:956
+#: static/js/dashboard.js:1016 static/js/dashboard.js:1070
 msgid "Reward"
 msgstr "Bezahlung"
 
-#: static/js/dashboard.js:910 static/js/dashboard.js:966
-#: templates/main/survey.html:78
+#: static/js/dashboard.js:1024 static/js/dashboard.js:1080
+#: templates/main/survey.html:82
 msgid "MiniBatched"
 msgstr "MiniBatched"
 
-#: static/js/dashboard.js:911
+#: static/js/dashboard.js:1025
 msgid "Yes, ID"
 msgstr "Ja, ID"
 
-#: static/js/dashboard.js:918
+#: static/js/dashboard.js:1032
 msgid "Batch-Status"
 msgstr "Batch-Status"
 
-#: static/js/dashboard.js:926 static/js/dashboard.js:950
+#: static/js/dashboard.js:1040 static/js/dashboard.js:1064
 msgid "HITTypeId"
 msgstr "HITTypeId"
 
-#: static/js/dashboard.js:935
+#: static/js/dashboard.js:1049
 msgid "Results"
 msgstr "Ergebnisse"
 
-#: static/js/dashboard.js:936
+#: static/js/dashboard.js:1050
 msgid "Delete"
 msgstr "Löschen"
 
-#: static/js/dashboard.js:942
+#: static/js/dashboard.js:1056
 msgid "HITId"
 msgstr "HITId"
 
-#: static/js/dashboard.js:958
+#: static/js/dashboard.js:1072
 msgid "HIT-Status"
 msgstr "HIT-Status"
 
-#: static/js/dashboard.js:1010
+#: static/js/dashboard.js:1124
 msgid "Queued"
 msgstr "In Warteschlange"
 
-#: static/js/qualification-list.js:26
+#: static/js/moment.min.js:1
+msgid ": , "
+msgstr ":, "
+
+#: static/js/qualification-list.js:34
 msgid "Load"
 msgstr "Laden"
 
-#: static/js/qualification-list.js:67
+#: static/js/qualification-list.js:82
 msgid "Qualification Deletion!"
 msgstr "Qualifikationslöschung!"
 
-#: static/js/qualification-list.js:68
+#: static/js/qualification-list.js:83
 msgid "Are you sure you want to delete the Qualification \"%1\"?"
 msgstr "Möchten Sie die Qualifikation \"%1\" wirklich löschen?"
 
-#: static/js/qualification-list.js:80
+#: static/js/qualification-list.js:95
 msgid "Successfully deleted Qualification \"%1\" (%2)"
 msgstr "Qualifikation \"%1 \" (%2) wurde erfolgreich gelöscht"
 
-#: static/js/qualification-list.js:96
+#: static/js/qualification-list.js:111
 msgid "Hide Batch qualifications"
 msgstr "Batchqualifikationen verstecken"
 
-#: static/js/qualification-list.js:141
+#: static/js/qualification-list.js:156
 msgid ""
 "The qualification was successfully created. It might take some time until"
 " AWS processed it and it shows up."
-msgstr ""
-"Die Qualifikation wurde erfolgreich erstellt. Es kann einige Zeit dauern,"
-" bis AWS sie verarbeitet hat und sie angezeigt wird."
+msgstr "Die Qualifikation wurde erfolgreich erstellt. Es kann einige Zeit dauern, bis AWS sie verarbeitet hat und sie angezeigt wird."
 
-#: static/js/survey.js:28
+#: static/js/survey.js:36
 msgid "Qualification Name Already Exists!"
 msgstr "Dieser Qualifikationsname existiert bereits!"
 
-#: static/js/survey.js:42
+#: static/js/survey.js:43
+msgid "Please select a valid option."
+msgstr "Bitte wählen Sie eine gültige Option."
+
+#: static/js/survey.js:67
 msgid "Please wait while your Survey is being created!"
 msgstr "Bitte warten.. Die Umfrage wird erstellt."
 
-#: static/js/survey.js:91
+#: static/js/survey.js:116
 msgid " and "
 msgstr " und "
 
-#: static/js/survey.js:93
+#: static/js/survey.js:118
 msgid "The Survey will be split into %1 %2 %3 HITs."
 msgstr "Die Umfrage wird in %1 %2 %3 HITs geteilt."
 
-#: static/js/survey.js:103
+#: static/js/survey.js:128
 msgid "enabled"
 msgstr "aktiviert"
 
-#: static/js/survey.js:106
+#: static/js/survey.js:131
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: static/js/survey.js:107
+#: static/js/survey.js:132
 msgid "***Ignored for non-batched***"
 msgstr "***Ignoriert für nicht gebatchte***"
 
-#: static/js/survey.js:112
+#: static/js/survey.js:137
 msgid "not"
 msgstr "nicht"
 
-#: static/js/survey.js:161
+#: static/js/survey.js:163
+msgid "None"
+msgstr "Keiner"
+
+#: static/js/survey.js:189
 msgid "non-batched"
 msgstr "nicht gebatcht"
 
-#: static/js/survey.js:163
+#: static/js/survey.js:191
 msgid "non-batched, <9 workers"
 msgstr "nicht gebatcht, <9 Arbeiter"
 
-#: static/js/survey.js:170
+#: static/js/survey.js:198
 msgid "masters"
 msgstr "Master"
 
-#: static/js/survey.js:209
+#: static/js/survey.js:237
 msgid "System"
 msgstr "System"
 
-#: static/js/survey.js:210
+#: static/js/survey.js:238
 msgid "Own"
 msgstr "Eigene"
 
-#: static/js/survey.js:302
+#: static/js/survey.js:330
 msgid "Select"
 msgstr "Auswählen"
 
-#: static/js/survey.js:364
+#: static/js/survey.js:401
 msgid "Exists"
 msgstr "Vorhanden"
 
-#: static/js/survey.js:365
+#: static/js/survey.js:402
 msgid "Does Not Exist"
 msgstr "Nicht Vorhanden"
 
-#: static/js/survey.js:366
+#: static/js/survey.js:403
 msgid "Equal To"
 msgstr "Gleich"
 
-#: static/js/survey.js:367
+#: static/js/survey.js:404
 msgid "Not Equal To"
 msgstr "Ungleich"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:113
 msgid "The worker with the ID \"%1\" was successfully"
 msgstr "Der Worker mit der ID \"%1\" wurde erfolgreich"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:113
 msgid "softblocked"
 msgstr "gesoftblockt"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:113
 msgid "unblocked"
 msgstr "entblockt"
+
+#: static/js/worker-list.js:149
+msgid "Successfully assigned the qualification!"
+msgstr "Qualifikation erfolgreich vergeben!"
+
+#: static/js/worker-list.js:173
+msgid "Successfully downloaded the CSV."
+msgstr "CSV erfolgreich heruntergeladen."
+
+#: static/js/worker-list.js:176 static/js/worker-list.js:214
+msgid "Internal Server Error"
+msgstr "interner Serverfehler"
+
+#: static/js/worker-list.js:176
+msgid "Something went terribly wrong: "
+msgstr "Etwas ist ziemlich schief gelaufen: "
+
+#: static/js/worker-list.js:214
+msgid "Something went wrong:"
+msgstr "Etwas ist schiefgelaufen:"
+
+#: static/js/worker-list.js:225
+msgid "Some Success"
+msgstr "Teilweiser Erfolg"
+
+#: static/js/worker-list.js:225
+msgid "Successfully completed the request, but there were some errors caught!"
+msgstr "Die Anfrage wurde erfolgreich abgeschlossen, es wurden jedoch einige Fehler festgestellt!"
+
+#: static/js/worker-list.js:237
+msgid "Successfully assigned the specified qualifications"
+msgstr "Die angegebenen Qualifikationen wurden erfolgreich zugewiesen"
 
 #: templates/404.html:17
 msgid "Oops!"
@@ -812,9 +938,7 @@ msgstr "404 Nicht Gefunden"
 
 #: templates/404.html:20
 msgid "Sorry, an error has occured, Requested page not found!"
-msgstr ""
-"Entschuldigung, da ist wohl was schiefgelaufen. Die angeforderte Seite "
-"wurde nicht gefunden"
+msgstr "Entschuldigung, da ist wohl was schiefgelaufen. Die angeforderte Seite wurde nicht gefunden"
 
 #: templates/404.html:25
 msgid "Take Me Home"
@@ -852,7 +976,7 @@ msgstr "Abgaben"
 msgid "Goal"
 msgstr "Ziel"
 
-#: templates/main/dashboard.html:21
+#: templates/main/dashboard.html:21 templates/main/worker_list.html:62
 msgid "Export"
 msgstr "Export"
 
@@ -864,16 +988,17 @@ msgstr "Export Alle"
 msgid "Export Submitted"
 msgstr "Export Neue"
 
-#: templates/main/dashboard.html:27
+#: templates/main/dashboard.html:27 templates/main/worker_list.html:76
 msgid "Import"
 msgstr "Import"
 
-#: templates/main/dashboard.html:36
+#: templates/main/dashboard.html:36 templates/main/worker_list.html:85
 msgid "Upload CSV"
 msgstr "CSV hochladen"
 
-#: templates/main/dashboard.html:40 templates/main/dashboard.html:77
-#: templates/main/dashboard.html:108 templates/main/qualification_list.html:53
+#: templates/main/dashboard.html:40 templates/main/dashboard.html:78
+#: templates/main/dashboard.html:109 templates/main/qualification_list.html:55
+#: templates/main/worker_list.html:40 templates/main/worker_list.html:89
 msgid "Close"
 msgstr "Schließen"
 
@@ -901,35 +1026,35 @@ msgstr "Annahme"
 msgid "Submission"
 msgstr "Abgabe"
 
-#: templates/main/dashboard.html:75
+#: templates/main/dashboard.html:76
 msgid "Approve selected"
 msgstr "Ausgewählte Annehmen"
 
-#: templates/main/dashboard.html:76
+#: templates/main/dashboard.html:77
 msgid "Reject selected"
 msgstr "Ausgewählte Ablehnen"
 
-#: templates/main/dashboard.html:98
+#: templates/main/dashboard.html:99
 msgid "Comparator"
 msgstr "Komparator"
 
-#: templates/main/dashboard.html:99
+#: templates/main/dashboard.html:100
 msgid "Value"
 msgstr "Wert"
 
-#: templates/main/dashboard.html:100
+#: templates/main/dashboard.html:101
 msgid "Actions Guarded"
 msgstr "Eingeschränkte Aktionen"
 
-#: templates/main/dashboard.html:120
+#: templates/main/dashboard.html:121
 msgid "Progress"
 msgstr "Fortschritt"
 
-#: templates/main/dashboard.html:121
+#: templates/main/dashboard.html:122
 msgid "Start"
 msgstr "Start"
 
-#: templates/main/dashboard.html:122
+#: templates/main/dashboard.html:123
 msgid "End"
 msgstr "Ende"
 
@@ -937,23 +1062,35 @@ msgstr "Ende"
 msgid "Create Qualification"
 msgstr "Qualifikation erstellen"
 
-#: templates/main/qualification_list.html:52
+#: templates/main/qualification_list.html:54
 msgid "Create"
 msgstr "Erstellen"
 
-#: templates/main/qualification_list.html:65
+#: templates/main/qualification_list.html:67
 msgid "Id"
 msgstr "ID"
 
-#: templates/main/qualification_list.html:66
+#: templates/main/qualification_list.html:68
 msgid "#Workers"
 msgstr "#Arbeiter"
 
-#: templates/main/qualification_list.html:67
+#: templates/main/qualification_list.html:69
 msgid "CreationTime"
 msgstr "Erstelldatum"
 
-#: templates/main/survey.html:32
+#: templates/main/survey.html:28 templates/main/survey.html:35
+#: templates/main/survey.html:63 templates/main/survey.html:67
+#: templates/main/survey.html:147
+msgid "Next"
+msgstr "Nächster"
+
+#: templates/main/survey.html:28 templates/main/survey.html:35
+#: templates/main/survey.html:63 templates/main/survey.html:67
+#: templates/main/survey.html:147
+msgid "Previous"
+msgstr "Bisherige"
+
+#: templates/main/survey.html:31
 msgid "Default: project name + date"
 msgstr "Standard: Projektname + Datum"
 
@@ -969,103 +1106,143 @@ msgstr "Qualifikation hinzufügen"
 msgid "Add default Qualifications"
 msgstr "Standardqualifikationen hinzufügen"
 
-#: templates/main/survey.html:67
+#: templates/main/survey.html:70
 msgid "HIT Overview"
 msgstr "HIT Übersicht"
 
-#: templates/main/survey.html:70
+#: templates/main/survey.html:74
 msgid "Project Name"
 msgstr "Projektname"
 
-#: templates/main/survey.html:79
+#: templates/main/survey.html:83
 msgid "MiniBatching is"
 msgstr "MiniBatching ist"
 
-#: templates/main/survey.html:82
+#: templates/main/survey.html:86
 msgid "Amount of HITs"
 msgstr "Anzahl der HITs"
 
-#: templates/main/survey.html:86
+#: templates/main/survey.html:90
 msgid "Amount of Workers"
 msgstr "Anzahl der Arbeiter"
 
-#: templates/main/survey.html:90
+#: templates/main/survey.html:94
 msgid "Lifetime of each HIT"
 msgstr "Ablaufzeit jedes HIT"
 
-#: templates/main/survey.html:94
+#: templates/main/survey.html:98
 msgid "Allotted Time per Worker"
 msgstr "Gewährte Zeit pro Arbeiter"
 
-#: templates/main/survey.html:98
+#: templates/main/survey.html:102
 msgid "Time until automatic approval"
 msgstr "Zeit bis zur automatischen Annahme"
 
-#: templates/main/survey.html:102
+#: templates/main/survey.html:106
 msgid "Masters Qualification"
 msgstr "Master-Qualifikation"
 
-#: templates/main/survey.html:103
+#: templates/main/survey.html:107
 msgid "Masters "
 msgstr "Master "
 
-#: templates/main/survey.html:103
+#: templates/main/survey.html:107
 msgid "necessary"
 msgstr "notwendig"
 
-#: templates/main/survey.html:106
+#: templates/main/survey.html:110
 msgid "Qualifications set"
 msgstr "Ausgewählte Qualifikationen"
 
-#: templates/main/survey.html:110
+#: templates/main/survey.html:115
 msgid "Approx. Costs"
 msgstr "Ungefähre Kosten"
 
-#: templates/main/survey.html:113
+#: templates/main/survey.html:118
 msgid "Reward per assignment"
 msgstr "Bezahlung pro Abgabe"
 
-#: templates/main/survey.html:116
+#: templates/main/survey.html:122
 msgid "Fee per assignment"
 msgstr "Gebühr pro Abgabe"
 
-#: templates/main/survey.html:120
+#: templates/main/survey.html:127
 msgid "Total cost per assignment"
 msgstr "Gesamtkosten pro Abgabe"
 
-#: templates/main/survey.html:123
+#: templates/main/survey.html:131
 msgid "Number of assignments"
 msgstr "Anzahl der Abgaben"
 
-#: templates/main/survey.html:126
+#: templates/main/survey.html:135
 msgid "Total"
 msgstr "Gesamt"
 
-#: templates/main/survey.html:132
+#: templates/main/survey.html:141
 msgid "Approx. Saved"
 msgstr "Ungefähr Gespart"
 
-#: templates/main/survey.html:136
+#: templates/main/survey.html:145
 msgid "Preview"
 msgstr "Vorschau"
 
 #: templates/main/worker_list.html:15
+msgid "Assign Qualification to worker "
+msgstr "Weisen Sie dem Arbeiter die Qualifikation zu "
+
+#: templates/main/worker_list.html:39
+msgid "Assign"
+msgstr "Zuordnen"
+
+#: templates/main/worker_list.html:56
+msgid ""
+"Here you can either download or upload a CSV containing all workers "
+"displayed on this page and your chosen Qualifications."
+msgstr "Hier können Sie eine CSV-Datei herunterladen oder hochladen, die alle auf dieser Seite angezeigten Mitarbeiter und Ihre ausgewählten Qualifikationen enthält."
+
+#: templates/main/worker_list.html:58
+msgid ""
+"Note: You can not only add Values but also Worker- and QualificationIDs "
+"to the exported CSV, just make sure they are valid.\n"
+"                              You can correct the CSV and resubmit it in "
+"case of Errors (or Warnings)."
+msgstr "Hinweis: Sie können der exportierten CSV nicht nur Werte, sondern auch Worker- und QualificationIDs hinzufügen. Vergewissern Sie sich nur, dass diese gültig sind. \n Sie können die CSV korrigieren und sie bei Fehlern (oder Warnungen) erneut senden."
+
+#: templates/main/worker_list.html:66
+msgid "First select the qualifications you want to associate/change"
+msgstr "Wählen Sie zuerst die Qualifikationen aus, die Sie zuweisen/ändern möchten"
+
+#: templates/main/worker_list.html:72
+msgid "Then just click here to download the CSV"
+msgstr "Dann klicken Sie einfach hier, um die CSV herunterzuladen"
+
+#: templates/main/worker_list.html:73
+msgid "Export CSV"
+msgstr "CSV exportieren"
+
+#: templates/main/worker_list.html:79
+msgid ""
+"Once you put all necessary data into the CSV select it here and hit the "
+"upload button!"
+msgstr "Sobald Sie alle notwendigen Daten in die CSV eingegeben haben, wählen Sie diese hier aus und klicken Sie auf den Upload-Button!"
+
+#: templates/main/worker_list.html:99
 msgid "Worker-ID"
 msgstr "Arbeiter-ID"
 
-#: templates/main/worker_list.html:16
+#: templates/main/worker_list.html:100
 msgid "#Approved"
 msgstr "#Angenommen"
 
-#: templates/main/worker_list.html:17
+#: templates/main/worker_list.html:101
 msgid "#Rejected"
 msgstr "#Abgelehnt"
 
-#: templates/main/worker_list.html:18
+#: templates/main/worker_list.html:102
 msgid "#Assignments"
 msgstr "#Abgaben"
 
-#: templates/main/worker_list.html:19
+#: templates/main/worker_list.html:103
 msgid "Last Assignment"
 msgstr "Letzte Abgabe"
 
