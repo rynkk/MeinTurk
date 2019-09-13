@@ -24,12 +24,12 @@ python run.py
  #### 1. Priorität Erforderlich 
   * ~~Füge Finish-Seite mit Überblick, Kosten und HTML-Vorschau ein~~
   * ~~Füge Buttons für jede HITRow und MiniHITRow im Dashboard ein: HIT/MiniHITabbrechen, Pausieren/Fortsetzen, Worker anzeigen, CSV-Import, CSV-Export, Preis ändern(?)~~
-  * ~~Implementiere eine Workerübersicht im Dashboard~~ Erledigt für MiniHITs, TODO für batches
+  * ~~Implementiere eine Workerübersicht im Dashboard~~
  #### 2. Priorität Hoch 
   * ~~Füge ein Overlay (Bootstrap Modal) für das CSV-Import und CSV-Export ein.~~
   * Remake/Polish die MiniHIT-Gruppierung des Dashboards
  #### 3. Priorität Mittel
-  * ~~Zeige akzeptierte Worker hinter Fortschritt-Spalte an~~ Anm: Pending hinter Fortschritt
+  * ~~Zeige akzeptierte Worker hinter Fortschritt-Spalte an~~
  #### 4. Priorität Niedrig 
   * ~~Layout aktualisieren und gestrichene Funktionen entfernen~~
   * ~~Mache HIT-OverviewChild im Dashboard suchbar~~
