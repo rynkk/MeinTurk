@@ -5,7 +5,7 @@ function getCookieValue(a) {
 
 var language = getCookieValue('language')
 if(language == "")
-    $('.selectpicker').selectpicker('val', 'en')
+    $('.selectpicker').selectpicker('val', localeValue)
 else
     $('.selectpicker').selectpicker('val', language)
 
