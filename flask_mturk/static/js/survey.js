@@ -123,9 +123,13 @@ $('a[data-toggle="tab"][href="#p5"]').on('shown.bs.tab', function (e) {
     var batched = document.getElementById('minibatch').checked
     if (batched){
         $('#overview_minibatch').text(_("enabled"))
+                                .addClass("text-success")
+                                .removeClass("text-danger")
         $('#overview_name').text($('#project_name').val()==''?'-':$('#project_name').val())
     }else{
         $('#overview_minibatch').text(_("disabled"))
+                                .addClass("text-danger")
+                                .removeClass("text-success")
         $('#overview_name').text(_('***Ignored for non-batched***'))
     }
 

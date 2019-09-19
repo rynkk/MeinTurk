@@ -1,12 +1,11 @@
 
 .vscode/
 _pycache_/
+logs/
 flask_mturk/.vscode/
 flask_mturk/_pycache_/
-flask_mturk/settings.cfg
 flask_mturk/wip/
-flast_mturk/batches.db
-
+flask_mturk/batches.db
 # Compiled #
 ############
 *.pyc

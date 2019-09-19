@@ -119,7 +119,7 @@ def survey():
         # master and adult qualification fields #
         must_be_master = form.must_be_master.data
         if must_be_master == "yes":
-            if app.config.get('Sandbox'):
+            if app.config.get('SANDBOX'):
                 logger.info('Adding Sandbox-Master qualification')
                 id = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'  # Sandbox
             else:
@@ -1051,7 +1051,7 @@ def update_mini_hits() -> None:
 
             # Creating a new HIT with the assigned attributes and saving its ID
             new_hit_id = api.create_hit_with_type(hittypeid, question, lifetime, workers, 'batch%r' % group_id)['HITId']
-            logger.info("Creating hit with id", new_hit_id)
+            logger.info("Creating hit with id %s" % new_hit_id)
             # Using saved ID to update DB-schema
             new_mini_hit.id = new_hit_id
             new_mini_hit.status = 'active'
@@ -1067,7 +1067,7 @@ def check_tracked_hits():
         hit = api.get_hit(thit.id)
         if hit['HITStatus'] != 'Reviewable':
             continue
-        logger.info('HIT %s is Reviewable. Updating Database.' % this.id)
+        logger.info('HIT %s is Reviewable. Updating Database.' % thit.id)
         thit.active = False
         assignments = api.list_assignments_for_hit(thit.id)
         for a in assignments:

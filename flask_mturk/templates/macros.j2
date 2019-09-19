@@ -92,7 +92,7 @@
         <div class="col-6 ml-4" style="padding-top: calc(0.375rem + 1px)">
             {% set css_class = 'form-check-label' %}
             {{ bool_field.label(class=css_class) }}
-            <i class="fas fa-info-circle fa-xs" data-toggle="tooltip" style="vertical-align: text-top" title="{{bool_field.description}}"></i>
+            <i class="fas fa-info-circle fa-xs text-success" data-toggle="tooltip" style="vertical-align: text-top" title="{{bool_field.description}}"></i>
             {% set css_class = 'form-check-input ml-0 relative' %}
             {{ bool_field(class=css_class) }}
             <span id="batches"></span>

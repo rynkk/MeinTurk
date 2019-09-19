@@ -7,8 +7,8 @@ $.fn.dataTable.ext.type.order['date-pre'] = function ( data ) {
     }
 };
 
-var ban_btn = "<button type='button' class='btn-sm btn-danger softblock'><i class='fas fa-lg fa-ban'></i></button>"
-var unban_btn = "<button type='button' class='btn-sm btn-success softblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
+var ban_btn = "<button type='button' class='btn-sm btn-danger softblock' data-toggle='tooltip' title='Softblock'><i class='fas fa-lg fa-ban'></i></button>"
+var unban_btn = "<button type='button' class='btn-sm btn-success softblock' data-toggle='tooltip' title='Unblock'><i class='fas fa-lg fa-thumbs-up'></i></button>"
 var table = $('#worker_table').DataTable({
     "language":{
         "url": datatables_translation
@@ -70,6 +70,7 @@ var table = $('#worker_table').DataTable({
         var check_div = $("<div>").addClass("col-md-4")
             .append('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#csvmodal">'+_('CSV-Actions')+'</button>')
         $("#worker_table_length").parent("div").after(check_div)
+        $('button[data-toggle="tooltip"]').tooltip()
     }
 });
 
@@ -103,12 +104,15 @@ $('#worker_table').on('click', '.softblock', async function(){
     if(content.success){
         if(content.status){
             softblock_td.text(_('Yes'))
+            $(this).tooltip('hide')
             $(this).replaceWith(unban_btn)
         }
         else{
             softblock_td.text(_('No'))
+            $(this).tooltip('hide')
             $(this).replaceWith(ban_btn)
         }
+        $('button[data-toggle="tooltip"]').tooltip()
         show_alert(_('Success'), gt.strargs(_('The worker with the ID "%1" was successfully'),[id]) +" "+ (content.status?_('softblocked'):_('unblocked')), 'success')
     }else
         show_alert(_('Error'), _('Something went wrong: ')+content.error, 'danger')

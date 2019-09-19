@@ -19,3 +19,7 @@ div#tabs a[data-toggle="tab"]{
 a.nav-item.error{
     color: #ee5858;
 }
+
+#overview_minibatch{
+    font-weight: 500;
+}
