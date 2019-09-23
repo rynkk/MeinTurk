@@ -9,4 +9,3 @@ flask_mturk/batches.db
 # Compiled #
 ############
 *.pyc
-logs/dump.log
