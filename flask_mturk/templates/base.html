@@ -16,9 +16,9 @@
     <body>
         <!-- Sticky NavBar-->
         <nav class="navbar sticky-top navbar-expand-lg bg-dark navbar-dark" >
-            <a class="navbar-brand unselectable">
+            <a href="{{ url_for('dashboard')}}" class="navbar-brand">
                     <img src="{{ url_for('static', filename='mturk_ico.png') }}" width="50" height="50" class="d-inline-block align-top" alt="">
-                    {{ _('MTurk-Custom-Framework') }}
+                    {{ _('MeinTurk') }}
                 </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#stickynav" aria-controls="stickynav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>

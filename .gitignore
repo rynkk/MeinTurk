@@ -9,3 +9,4 @@ flask_mturk/batches.db
 # Compiled #
 ############
 *.pyc
+flask_mturk/settings.cfg
