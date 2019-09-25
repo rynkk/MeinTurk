@@ -6,6 +6,7 @@ flask_mturk/.vscode/
 flask_mturk/_pycache_/
 flask_mturk/wip/
 flask_mturk/batches.db
+flask_mturk/batches_sb.db
 # Compiled #
 ############
 *.pyc
