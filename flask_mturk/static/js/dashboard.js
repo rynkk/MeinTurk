@@ -349,7 +349,7 @@ $('#project_table').on('click', '.cache-btn',function(event){
                 btnClass: 'btn-blue',
                 action: function(){
                     $.alert({
-                        title: _('Really?'),
+                        title: _('Archiving Batch'),
                         content: _('Are you sure?'),
                         buttons:{
                             yes:{
@@ -464,7 +464,7 @@ $('#project_table').on('click','.delete_hit', function(event){
             btnClass: 'btn-blue',
             action: function(){
                 $.alert({
-                    title: _('Really?'),
+                    title: _('HIT Deletion'),
                     content: _('Are you sure?'),
                     buttons:{
                         yes:{
@@ -965,33 +965,33 @@ function format_info ( data ) {
         var batch_status = data['batch_status'] ? _('Active'):_('Paused')
         var row_one = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Title')+':</div>'+
-            '<div class="col-2">'+data['Title']+'</div>'+
+            '<div class="col-4">'+data['Title']+'</div>'+
             '<div class="col-2">'+_('Reward')+':</div>'+
-            '<div class="col-4">$'+data['Reward']+'</div>'+
+            '<div class="col-2">$'+data['Reward']+'</div>'+
             '<div class="col-2">'+csv_modal_btn+'</div>'+
         '</div>')
 
         var row_two = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Description')+':</div>'+
-            '<div class="col-2">'+data['Description']+'</div>'+
+            '<div class="col-4">'+data['Description']+'</div>'+
             '<div class="col-2">'+_('MiniBatched')+':</div>'+
-            '<div class="col-4">'+_('Yes, ID')+': '+data['batch_id']+'</div>'+
+            '<div class="col-2">'+_('Yes, ID')+': '+data['batch_id']+'</div>'+
             '<div class="col-2">'+cache_btn+'</div>'+
         '</div>')
 
         var row_three = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Keywords')+':</div>'+
-            '<div class="col-2">'+data['Keywords']+'</div>'+
+            '<div class="col-4">'+data['Keywords']+'</div>'+
             '<div class="col-2">'+_('Batch-Status')+':</div>'+
-            '<div class="col-4 batch-status">'+batch_status+'</div>'+
+            '<div class="col-2 batch-status">'+batch_status+'</div>'+
             '<div class="col-2">'+toggle_status_btn+'</div>'+
         '</div>')
 
         var row_four = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Qualifications')+':</div>'+
-            '<div class="col-2">'+qualificationbutton+'</div>'+
+            '<div class="col-4">'+qualificationbutton+'</div>'+
             '<div class="col-2">'+_('HITTypeId')+':</div>'+
-            '<div class="col-4">'+data['HITTypeId']+'</div>'+
+            '<div class="col-2">'+data['HITTypeId']+'</div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
     }
