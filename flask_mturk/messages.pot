@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-20 15:37+0200\n"
+"POT-Creation-Date: 2019-09-25 11:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,12 +139,12 @@ msgid ""
 " additional fees."
 msgstr ""
 
-#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:106
+#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:107
 msgid "Yes"
 msgstr ""
 
 #: forms.py:151 static/js/dashboard.js:1081 static/js/worker-list.js:44
-#: static/js/worker-list.js:110
+#: static/js/worker-list.js:112
 msgid "No"
 msgstr ""
 
@@ -482,8 +482,7 @@ msgstr ""
 msgid "confirm"
 msgstr ""
 
-#: static/js/cached-list.js:57 static/js/dashboard.js:382
-#: static/js/dashboard.js:499
+#: static/js/cached-list.js:57
 msgid "Really?"
 msgstr ""
 
@@ -501,8 +500,8 @@ msgstr ""
 #: static/js/dashboard.js:400 static/js/dashboard.js:511
 #: static/js/dashboard.js:611 static/js/dashboard.js:667
 #: static/js/qualification-list.js:95 static/js/qualification-list.js:156
-#: static/js/worker-list.js:113 static/js/worker-list.js:149
-#: static/js/worker-list.js:173 static/js/worker-list.js:237
+#: static/js/worker-list.js:117 static/js/worker-list.js:153
+#: static/js/worker-list.js:177 static/js/worker-list.js:241
 msgid "Success"
 msgstr ""
 
@@ -513,13 +512,13 @@ msgstr ""
 #: static/js/cached-list.js:73 static/js/dashboard.js:364
 #: static/js/dashboard.js:402 static/js/dashboard.js:516
 #: static/js/dashboard.js:617 static/js/dashboard.js:673
-#: static/js/qualification-list.js:159 static/js/worker-list.js:115
-#: static/js/worker-list.js:151 static/js/worker-list.js:179
+#: static/js/qualification-list.js:159 static/js/worker-list.js:119
+#: static/js/worker-list.js:155 static/js/worker-list.js:183
 msgid "Error"
 msgstr ""
 
 #: static/js/cached-list.js:73 static/js/dashboard.js:402
-#: static/js/worker-list.js:115
+#: static/js/worker-list.js:119
 msgid "Something went wrong: "
 msgstr ""
 
@@ -561,6 +560,10 @@ msgstr ""
 msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
+msgstr ""
+
+#: static/js/dashboard.js:382
+msgid "Archiving Batch"
 msgstr ""
 
 #: static/js/dashboard.js:395
@@ -609,6 +612,10 @@ msgstr ""
 
 #: static/js/dashboard.js:492
 msgid "Make sure to create a backup of your results first."
+msgstr ""
+
+#: static/js/dashboard.js:499
+msgid "HIT Deletion"
 msgstr ""
 
 #: static/js/dashboard.js:511
@@ -685,8 +692,8 @@ msgstr ""
 msgid "Adult Content"
 msgstr ""
 
-#: static/js/dashboard.js:905 static/js/worker-list.js:160
-#: static/js/worker-list.js:197
+#: static/js/dashboard.js:905 static/js/worker-list.js:164
+#: static/js/worker-list.js:201
 msgid "This field is required."
 msgstr ""
 
@@ -706,16 +713,16 @@ msgstr ""
 msgid "Softblocked"
 msgstr ""
 
-#: static/js/dashboard.js:946 static/js/worker-list.js:226
+#: static/js/dashboard.js:946 static/js/worker-list.js:230
 msgid "Warnings"
 msgstr ""
 
 #: static/js/dashboard.js:949 static/js/dashboard.js:967
-#: static/js/worker-list.js:228 static/js/worker-list.js:248
+#: static/js/worker-list.js:232 static/js/worker-list.js:252
 msgid "Row "
 msgstr ""
 
-#: static/js/dashboard.js:965 static/js/worker-list.js:246
+#: static/js/dashboard.js:965 static/js/worker-list.js:250
 msgid "Logic-error in CSV"
 msgstr ""
 
@@ -827,103 +834,103 @@ msgstr ""
 msgid "enabled"
 msgstr ""
 
-#: static/js/survey.js:131
+#: static/js/survey.js:133
 msgid "disabled"
 msgstr ""
 
-#: static/js/survey.js:132
+#: static/js/survey.js:136
 msgid "***Ignored for non-batched***"
 msgstr ""
 
-#: static/js/survey.js:137
+#: static/js/survey.js:141
 msgid "not"
 msgstr ""
 
-#: static/js/survey.js:163
+#: static/js/survey.js:167
 msgid "None"
 msgstr ""
 
-#: static/js/survey.js:189
+#: static/js/survey.js:193
 msgid "non-batched"
 msgstr ""
 
-#: static/js/survey.js:191
+#: static/js/survey.js:195
 msgid "non-batched, <9 workers"
 msgstr ""
 
-#: static/js/survey.js:198
+#: static/js/survey.js:202
 msgid "masters"
 msgstr ""
 
-#: static/js/survey.js:237
+#: static/js/survey.js:241
 msgid "System"
 msgstr ""
 
-#: static/js/survey.js:238
+#: static/js/survey.js:242
 msgid "Own"
 msgstr ""
 
-#: static/js/survey.js:330
+#: static/js/survey.js:334
 msgid "Select"
 msgstr ""
 
-#: static/js/survey.js:401
+#: static/js/survey.js:405
 msgid "Exists"
 msgstr ""
 
-#: static/js/survey.js:402
+#: static/js/survey.js:406
 msgid "Does Not Exist"
 msgstr ""
 
-#: static/js/survey.js:403
+#: static/js/survey.js:407
 msgid "Equal To"
 msgstr ""
 
-#: static/js/survey.js:404
+#: static/js/survey.js:408
 msgid "Not Equal To"
 msgstr ""
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "The worker with the ID \"%1\" was successfully"
 msgstr ""
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "softblocked"
 msgstr ""
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "unblocked"
 msgstr ""
 
-#: static/js/worker-list.js:149
+#: static/js/worker-list.js:153
 msgid "Successfully assigned the qualification!"
 msgstr ""
 
-#: static/js/worker-list.js:173
+#: static/js/worker-list.js:177
 msgid "Successfully downloaded the CSV."
 msgstr ""
 
-#: static/js/worker-list.js:176 static/js/worker-list.js:214
+#: static/js/worker-list.js:180 static/js/worker-list.js:218
 msgid "Internal Server Error"
 msgstr ""
 
-#: static/js/worker-list.js:176
+#: static/js/worker-list.js:180
 msgid "Something went terribly wrong: "
 msgstr ""
 
-#: static/js/worker-list.js:214
+#: static/js/worker-list.js:218
 msgid "Something went wrong:"
 msgstr ""
 
-#: static/js/worker-list.js:225
+#: static/js/worker-list.js:229
 msgid "Some Success"
 msgstr ""
 
-#: static/js/worker-list.js:225
+#: static/js/worker-list.js:229
 msgid "Successfully completed the request, but there were some errors caught!"
 msgstr ""
 
-#: static/js/worker-list.js:237
+#: static/js/worker-list.js:241
 msgid "Successfully assigned the specified qualifications"
 msgstr ""
 
@@ -944,7 +951,7 @@ msgid "Take Me Home"
 msgstr ""
 
 #: templates/base.html:21
-msgid "MTurk-Custom-Framework"
+msgid "MeinTurk"
 msgstr ""
 
 #: templates/base.html:29

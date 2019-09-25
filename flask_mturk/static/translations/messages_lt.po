@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-02 18:07+0200\n"
+"POT-Creation-Date: 2019-09-25 11:43+0200\n"
 "PO-Revision-Date: 2019-07-31 21:40+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: lt\n"
@@ -48,7 +48,7 @@ msgstr "nomen Project"
 msgid "Name of the project. (Not visible to workers)"
 msgstr "Nomen de project. (Non est visibilis operarios)"
 
-#: forms.py:136 static/js/dashboard.js:900 templates/main/survey.html:74
+#: forms.py:136 static/js/dashboard.js:1014 templates/main/survey.html:78
 msgid "Title"
 msgstr "titulus"
 
@@ -56,8 +56,8 @@ msgstr "titulus"
 msgid "Survey title being displayed to workers."
 msgstr "circumspectis operarios in titulo esse proponendum."
 
-#: forms.py:137 forms.py:184 static/js/dashboard.js:908
-#: static/js/dashboard.js:940 templates/main/qualification_list.html:68
+#: forms.py:137 forms.py:184 static/js/dashboard.js:1022
+#: static/js/dashboard.js:1054 templates/main/qualification_list.html:70
 msgid "Description"
 msgstr "Descriptio"
 
@@ -65,8 +65,8 @@ msgstr "Descriptio"
 msgid "Comprehensive description of your survey."
 msgstr "Aliquam aliquet genus tuum."
 
-#: forms.py:138 forms.py:185 static/js/dashboard.js:916
-#: static/js/dashboard.js:948
+#: forms.py:138 forms.py:185 static/js/dashboard.js:1030
+#: static/js/dashboard.js:1062
 msgid "Keywords"
 msgstr "slogan"
 
@@ -82,9 +82,7 @@ msgstr "Usque ad tempus expletum"
 msgid ""
 "Time until the survey expires and becomes unavailable to workers. "
 "MINIBATCHING: This will be assigned to each MiniHIT of the batch!"
-msgstr ""
-"Usque ad tempus aliquet exspirat et fit ut unavailable operarios. "
-"MINIcumulus: Hoc erit unicuique assignata est ex Minisuffragium cumulus!"
+msgstr "Usque ad tempus aliquet exspirat et fit ut unavailable operarios. MINIcumulus: Hoc erit unicuique assignata est ex Minisuffragium cumulus!"
 
 #: forms.py:142
 msgid "Amount workers"
@@ -94,9 +92,7 @@ msgstr "moles operarios"
 msgid ""
 "The amount of workers that can work on your survey. MINIBATCHING: MiniHIT"
 " will automatically be generated to reach this amount of submissions!"
-msgstr ""
-"Moles operarios qui operantur in aliquet. MINIcumulus: ad summam "
-"submissionibus Minisuffragium automatically generatur;"
+msgstr "Moles operarios qui operantur in aliquet. MINIcumulus: ad summam submissionibus Minisuffragium automatically generatur;"
 
 #: forms.py:143
 msgid "MiniBatching"
@@ -106,9 +102,7 @@ msgstr "Minicumulus"
 msgid ""
 "MiniBatching will divide your survey into multiple smaller surveys with "
 "max. 9 workers each to save fees."
-msgstr ""
-"Minus in plures divisa Minicumulus aliquet lustrat max. IX operarios "
-"inter se servare fees."
+msgstr "Minus in plures divisa Minicumulus aliquet lustrat max. IX operarios inter se servare fees."
 
 #: forms.py:144
 msgid "MiniBatching-Qualification name"
@@ -119,9 +113,7 @@ msgid ""
 "This will be the name under which the qualification for this batch will "
 "be saved. This qualification will prevent multiple submissions from the "
 "same worker within this batch."
-msgstr ""
-"Dicendum quod hoc nomen, sub quo salvus massa. Ne plures simul operatur "
-"Qudd hac massa penatibus a."
+msgstr "Dicendum quod hoc nomen, sub quo salvus massa. Ne plures simul operatur Qudd hac massa penatibus a."
 
 #: forms.py:147
 msgid "Allotted time"
@@ -147,16 +139,14 @@ msgstr "Operarios esse debet Magister"
 msgid ""
 "Master are workers with disinguished submission-quality. This will create"
 " additional fees."
-msgstr ""
-"Magister Sunt operarios in obsequio species distinguuntur. Hoc erit "
-"creare additional feodis."
+msgstr "Magister Sunt operarios in obsequio species distinguuntur. Hoc erit creare additional feodis."
 
-#: forms.py:151 static/js/worker-list.js:29 static/js/worker-list.js:65
+#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:107
 msgid "Yes"
 msgstr "Ita"
 
-#: forms.py:151 static/js/dashboard.js:967 static/js/worker-list.js:29
-#: static/js/worker-list.js:69
+#: forms.py:151 static/js/dashboard.js:1081 static/js/worker-list.js:44
+#: static/js/worker-list.js:112
 msgid "No"
 msgstr "nullum"
 
@@ -178,9 +168,7 @@ msgstr "Project continet Eliquatio"
 msgid ""
 "Workers unwilling or not allowed to see adult content will be excluded "
 "from the survey if this is checked."
-msgstr ""
-"Aut non licet invito operarios videte Eliquatio excluduntur a aliquet ut,"
-" si hic est sedatus."
+msgstr "Aut non licet invito operarios videte Eliquatio excluduntur a aliquet ut, si hic est sedatus."
 
 #: forms.py:156
 msgid "Visibility"
@@ -192,11 +180,7 @@ msgid ""
 "Private: Cannot accept nor preview without the right qualifications.; "
 "Hidden: Cannot accept, preview nor see the survey without the right "
 "qualifications."
-msgstr ""
-"Publica: Numquid non est sine iure accipere temperabo ad circumspectis .;"
-" Privatum potest recipere qualitatem sine missione vel praevisum .; "
-"Occultatum: Numquid non accipit, nec videre preview circumspectis ius non"
-" habent."
+msgstr "Publica: Numquid non est sine iure accipere temperabo ad circumspectis .; Privatum potest recipere qualitatem sine missione vel praevisum .; Occultatum: Numquid non accipit, nec videre preview circumspectis ius non habent."
 
 #: forms.py:157
 msgid "Public"
@@ -222,8 +206,8 @@ msgstr "Generalis"
 msgid "Worker"
 msgstr "opificem"
 
-#: forms.py:166 routes.py:183 static/js/dashboard.js:924
-#: static/js/dashboard.js:964 templates/base.html:35
+#: forms.py:166 forms.py:191 routes.py:201 static/js/dashboard.js:1038
+#: static/js/dashboard.js:1078 templates/base.html:35
 msgid "Qualifications"
 msgstr "temperabo"
 
@@ -239,9 +223,7 @@ msgstr "consummavi"
 msgid ""
 "Stop trying to trick the validation! You can only minibatch with more "
 "that 9 workers!"
-msgstr ""
-"Quaerit avaritiam convalidandum prohibere! IX, quod non potest ultra ad "
-"te minicumulus operarios!"
+msgstr "Quaerit avaritiam convalidandum prohibere! IX, quod non potest ultra ad te minicumulus operarios!"
 
 #: forms.py:174
 msgid "Could not set if HIT batched or not!"
@@ -251,13 +233,13 @@ msgstr "Si non potuit suffragium cumulused necne?"
 msgid "Could not set HIT-Id!"
 msgstr "Non suffragium-j set!"
 
-#: forms.py:178
+#: forms.py:178 forms.py:197
 msgid "Only CSV-Files are allowed!"
 msgstr "tabella tantum Lima es, concessa?"
 
 #: forms.py:183 templates/main/cached_list.html:15
-#: templates/main/dashboard.html:97 templates/main/dashboard.html:119
-#: templates/main/qualification_list.html:64
+#: templates/main/dashboard.html:98 templates/main/dashboard.html:120
+#: templates/main/qualification_list.html:66
 msgid "Name"
 msgstr "nomine"
 
@@ -273,130 +255,215 @@ msgstr "abacus describitur;"
 msgid "AutoGranted"
 msgstr "Autopraebere"
 
+#: forms.py:186
+msgid ""
+"AutoGranted qualifications are automatically assigned to workers who work"
+" on a HIT containing that AutoGranted qualification."
+msgstr "AutoGranted operarios qui operantur temperabo automatice assignata, quae continentur in hit AutoGranted absolute."
+
 #: forms.py:187
 msgid "AutoGranted Value"
 msgstr "Precium Autopraebere"
 
-#: routes.py:55 templates/base.html:28
+#: forms.py:191
+msgid "At least select one qualification!"
+msgstr "At certe absolute unum eligere!"
+
+#: forms.py:202
+msgid "Qualification"
+msgstr "absolute"
+
+#: forms.py:202
+msgid "Please select a qualification!"
+msgstr "Placere eligere absolute!"
+
+#: forms.py:203
+msgid "Qualification Value"
+msgstr "absolute Value"
+
+#: routes.py:57 templates/base.html:28
 msgid "Dashboard"
 msgstr "tabella"
 
-#: routes.py:169
+#: routes.py:186
 msgid "New Survey"
 msgstr "novum circumspectis"
 
-#: routes.py:220 templates/base.html:36 templates/main/survey.html:87
+#: routes.py:251 templates/base.html:36 templates/main/survey.html:91
 msgid "Workers"
 msgstr "operarios"
 
-#: routes.py:235
-msgid "Cached Batches"
-msgstr "E conditorio cumuluses"
+#: routes.py:278
+msgid ""
+"Could not validate the selected Qualifications! Did you delete any of "
+"them before trying to export the CSV?"
+msgstr "Non lego Temperabo selige! Nonne vos delete ullus illorum priusquam ad CSV patefacio?"
 
-#: routes.py:247
-msgid "Not found"
-msgstr "non inveni"
-
-#: routes.py:261
-msgid "Batch still has pending assignments."
-msgstr "cumulus etiam pending has provincias profecti."
-
-#: routes.py:263
-msgid "Batch still has non-completed assignments."
-msgstr "Complebitur, non tamen habet cumulus provincias profecti."
-
-#: routes.py:265
-msgid "Cannot cache Batch with active HITs."
-msgstr "Cache cumulus suffragiums non sunt activae."
-
-#: routes.py:302
-#, python-format
-msgid "Could not find Batch with id %s."
-msgstr "Non inveniet cumulus id apud %s ."
-
-#: routes.py:424
-msgid "No Assignments found."
-msgstr "munus non inveni."
-
-#: routes.py:437
+#: routes.py:300 routes.py:572
 #, python-format
 msgid "CSV header not formatted properly: </br> Missing header %s"
 msgstr "tabella header non bene formatae sint: </ br> Absentis header %s"
 
-#: routes.py:440
+#: routes.py:307
+msgid "Qualification Header missing"
+msgstr "Header absolute defuit"
+
+#: routes.py:310
+#, python-format
+msgid "Qualification Values must be Integers; \"%s\" was entered!"
+msgstr "Pretio Integers absolute necesse est esse; \ ' %s \ "ingressus est!"
+
+#: routes.py:312
+#, python-format
+msgid "Qualification Values must be positive (or 0); \"%s\" was entered!"
+msgstr "Pretio affirmativa est absolute (seu 0); \ ' %s \ "ingressus est!"
+
+#: routes.py:321
+msgid "No processable Data in CSV!"
+msgstr "Nulla Data processable in CSV!"
+
+#: routes.py:338
+#, python-format
+msgid "Could not associate qualification: %s"
+msgstr "Absolute non commisceri: %s"
+
+#: routes.py:340
+#, python-format
+msgid ""
+"Qualification Values must be Integers and positive (or 0); \"%s\" was "
+"entered!"
+msgstr "Necesse est esse absolute valores integri, positive (vel 0); \ ' %s \ "ingressus est!"
+
+#: routes.py:358
+msgid "Cached Batches"
+msgstr "E conditorio cumuluses"
+
+#: routes.py:370
+msgid "Not found"
+msgstr "non inveni"
+
+#: routes.py:384
+msgid "Batch still has pending assignments."
+msgstr "cumulus etiam pending has provincias profecti."
+
+#: routes.py:386
+msgid "Batch still has non-completed assignments."
+msgstr "Complebitur, non tamen habet cumulus provincias profecti."
+
+#: routes.py:388
+msgid "Cannot cache Batch with active HITs."
+msgstr "Cache cumulus suffragiums non sunt activae."
+
+#: routes.py:424
+#, python-format
+msgid "Could not find Batch with id %s."
+msgstr "Non inveniet cumulus id apud %s ."
+
+#: routes.py:555
+msgid "No Assignments found."
+msgstr "munus non inveni."
+
+#: routes.py:575
 msgid "Approve and Reject are both set."
 msgstr "Quae probant, et nego utrumque paro."
 
-#: routes.py:442
+#: routes.py:577
 msgid "Approve and Reject are both not set."
 msgstr "Rogationem contribulati sunt ambo et non probo."
 
-#: routes.py:453
+#: routes.py:588
 msgid "Duplicate HIT/Assignment/Worker combination."
 msgstr "Effingo suffragium / adsignatione / combination opificem."
 
-#: routes.py:457
+#: routes.py:592
 #, python-format
 msgid "Non-valid Assignment status: \"%s\"."
 msgstr "Cozzolani non-ratum status, \" %s \"."
 
-#: routes.py:459
+#: routes.py:594
 msgid "Non-valid HIT/Assignment/Worker combination."
 msgstr "Non valet suffragium / adsignatione / combination opificem."
 
-#: routes.py:461
+#: routes.py:596
 msgid "Bonus not a valid number."
 msgstr "Bonus ratum non est numerus."
 
-#: routes.py:463
+#: routes.py:598
 #, python-format
 msgid "Bonus is too high. MAX: %s."
 msgstr "Bonus est nimis alta. Maxima: %s ."
 
-#: routes.py:465
+#: routes.py:600
 msgid "Bonus assigned but no reason given."
 msgstr "Nemo bonus ratio assignari."
 
-#: routes.py:507
+#: routes.py:605
+#, python-format
+msgid "Could not get Qualification %s, are you sure that is the right ID?"
+msgstr "Non adepto Qualification %s : is ius id, quod tu certus?"
+
+#: routes.py:607
+msgid "FollowUpQualifications Value must be an integer!"
+msgstr "FollowUpQualifications quanti ea sit integer?"
+
+#: routes.py:609
+msgid "FollowUpQualifications Value must be greater than or equal to 0!"
+msgstr "FollowUpQualifications maior vel aequalis pretioque 0"
+
+#: routes.py:659
 msgid "Could not approve assignment, maybe it was auto-approved already?"
 msgstr "Non probo rerum, maybe erat auto- iam probatus?"
 
-#: routes.py:515
+#: routes.py:671
 msgid "Could not reject assignment, maybe it was auto-approved already?"
 msgstr "Non respuit munus, maybe erat auto- iam probatus?"
 
-#: routes.py:522
+#: routes.py:679
 msgid "Could not send bonus. You can only send one bonus per Assignment!"
 msgstr "Bonus non mitteret. Vos can tantum est bonus per adsignatione mittere?"
 
-#: routes.py:556
+#: routes.py:690 routes.py:699
+#, python-format
+msgid "Could not send softblock worker %s, you will have to do it manually now."
+msgstr "Non mitto softblock operatur %s , vos mos have ut manually id nunc."
+
+#: routes.py:694
+msgid "FollowUpValue not specified, setting it to 1."
+msgstr "FollowUpValue Non certa, ut I sit profecta."
+
+#: routes.py:729
 #, python-format
 msgid "No Batch with ID %s."
 msgstr "cumulus id non apud %s ."
 
-#: routes.py:613
+#: routes.py:735
+#, python-format
+msgid "No HIT with ID %s exists in Database."
+msgstr "INCUSSUS id non apud %s existit in Lat."
+
+#: routes.py:789
 #, python-format
 msgid "No MiniHIT at position %s of Group %s found!"
 msgstr "Non Minisuffragium in loco %s et Group %s inveni!"
 
-#: routes.py:626
+#: routes.py:802
 #, python-format
 msgid "MiniHIT at position %s of Group %s was already published!"
 msgstr "Minisuffragium loco apud %s et Group %s cum iam editis!"
 
-#: routes.py:657
+#: routes.py:834
 msgid "Something weird happened."
 msgstr "Fatum aliquid factum est."
 
-#: routes.py:666
+#: routes.py:846
 msgid "No Batch with ID."
 msgstr "Cum id non cumulus."
 
-#: routes.py:668
+#: routes.py:849
 msgid "Batch is not cached."
 msgstr "cumulus non print."
 
-#: routes.py:681
+#: routes.py:866
 msgid "Group does not exist."
 msgstr "Group non est."
 
@@ -412,31 +479,31 @@ msgstr "Esne certus vos volo ut delete a archived cumulus \\ \"%1 \"?"
 msgid "This is non reversable and all data will be lost!"
 msgstr "Hic est notitia et voluntas reversable non amisit!"
 
-#: static/js/cached-list.js:53 static/js/dashboard.js:370
-#: static/js/dashboard.js:484 static/js/qualification-list.js:71
+#: static/js/cached-list.js:53 static/js/dashboard.js:378
+#: static/js/dashboard.js:495 static/js/qualification-list.js:86
 msgid "confirm"
 msgstr "Constituo"
 
-#: static/js/cached-list.js:57 static/js/dashboard.js:374
-#: static/js/dashboard.js:488
+#: static/js/cached-list.js:57
 msgid "Really?"
 msgstr "Vere?"
 
-#: static/js/cached-list.js:58 static/js/dashboard.js:375
-#: static/js/dashboard.js:489
+#: static/js/cached-list.js:58 static/js/dashboard.js:383
+#: static/js/dashboard.js:500
 msgid "Are you sure?"
 msgstr "Es certus?"
 
-#: static/js/cached-list.js:61 static/js/dashboard.js:378
-#: static/js/dashboard.js:492
+#: static/js/cached-list.js:61 static/js/dashboard.js:386
+#: static/js/dashboard.js:503
 msgid "yes"
 msgstr "etiam"
 
-#: static/js/cached-list.js:71 static/js/dashboard.js:345
-#: static/js/dashboard.js:389 static/js/dashboard.js:500
-#: static/js/dashboard.js:545 static/js/dashboard.js:579
-#: static/js/qualification-list.js:80 static/js/qualification-list.js:141
-#: static/js/worker-list.js:72
+#: static/js/cached-list.js:71 static/js/dashboard.js:353
+#: static/js/dashboard.js:400 static/js/dashboard.js:511
+#: static/js/dashboard.js:611 static/js/dashboard.js:667
+#: static/js/qualification-list.js:95 static/js/qualification-list.js:156
+#: static/js/worker-list.js:117 static/js/worker-list.js:153
+#: static/js/worker-list.js:177 static/js/worker-list.js:241
 msgid "Success"
 msgstr "success"
 
@@ -444,348 +511,430 @@ msgstr "success"
 msgid "Successfully deleted archived Batch \"%1\""
 msgstr "Feliciter delevit scrinium cumulus \\ \"%1 \""
 
-#: static/js/cached-list.js:73 static/js/dashboard.js:356
-#: static/js/dashboard.js:391 static/js/dashboard.js:505
-#: static/js/dashboard.js:551 static/js/dashboard.js:585
-#: static/js/qualification-list.js:144 static/js/worker-list.js:74
+#: static/js/cached-list.js:73 static/js/dashboard.js:364
+#: static/js/dashboard.js:402 static/js/dashboard.js:516
+#: static/js/dashboard.js:617 static/js/dashboard.js:673
+#: static/js/qualification-list.js:159 static/js/worker-list.js:119
+#: static/js/worker-list.js:155 static/js/worker-list.js:183
 msgid "Error"
 msgstr "Error"
 
-#: static/js/cached-list.js:73 static/js/dashboard.js:391
-#: static/js/worker-list.js:74
+#: static/js/cached-list.js:73 static/js/dashboard.js:402
+#: static/js/worker-list.js:119
 msgid "Something went wrong: "
 msgstr "Aliquid abiit iniuriam: "
 
-#: static/js/cached-list.js:78 static/js/dashboard.js:396
-#: static/js/dashboard.js:510
+#: static/js/cached-list.js:78 static/js/dashboard.js:407
+#: static/js/dashboard.js:521
 msgid "no"
 msgstr "nihil"
 
-#: static/js/cached-list.js:89 static/js/dashboard.js:407
-#: static/js/dashboard.js:520 static/js/qualification-list.js:84
+#: static/js/cached-list.js:89 static/js/dashboard.js:418
+#: static/js/dashboard.js:531 static/js/qualification-list.js:99
 msgid "cancel"
 msgstr "inrita"
 
-#: static/js/dashboard.js:216
+#: static/js/dashboard.js:110
+msgid "TBD"
+msgstr "TBD"
+
+#: static/js/dashboard.js:224
 msgid "Show hidden"
 msgstr "show occultatum"
 
-#: static/js/dashboard.js:220
+#: static/js/dashboard.js:228
 msgid "Show nonbatched"
 msgstr "show noncumulused"
 
-#: static/js/dashboard.js:345
+#: static/js/dashboard.js:353
 msgid "Successfully deleted queued HIT from Database."
 msgstr "Feliciter delevit amet ictus Lat."
 
-#: static/js/dashboard.js:366
+#: static/js/dashboard.js:374
 msgid "Archiving Batch!"
 msgstr "Archiving cumulus!"
 
-#: static/js/dashboard.js:367
+#: static/js/dashboard.js:375
 msgid "Are you sure you want to archive the Batch \"%1\"?"
 msgstr "Esne certus vos volo ut omnium vanitatum seges \\ \"%1 \"?"
 
-#: static/js/dashboard.js:367
+#: static/js/dashboard.js:375
 msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
-msgstr ""
-"Hic temporibus autem et decrescet loading non reversable et mutari non "
-"poterit iam seges!"
+msgstr "Hic temporibus autem et decrescet loading non reversable et mutari non poterit iam seges!"
 
-#: static/js/dashboard.js:389
+#: static/js/dashboard.js:382
+msgid "Archiving Batch"
+msgstr "archiving Batch"
+
+#: static/js/dashboard.js:395
+msgid ""
+"Archiving Batch. This may take some time depending on the size of the "
+"batch!"
+msgstr "Archiving Batch. Ut hic aliquam tempus fretus magnitudinem batch!"
+
+#: static/js/dashboard.js:400
 msgid "Successfully archived Batch \"%1\""
 msgstr "Feliciter scrinium cumulus \"%1 \""
 
-#: static/js/dashboard.js:423 static/js/dashboard.js:896
+#: static/js/dashboard.js:434 static/js/dashboard.js:1010
 msgid "Pause"
 msgstr "Blogs"
 
-#: static/js/dashboard.js:423 static/js/dashboard.js:896
+#: static/js/dashboard.js:434 static/js/dashboard.js:1010
 msgid "Continue"
 msgstr "continue"
 
-#: static/js/dashboard.js:424 static/js/dashboard.js:898
+#: static/js/dashboard.js:435 static/js/dashboard.js:1012
 msgid "Active"
 msgstr "Active"
 
-#: static/js/dashboard.js:424 static/js/dashboard.js:898
+#: static/js/dashboard.js:435 static/js/dashboard.js:1012
 msgid "Paused"
 msgstr "paulum"
 
-#: static/js/dashboard.js:450 static/js/dashboard.js:892
-#: static/js/dashboard.js:933
+#: static/js/dashboard.js:461 static/js/dashboard.js:1006
+#: static/js/dashboard.js:1047
 msgid "Show"
 msgstr "show"
 
-#: static/js/dashboard.js:450 static/js/dashboard.js:892
-#: static/js/dashboard.js:933
+#: static/js/dashboard.js:461 static/js/dashboard.js:1006
+#: static/js/dashboard.js:1047
 msgid "Hide"
 msgstr "celare"
 
-#: static/js/dashboard.js:480
+#: static/js/dashboard.js:491
 msgid "HIT Deletion!"
 msgstr "Index deletionum Index suffragium!"
 
-#: static/js/dashboard.js:481
+#: static/js/dashboard.js:492
 msgid "Are you sure that you want to <b>delete</b> the HIT \"%1\"?"
 msgstr "Esne certus ut vos volo <b> delere </ b> suffragium \\ \"%1 \"?"
 
-#: static/js/dashboard.js:481
+#: static/js/dashboard.js:492
 msgid "Make sure to create a backup of your results first."
 msgstr "Fac ut partum a praecessi of vestri tergum ante."
 
-#: static/js/dashboard.js:500
+#: static/js/dashboard.js:499
+msgid "HIT Deletion"
+msgstr "Salire ad INLIDO"
+
+#: static/js/dashboard.js:511
 msgid "The HIT was deleted successfully!"
 msgstr "Deletum fuisse suffragium melius!"
 
-#: static/js/dashboard.js:545
+#: static/js/dashboard.js:611
 msgid "The selected assignments were successfully rejected!"
 msgstr "Lego provincias prospere reiectus;"
 
-#: static/js/dashboard.js:547 static/js/dashboard.js:581
+#: static/js/dashboard.js:613 static/js/dashboard.js:669
 msgid "The following errors occured:"
 msgstr "Occurrit erroribus, in his:"
 
-#: static/js/dashboard.js:549 static/js/dashboard.js:583
+#: static/js/dashboard.js:615 static/js/dashboard.js:671
 msgid "AssignmentId %1: %2"
 msgstr "AssignmentId %1, %2"
 
-#: static/js/dashboard.js:579
+#: static/js/dashboard.js:631
+msgid "Approving Assignment "
+msgstr "consilio adsignatione "
+
+#: static/js/dashboard.js:634
+msgid "Softblocking Worker"
+msgstr "Softblocking opificem"
+
+#: static/js/dashboard.js:667
 msgid "The selected assignments were successfully approved!"
 msgstr "Lego provincias prospere probatus!"
 
-#: static/js/dashboard.js:605 static/js/dashboard.js:726
+#: static/js/dashboard.js:691 static/js/dashboard.js:833
 #: templates/main/dashboard.html:15 templates/main/dashboard.html:50
-#: templates/main/dashboard.html:87
+#: templates/main/dashboard.html:88
 msgid "Loading"
 msgstr "loading"
 
-#: static/js/dashboard.js:712
+#: static/js/dashboard.js:715
+msgid "Progress for "
+msgstr "et progressus "
+
+#: static/js/dashboard.js:720
+msgid "Progress for HIT "
+msgstr "Progressus in INLIDO "
+
+#: static/js/dashboard.js:728
+msgid "No Results have been submitted"
+msgstr "Results non sunt subiecti"
+
+#: static/js/dashboard.js:819
 msgid "CSV Actions for "
 msgstr "Actiones enim tabella "
 
-#: static/js/dashboard.js:735
+#: static/js/dashboard.js:842
 msgid "Qualifications for "
 msgstr "ad ingenii qualitatem "
 
-#: static/js/dashboard.js:741
+#: static/js/dashboard.js:848
 msgid "No Qualifications are assigned to this HIT"
 msgstr "Non temperabo est assignata INCUSSUS"
 
-#: static/js/dashboard.js:765
+#: static/js/dashboard.js:872
 msgid "Batch-Qualification, reload the Page to show the actual Name"
 msgstr "cumulus, absolute loquendo, reload in re ostendere Page Name"
 
-#: static/js/dashboard.js:772
+#: static/js/dashboard.js:879
 msgid "Masters"
 msgstr "Masters"
 
-#: static/js/dashboard.js:774
+#: static/js/dashboard.js:881
 msgid "Masters Sandbox"
 msgstr "Senatus consultum Masters"
 
-#: static/js/dashboard.js:776
+#: static/js/dashboard.js:883
 msgid "Adult Content"
 msgstr "Eliquatio"
 
-#: static/js/dashboard.js:798
+#: static/js/dashboard.js:905 static/js/worker-list.js:164
+#: static/js/worker-list.js:201
 msgid "This field is required."
 msgstr "Hic ager requiritur."
 
-#: static/js/dashboard.js:821
+#: static/js/dashboard.js:928
 msgid "Approved"
 msgstr "probatus"
 
-#: static/js/dashboard.js:823
+#: static/js/dashboard.js:930
 msgid "Rejected"
 msgstr "Reicient"
 
-#: static/js/dashboard.js:827 templates/main/dashboard.html:63
+#: static/js/dashboard.js:934 templates/main/dashboard.html:63
 msgid "Bonus paid"
 msgstr "Bonus solvit"
 
-#: static/js/dashboard.js:829 templates/main/worker_list.html:20
+#: static/js/dashboard.js:936 templates/main/worker_list.html:104
 msgid "Softblocked"
 msgstr "softblockito"
 
-#: static/js/dashboard.js:839
+#: static/js/dashboard.js:946 static/js/worker-list.js:230
 msgid "Warnings"
 msgstr "admonitiones"
 
-#: static/js/dashboard.js:842 static/js/dashboard.js:860
+#: static/js/dashboard.js:949 static/js/dashboard.js:967
+#: static/js/worker-list.js:232 static/js/worker-list.js:252
 msgid "Row "
 msgstr "row "
 
-#: static/js/dashboard.js:858
+#: static/js/dashboard.js:965 static/js/worker-list.js:250
 msgid "Logic-error in CSV"
 msgstr "Logica, errorem in tabella"
 
-#: static/js/dashboard.js:891 static/js/dashboard.js:932
+#: static/js/dashboard.js:1005 static/js/dashboard.js:1046
 msgid "CLICK"
 msgstr "CREPITO"
 
-#: static/js/dashboard.js:893 static/js/dashboard.js:934
+#: static/js/dashboard.js:1007 static/js/dashboard.js:1048
+#: static/js/worker-list.js:72 templates/main/worker_list.html:49
 msgid "CSV-Actions"
 msgstr "tabella actiones,"
 
-#: static/js/dashboard.js:897
+#: static/js/dashboard.js:1011
 msgid "Archive"
 msgstr "archive"
 
-#: static/js/dashboard.js:902 static/js/dashboard.js:956
+#: static/js/dashboard.js:1016 static/js/dashboard.js:1070
 msgid "Reward"
 msgstr "Praemium"
 
-#: static/js/dashboard.js:910 static/js/dashboard.js:966
-#: templates/main/survey.html:78
+#: static/js/dashboard.js:1024 static/js/dashboard.js:1080
+#: templates/main/survey.html:82
 msgid "MiniBatched"
 msgstr "Minicumulused"
 
-#: static/js/dashboard.js:911
+#: static/js/dashboard.js:1025
 msgid "Yes, ID"
 msgstr "Ita, id"
 
-#: static/js/dashboard.js:918
+#: static/js/dashboard.js:1032
 msgid "Batch-Status"
 msgstr "cumulus Status,"
 
-#: static/js/dashboard.js:926 static/js/dashboard.js:950
+#: static/js/dashboard.js:1040 static/js/dashboard.js:1064
 msgid "HITTypeId"
 msgstr "suffragiumTypeId"
 
-#: static/js/dashboard.js:935
+#: static/js/dashboard.js:1049
 msgid "Results"
 msgstr "resultsos"
 
-#: static/js/dashboard.js:936
+#: static/js/dashboard.js:1050
 msgid "Delete"
 msgstr "delere"
 
-#: static/js/dashboard.js:942
+#: static/js/dashboard.js:1056
 msgid "HITId"
 msgstr "suffragiumId"
 
-#: static/js/dashboard.js:958
+#: static/js/dashboard.js:1072
 msgid "HIT-Status"
 msgstr "INCUSSUS Status,"
 
-#: static/js/dashboard.js:1010
+#: static/js/dashboard.js:1124
 msgid "Queued"
 msgstr "queued"
 
-#: static/js/qualification-list.js:26
+#: static/js/moment.min.js:1
+msgid ": , "
+msgstr ":: "
+
+#: static/js/qualification-list.js:34
 msgid "Load"
 msgstr "onus"
 
-#: static/js/qualification-list.js:67
+#: static/js/qualification-list.js:82
 msgid "Qualification Deletion!"
 msgstr "Index deletionum Index absolute!"
 
-#: static/js/qualification-list.js:68
+#: static/js/qualification-list.js:83
 msgid "Are you sure you want to delete the Qualification \"%1\"?"
 msgstr "Esne certus vos volo ut delete a facultas \\ \"%1 \"?"
 
-#: static/js/qualification-list.js:80
+#: static/js/qualification-list.js:95
 msgid "Successfully deleted Qualification \"%1\" (%2)"
 msgstr "Feliciter delevit facultas  \"%1 \" (%2)"
 
-#: static/js/qualification-list.js:96
+#: static/js/qualification-list.js:111
 msgid "Hide Batch qualifications"
 msgstr "celare stapelus qualicationus"
 
-#: static/js/qualification-list.js:141
+#: static/js/qualification-list.js:156
 msgid ""
 "The qualification was successfully created. It might take some time until"
 " AWS processed it and it shows up."
-msgstr ""
-"Et absolute bene esse creatum. Ut aliquando ad discursum AWS eaque "
-"ostendit."
+msgstr "Et absolute bene esse creatum. Ut aliquando ad discursum AWS eaque ostendit."
 
-#: static/js/survey.js:28
+#: static/js/survey.js:36
 msgid "Qualification Name Already Exists!"
 msgstr "Iam enim nominis absolute!"
 
-#: static/js/survey.js:42
+#: static/js/survey.js:43
+msgid "Please select a valid option."
+msgstr "Placere eligere optio valet."
+
+#: static/js/survey.js:67
 msgid "Please wait while your Survey is being created!"
 msgstr "Quaeso te exspectare dum circumspectis creatum est?"
 
-#: static/js/survey.js:91
+#: static/js/survey.js:116
 msgid " and "
 msgstr " et "
 
-#: static/js/survey.js:93
+#: static/js/survey.js:118
 msgid "The Survey will be split into %1 %2 %3 HITs."
 msgstr "Scinditur in %1 %2 %3 et circumspectis suffragiums."
 
-#: static/js/survey.js:103
+#: static/js/survey.js:128
 msgid "enabled"
 msgstr "enabled"
 
-#: static/js/survey.js:106
+#: static/js/survey.js:133
 msgid "disabled"
 msgstr "disabled"
 
-#: static/js/survey.js:107
+#: static/js/survey.js:136
 msgid "***Ignored for non-batched***"
 msgstr "Enim non-cumulused *** *** Neglexit"
 
-#: static/js/survey.js:112
+#: static/js/survey.js:141
 msgid "not"
 msgstr "non"
 
-#: static/js/survey.js:161
+#: static/js/survey.js:167
+msgid "None"
+msgstr "Nihil"
+
+#: static/js/survey.js:193
 msgid "non-batched"
 msgstr "non-cumulused"
 
-#: static/js/survey.js:163
+#: static/js/survey.js:195
 msgid "non-batched, <9 workers"
 msgstr "non-cumulused, <operarios IX"
 
-#: static/js/survey.js:170
+#: static/js/survey.js:202
 msgid "masters"
 msgstr "magistri"
 
-#: static/js/survey.js:209
+#: static/js/survey.js:241
 msgid "System"
 msgstr "ratio"
 
-#: static/js/survey.js:210
+#: static/js/survey.js:242
 msgid "Own"
 msgstr "suum"
 
-#: static/js/survey.js:302
+#: static/js/survey.js:334
 msgid "Select"
 msgstr "select"
 
-#: static/js/survey.js:364
+#: static/js/survey.js:405
 msgid "Exists"
 msgstr "Est"
 
-#: static/js/survey.js:365
+#: static/js/survey.js:406
 msgid "Does Not Exist"
 msgstr "Non existat"
 
-#: static/js/survey.js:366
+#: static/js/survey.js:407
 msgid "Equal To"
 msgstr "Aequalis"
 
-#: static/js/survey.js:367
+#: static/js/survey.js:408
 msgid "Not Equal To"
 msgstr "Non aequalis"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:117
 msgid "The worker with the ID \"%1\" was successfully"
 msgstr "Et qui illud operatur, id est \"%1 \" quod bene"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:117
 msgid "softblocked"
 msgstr "softblocked"
 
-#: static/js/worker-list.js:72
+#: static/js/worker-list.js:117
 msgid "unblocked"
 msgstr "unblocked"
+
+#: static/js/worker-list.js:153
+msgid "Successfully assigned the qualification!"
+msgstr "Feliciter absolute assignata est?"
+
+#: static/js/worker-list.js:177
+msgid "Successfully downloaded the CSV."
+msgstr "Feliciter downloaded a CSV."
+
+#: static/js/worker-list.js:180 static/js/worker-list.js:218
+msgid "Internal Server Error"
+msgstr "Distributorii error Internus"
+
+#: static/js/worker-list.js:180
+msgid "Something went terribly wrong: "
+msgstr "Terribly aliquid abiit iniuriam: "
+
+#: static/js/worker-list.js:218
+msgid "Something went wrong:"
+msgstr "Aliquid abiit iniuriam:"
+
+#: static/js/worker-list.js:229
+msgid "Some Success"
+msgstr "quidam Success"
+
+#: static/js/worker-list.js:229
+msgid "Successfully completed the request, but there were some errors caught!"
+msgstr "Feliciter consummarunt petentium erroribus captus fuere;"
+
+#: static/js/worker-list.js:241
+msgid "Successfully assigned the specified qualifications"
+msgstr "Feliciter certa ad ingenii qualitatem assignata"
 
 #: templates/404.html:17
 msgid "Oops!"
@@ -804,8 +953,8 @@ msgid "Take Me Home"
 msgstr "Ave"
 
 #: templates/base.html:21
-msgid "MTurk-Custom-Framework"
-msgstr "MTurk-Custom-Framework"
+msgid "MeinTurk"
+msgstr "MeinTurk"
 
 #: templates/base.html:29
 msgid "Create Study"
@@ -835,7 +984,7 @@ msgstr "summitto"
 msgid "Goal"
 msgstr "propositum"
 
-#: templates/main/dashboard.html:21
+#: templates/main/dashboard.html:21 templates/main/worker_list.html:62
 msgid "Export"
 msgstr "export"
 
@@ -847,16 +996,17 @@ msgstr "omnes export"
 msgid "Export Submitted"
 msgstr "Summitto export"
 
-#: templates/main/dashboard.html:27
+#: templates/main/dashboard.html:27 templates/main/worker_list.html:76
 msgid "Import"
 msgstr "Import"
 
-#: templates/main/dashboard.html:36
+#: templates/main/dashboard.html:36 templates/main/worker_list.html:85
 msgid "Upload CSV"
 msgstr "upload tabella"
 
-#: templates/main/dashboard.html:40 templates/main/dashboard.html:77
-#: templates/main/dashboard.html:108 templates/main/qualification_list.html:53
+#: templates/main/dashboard.html:40 templates/main/dashboard.html:78
+#: templates/main/dashboard.html:109 templates/main/qualification_list.html:55
+#: templates/main/worker_list.html:40 templates/main/worker_list.html:89
 msgid "Close"
 msgstr "prope"
 
@@ -884,35 +1034,35 @@ msgstr "acceptatio"
 msgid "Submission"
 msgstr "submission"
 
-#: templates/main/dashboard.html:75
+#: templates/main/dashboard.html:76
 msgid "Approve selected"
 msgstr "probant electus"
 
-#: templates/main/dashboard.html:76
+#: templates/main/dashboard.html:77
 msgid "Reject selected"
 msgstr "Rogationem contribulati electus"
 
-#: templates/main/dashboard.html:98
+#: templates/main/dashboard.html:99
 msgid "Comparator"
 msgstr "Comparator"
 
-#: templates/main/dashboard.html:99
+#: templates/main/dashboard.html:100
 msgid "Value"
 msgstr "valorem"
 
-#: templates/main/dashboard.html:100
+#: templates/main/dashboard.html:101
 msgid "Actions Guarded"
 msgstr "actus bilia"
 
-#: templates/main/dashboard.html:120
+#: templates/main/dashboard.html:121
 msgid "Progress"
 msgstr "progress"
 
-#: templates/main/dashboard.html:121
+#: templates/main/dashboard.html:122
 msgid "Start"
 msgstr "initium"
 
-#: templates/main/dashboard.html:122
+#: templates/main/dashboard.html:123
 msgid "End"
 msgstr "finis"
 
@@ -920,23 +1070,35 @@ msgstr "finis"
 msgid "Create Qualification"
 msgstr "efficere facultas"
 
-#: templates/main/qualification_list.html:52
+#: templates/main/qualification_list.html:54
 msgid "Create"
 msgstr "efficere"
 
-#: templates/main/qualification_list.html:65
+#: templates/main/qualification_list.html:67
 msgid "Id"
 msgstr "id"
 
-#: templates/main/qualification_list.html:66
+#: templates/main/qualification_list.html:68
 msgid "#Workers"
 msgstr "#Workers"
 
-#: templates/main/qualification_list.html:67
+#: templates/main/qualification_list.html:69
 msgid "CreationTime"
 msgstr "CreationTime"
 
-#: templates/main/survey.html:32
+#: templates/main/survey.html:28 templates/main/survey.html:35
+#: templates/main/survey.html:63 templates/main/survey.html:67
+#: templates/main/survey.html:147
+msgid "Next"
+msgstr "deinde"
+
+#: templates/main/survey.html:28 templates/main/survey.html:35
+#: templates/main/survey.html:63 templates/main/survey.html:67
+#: templates/main/survey.html:147
+msgid "Previous"
+msgstr "priorem"
+
+#: templates/main/survey.html:31
 msgid "Default: project name + date"
 msgstr "Default: date project nomine +"
 
@@ -952,103 +1114,146 @@ msgstr "addere facultas"
 msgid "Add default Qualifications"
 msgstr "Addere default Temperabo"
 
-#: templates/main/survey.html:67
+#: templates/main/survey.html:70
 msgid "HIT Overview"
 msgstr "Overview INCUSSUS"
 
-#: templates/main/survey.html:70
+#: templates/main/survey.html:74
 msgid "Project Name"
 msgstr "Project Name"
 
-#: templates/main/survey.html:79
+#: templates/main/survey.html:83
 msgid "MiniBatching is"
 msgstr "Minicumulus est"
 
-#: templates/main/survey.html:82
+#: templates/main/survey.html:86
 msgid "Amount of HITs"
 msgstr "Moles suffragiums"
 
-#: templates/main/survey.html:86
+#: templates/main/survey.html:90
 msgid "Amount of Workers"
 msgstr "Moles Operariorum"
 
-#: templates/main/survey.html:90
+#: templates/main/survey.html:94
 msgid "Lifetime of each HIT"
 msgstr "Vita uniuscuiusque INCUSSUS"
 
-#: templates/main/survey.html:94
+#: templates/main/survey.html:98
 msgid "Allotted Time per Worker"
 msgstr "Tempus per opificem locus assignatur"
 
-#: templates/main/survey.html:98
+#: templates/main/survey.html:102
 msgid "Time until automatic approval"
 msgstr "Latae usque ad tempus probat"
 
-#: templates/main/survey.html:102
+#: templates/main/survey.html:106
 msgid "Masters Qualification"
 msgstr "facultas Masters"
 
-#: templates/main/survey.html:103
+#: templates/main/survey.html:107
 msgid "Masters "
 msgstr "Masters "
 
-#: templates/main/survey.html:103
+#: templates/main/survey.html:107
 msgid "necessary"
 msgstr "necesse"
 
-#: templates/main/survey.html:106
+#: templates/main/survey.html:110
 msgid "Qualifications set"
 msgstr "set industria"
 
-#: templates/main/survey.html:110
+#: templates/main/survey.html:115
 msgid "Approx. Costs"
 msgstr "Nullam dolor. costs"
 
-#: templates/main/survey.html:113
+#: templates/main/survey.html:118
 msgid "Reward per assignment"
 msgstr "Praemium per munus"
 
-#: templates/main/survey.html:116
+#: templates/main/survey.html:122
 msgid "Fee per assignment"
 msgstr "Feodo per munus"
 
-#: templates/main/survey.html:120
+#: templates/main/survey.html:127
 msgid "Total cost per assignment"
 msgstr "Totalis sumptus per munus"
 
-#: templates/main/survey.html:123
+#: templates/main/survey.html:131
 msgid "Number of assignments"
 msgstr "Numerum in provincias"
 
-#: templates/main/survey.html:126
+#: templates/main/survey.html:135
 msgid "Total"
 msgstr "summa"
 
-#: templates/main/survey.html:132
+#: templates/main/survey.html:141
 msgid "Approx. Saved"
 msgstr "Nullam dolor. salvus erit"
 
-#: templates/main/survey.html:136
+#: templates/main/survey.html:145
 msgid "Preview"
 msgstr "preview"
 
 #: templates/main/worker_list.html:15
+msgid "Assign Qualification to worker "
+msgstr "Tribuo simpliciter operatur, "
+
+#: templates/main/worker_list.html:39
+msgid "Assign"
+msgstr "Tribuo"
+
+#: templates/main/worker_list.html:56
+msgid ""
+"Here you can either download or upload a CSV containing all workers "
+"displayed on this page and your chosen Qualifications."
+msgstr "Hic vos can vel a CSV upload download et ostendi operarios in hac pagina continet omnia et elegit Qualifications."
+
+#: templates/main/worker_list.html:58
+msgid ""
+"Note: You can not only add Values but also Worker- and QualificationIDs "
+"to the exported CSV, just make sure they are valid.\n"
+"                              You can correct the CSV and resubmit it in "
+"case of Errors (or Warnings)."
+msgstr "Nota: non potes tantum, sed etiam add Pretio Worker- QualificationIDs et exportata ad CSV, fac sicut valida sint. \ N te potest corrigere errores a CSV et si quod denuo proponendam (vel Admonitiones)."
+
+#: templates/main/worker_list.html:66
+msgid "First select the qualifications you want to associate/change"
+msgstr "Primum lege lectionem spectante ad ingenii qualitatem vis ad coniungere / mutatio"
+
+#: templates/main/worker_list.html:72
+msgid "Then just click here to download the CSV"
+msgstr "Tunc click here to download Iustus est CSV"
+
+#: templates/main/worker_list.html:73
+msgid "Export CSV"
+msgstr "CSV patefacio"
+
+#: templates/main/worker_list.html:79
+msgid ""
+"Once you put all necessary data into the CSV select it here and hit the "
+"upload button!"
+msgstr "Cum posuistis in omnibus notitia necessarium eligere ea CSV huc atque formulam onerationis ledo puga pyga!"
+
+#: templates/main/worker_list.html:99
 msgid "Worker-ID"
 msgstr "Id opifice,"
 
-#: templates/main/worker_list.html:16
+#: templates/main/worker_list.html:100
 msgid "#Approved"
 msgstr "#Approved"
 
-#: templates/main/worker_list.html:17
+#: templates/main/worker_list.html:101
 msgid "#Rejected"
 msgstr "#Rejected"
 
-#: templates/main/worker_list.html:18
+#: templates/main/worker_list.html:102
 msgid "#Assignments"
 msgstr "#munus"
 
-#: templates/main/worker_list.html:19
+#: templates/main/worker_list.html:103
 msgid "Last Assignment"
 msgstr "Last adsignatione"
+
+#~ msgid "MTurk-Custom-Framework"
+#~ msgstr "MTurk-Custom-Framework"
 

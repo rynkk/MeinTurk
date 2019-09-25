@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-20 15:37+0200\n"
+"POT-Creation-Date: 2019-09-25 11:43+0200\n"
 "PO-Revision-Date: 2019-07-28 12:08+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -140,12 +140,12 @@ msgid ""
 " additional fees."
 msgstr "Master sind Arbeiter mit außergewöhnlicher Abgabequalität. Hierdurch entstehen zusätzliche Gebühren."
 
-#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:106
+#: forms.py:151 static/js/worker-list.js:44 static/js/worker-list.js:107
 msgid "Yes"
 msgstr "Ja"
 
 #: forms.py:151 static/js/dashboard.js:1081 static/js/worker-list.js:44
-#: static/js/worker-list.js:110
+#: static/js/worker-list.js:112
 msgid "No"
 msgstr "Nein"
 
@@ -310,12 +310,12 @@ msgstr "Qualifikationsheader fehlt"
 #: routes.py:310
 #, python-format
 msgid "Qualification Values must be Integers; \"%s\" was entered!"
-msgstr "Qualifikationswerte müssen Ganzzahlen sein; \ " %s \" wurde eingegeben!"
+msgstr "Qualifikationswerte müssen Ganzzahlen sein; \\ \" %s \" wurde eingegeben!"
 
 #: routes.py:312
 #, python-format
 msgid "Qualification Values must be positive (or 0); \"%s\" was entered!"
-msgstr "Qualifikationswerte müssen positiv sein (oder 0); \ " %s \" wurde eingegeben!"
+msgstr "Qualifikationswerte müssen positiv sein (oder 0); \\ \" %s \" wurde eingegeben!"
 
 #: routes.py:321
 msgid "No processable Data in CSV!"
@@ -331,7 +331,7 @@ msgstr "Qualifikation konnte nicht zugeordnet werden: %s"
 msgid ""
 "Qualification Values must be Integers and positive (or 0); \"%s\" was "
 "entered!"
-msgstr "Qualifikationswerte müssen Ganzzahlen und positiv (oder 0) sein; \ " %s \" wurde eingegeben!"
+msgstr "Qualifikationswerte müssen Ganzzahlen und positiv (oder 0) sein; \\ \" %s \" wurde eingegeben!"
 
 #: routes.py:358
 msgid "Cached Batches"
@@ -483,8 +483,7 @@ msgstr "Dies ist nicht umkehrbar und alle Daten gehen verloren!"
 msgid "confirm"
 msgstr "bestätigen"
 
-#: static/js/cached-list.js:57 static/js/dashboard.js:382
-#: static/js/dashboard.js:499
+#: static/js/cached-list.js:57
 msgid "Really?"
 msgstr "Wirklich?"
 
@@ -502,8 +501,8 @@ msgstr "Ja"
 #: static/js/dashboard.js:400 static/js/dashboard.js:511
 #: static/js/dashboard.js:611 static/js/dashboard.js:667
 #: static/js/qualification-list.js:95 static/js/qualification-list.js:156
-#: static/js/worker-list.js:113 static/js/worker-list.js:149
-#: static/js/worker-list.js:173 static/js/worker-list.js:237
+#: static/js/worker-list.js:117 static/js/worker-list.js:153
+#: static/js/worker-list.js:177 static/js/worker-list.js:241
 msgid "Success"
 msgstr "Erfolg"
 
@@ -514,13 +513,13 @@ msgstr "Archivierter Stapel \"%1\" erfolgreich gelöscht"
 #: static/js/cached-list.js:73 static/js/dashboard.js:364
 #: static/js/dashboard.js:402 static/js/dashboard.js:516
 #: static/js/dashboard.js:617 static/js/dashboard.js:673
-#: static/js/qualification-list.js:159 static/js/worker-list.js:115
-#: static/js/worker-list.js:151 static/js/worker-list.js:179
+#: static/js/qualification-list.js:159 static/js/worker-list.js:119
+#: static/js/worker-list.js:155 static/js/worker-list.js:183
 msgid "Error"
 msgstr "Fehler"
 
 #: static/js/cached-list.js:73 static/js/dashboard.js:402
-#: static/js/worker-list.js:115
+#: static/js/worker-list.js:119
 msgid "Something went wrong: "
 msgstr "Etwas ist schiefgelaufen: "
 
@@ -563,6 +562,10 @@ msgid ""
 "This will decrease the loading times but is also non reversable and you "
 "will not be able to modify the Batch anymore!"
 msgstr "Dies verkürzt die Ladezeiten, ist jedoch nicht umkehrbar und Sie können den Batch nicht mehr modifizieren!"
+
+#: static/js/dashboard.js:382
+msgid "Archiving Batch"
+msgstr "Batch Archivierung!"
 
 #: static/js/dashboard.js:395
 msgid ""
@@ -611,6 +614,10 @@ msgstr "Möchten Sie den HIT \"%1\" wirklich <b>löschen</b>?"
 #: static/js/dashboard.js:492
 msgid "Make sure to create a backup of your results first."
 msgstr "Stellen Sie sicher, dass Sie zuerst eine Sicherungskopie Ihrer Ergebnisse erstellen."
+
+#: static/js/dashboard.js:499
+msgid "HIT Deletion"
+msgstr "HIT-Löschung"
 
 #: static/js/dashboard.js:511
 msgid "The HIT was deleted successfully!"
@@ -686,8 +693,8 @@ msgstr "Master Sandbox"
 msgid "Adult Content"
 msgstr "Nicht jugendfreier Inhalt"
 
-#: static/js/dashboard.js:905 static/js/worker-list.js:160
-#: static/js/worker-list.js:197
+#: static/js/dashboard.js:905 static/js/worker-list.js:164
+#: static/js/worker-list.js:201
 msgid "This field is required."
 msgstr "Dieses Feld wird benötigt."
 
@@ -707,16 +714,16 @@ msgstr "Gezahlter Bonus"
 msgid "Softblocked"
 msgstr "Gesoftblockt"
 
-#: static/js/dashboard.js:946 static/js/worker-list.js:226
+#: static/js/dashboard.js:946 static/js/worker-list.js:230
 msgid "Warnings"
 msgstr "Warnungen"
 
 #: static/js/dashboard.js:949 static/js/dashboard.js:967
-#: static/js/worker-list.js:228 static/js/worker-list.js:248
+#: static/js/worker-list.js:232 static/js/worker-list.js:252
 msgid "Row "
 msgstr "Reihe "
 
-#: static/js/dashboard.js:965 static/js/worker-list.js:246
+#: static/js/dashboard.js:965 static/js/worker-list.js:250
 msgid "Logic-error in CSV"
 msgstr "Logikfehler in CSV"
 
@@ -828,103 +835,103 @@ msgstr "Die Umfrage wird in %1 %2 %3 HITs geteilt."
 msgid "enabled"
 msgstr "aktiviert"
 
-#: static/js/survey.js:131
+#: static/js/survey.js:133
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: static/js/survey.js:132
+#: static/js/survey.js:136
 msgid "***Ignored for non-batched***"
 msgstr "***Ignoriert für nicht gebatchte***"
 
-#: static/js/survey.js:137
+#: static/js/survey.js:141
 msgid "not"
 msgstr "nicht"
 
-#: static/js/survey.js:163
+#: static/js/survey.js:167
 msgid "None"
 msgstr "Keiner"
 
-#: static/js/survey.js:189
+#: static/js/survey.js:193
 msgid "non-batched"
 msgstr "nicht gebatcht"
 
-#: static/js/survey.js:191
+#: static/js/survey.js:195
 msgid "non-batched, <9 workers"
 msgstr "nicht gebatcht, <9 Arbeiter"
 
-#: static/js/survey.js:198
+#: static/js/survey.js:202
 msgid "masters"
 msgstr "Master"
 
-#: static/js/survey.js:237
+#: static/js/survey.js:241
 msgid "System"
 msgstr "System"
 
-#: static/js/survey.js:238
+#: static/js/survey.js:242
 msgid "Own"
 msgstr "Eigene"
 
-#: static/js/survey.js:330
+#: static/js/survey.js:334
 msgid "Select"
 msgstr "Auswählen"
 
-#: static/js/survey.js:401
+#: static/js/survey.js:405
 msgid "Exists"
 msgstr "Vorhanden"
 
-#: static/js/survey.js:402
+#: static/js/survey.js:406
 msgid "Does Not Exist"
 msgstr "Nicht Vorhanden"
 
-#: static/js/survey.js:403
+#: static/js/survey.js:407
 msgid "Equal To"
 msgstr "Gleich"
 
-#: static/js/survey.js:404
+#: static/js/survey.js:408
 msgid "Not Equal To"
 msgstr "Ungleich"
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "The worker with the ID \"%1\" was successfully"
 msgstr "Der Worker mit der ID \"%1\" wurde erfolgreich"
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "softblocked"
 msgstr "gesoftblockt"
 
-#: static/js/worker-list.js:113
+#: static/js/worker-list.js:117
 msgid "unblocked"
 msgstr "entblockt"
 
-#: static/js/worker-list.js:149
+#: static/js/worker-list.js:153
 msgid "Successfully assigned the qualification!"
 msgstr "Qualifikation erfolgreich vergeben!"
 
-#: static/js/worker-list.js:173
+#: static/js/worker-list.js:177
 msgid "Successfully downloaded the CSV."
 msgstr "CSV erfolgreich heruntergeladen."
 
-#: static/js/worker-list.js:176 static/js/worker-list.js:214
+#: static/js/worker-list.js:180 static/js/worker-list.js:218
 msgid "Internal Server Error"
 msgstr "interner Serverfehler"
 
-#: static/js/worker-list.js:176
+#: static/js/worker-list.js:180
 msgid "Something went terribly wrong: "
 msgstr "Etwas ist ziemlich schief gelaufen: "
 
-#: static/js/worker-list.js:214
+#: static/js/worker-list.js:218
 msgid "Something went wrong:"
 msgstr "Etwas ist schiefgelaufen:"
 
-#: static/js/worker-list.js:225
+#: static/js/worker-list.js:229
 msgid "Some Success"
 msgstr "Teilweiser Erfolg"
 
-#: static/js/worker-list.js:225
+#: static/js/worker-list.js:229
 msgid "Successfully completed the request, but there were some errors caught!"
 msgstr "Die Anfrage wurde erfolgreich abgeschlossen, es wurden jedoch einige Fehler festgestellt!"
 
-#: static/js/worker-list.js:237
+#: static/js/worker-list.js:241
 msgid "Successfully assigned the specified qualifications"
 msgstr "Die angegebenen Qualifikationen wurden erfolgreich zugewiesen"
 
@@ -945,8 +952,8 @@ msgid "Take Me Home"
 msgstr "Zurück zur Übersicht"
 
 #: templates/base.html:21
-msgid "MTurk-Custom-Framework"
-msgstr "MTurk-Custom-Framework"
+msgid "MeinTurk"
+msgstr "MeinTurk"
 
 #: templates/base.html:29
 msgid "Create Study"
@@ -1245,4 +1252,7 @@ msgstr "#Abgaben"
 #: templates/main/worker_list.html:103
 msgid "Last Assignment"
 msgstr "Letzte Abgabe"
+
+#~ msgid "MTurk-Custom-Framework"
+#~ msgstr "MTurk-Custom-Framework"
 
