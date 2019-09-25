@@ -154,7 +154,7 @@ class SurveyForm(FlaskForm):
     adult_content = BooleanField(lazy_gettext('Project contains adult content'), description=lazy_gettext('Workers unwilling or not allowed to see adult content will be excluded from the survey if this is checked.'), default=False,
                                  validators=[Optional()])
     project_visibility = RadioField(lazy_gettext('Visibility'), description=lazy_gettext('Public: Cannot accept the Survey without the right qualifications.; Private: Cannot accept nor preview without the right qualifications.; Hidden: Cannot accept, preview nor see the survey without the right qualifications.'), default='Accept', validators=[InputRequired()],
-                                    choices=[('Accept', lazy_gettext('Public')), ('PreviewAndAccept ', lazy_gettext('Private')), ('DiscoverPreviewAndAccept ', lazy_gettext('Hidden'))])
+                                    choices=[('Accept', lazy_gettext('Public')), ('PreviewAndAccept', lazy_gettext('Private')), ('DiscoverPreviewAndAccept', lazy_gettext('Hidden'))])
 
     # SurveyLayout #
 
