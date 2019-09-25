@@ -25,7 +25,7 @@ var table = $('#worker_table').DataTable({
         {
             "data": null,
             "render": function(data, type, row){                
-                return row.no_app+'(+'+(row.no_ass-row.no_app-row.no_rej)+')'
+                return row.no_app + (row.no_ass-row.no_app-row.no_rej==0?'':'(+'+(row.no_ass-row.no_app-row.no_rej)+')')
             },
         },
         { "data": "no_rej" },
