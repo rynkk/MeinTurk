@@ -1063,8 +1063,8 @@ function format_slide_row(hit){
         $tr.append($('<td>').text(hit.position)) //hit.position should be same as i always
         $tr.append($('<td>').text(hit.HITStatus))
         $tr.append($('<td>').text(ass_submitted+'/'+hit.MaxAssignments+' , P: '+hit.NumberOfAssignmentsPending+', C: '+hit.NumberOfAssignmentsCompleted))
-        $tr.append($('<td>').text(hit.CreationTime))
-        $tr.append($('<td>').text(hit.Expiration))
+        $tr.append($('<td>').text(toDate(hit.CreationTime)))
+        $tr.append($('<td>').text(toDate(hit.Expiration)))
         var $progressbtn = $('<button type="button" data-toggle="modal" data-target="#progressmodal">').data("id",hit.HITId).data("position",hit.position).data("batched", true)
             .addClass("btn btn-sm btn-info").append('<i class="fas fa-tasks"></i>')
         $tr.append($('<td>').append($progressbtn))

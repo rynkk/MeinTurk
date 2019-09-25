@@ -60,9 +60,13 @@ if app.config.get('SANDBOX') is None:
     logger.warning("*** WARNING: SANDBOX in config not set, default to True ***")
     logger.warning("*** Sandbox mode activated - Using the MTurk Sandbox server ***")
     endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+    logger.warning("*** Sandbox mode activated - Using the Sandbox Database ***")
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///batches_sb.db'
 elif app.config.get('SANDBOX') is True:
     logger.warning("*** Sandbox mode activated - Using the MTurk Sandbox server ***")
     endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+    logger.warning("*** Sandbox mode activated - Using the Sandbox Database ***")
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///batches_sb.db'
 elif app.config.get('SANDBOX') is False:
     logger.warning("*** Production mode activated - Using the live MTurk server ***")
     endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
