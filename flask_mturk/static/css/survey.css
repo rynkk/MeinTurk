@@ -9,6 +9,12 @@ div#tabs a[data-toggle="tab"]{
     border-color:#dee2e6;
     border-bottom-left-radius: 0.25rem;
     border-bottom-right-radius: 0.25rem;
+    background-color: #f8f9fa;
+}
+
+a.nav-link.active{
+    background-color: #f8f9fa;
+    border-bottom-color: #f8f9fa;
 }
 
 .remove-row{
