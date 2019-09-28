@@ -13,8 +13,8 @@ div#tabs a[data-toggle="tab"]{
 }
 
 a.nav-link.active{
-    background-color: #f8f9fa;
-    border-bottom-color: #f8f9fa;
+    background-color: #f8f9fa !important;
+    border-bottom-color: #f8f9fa !important;
 }
 
 .remove-row{
