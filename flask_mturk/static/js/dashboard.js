@@ -990,8 +990,7 @@ function format_info ( data ) {
         var row_four = $('<div class="row mt-2">'+
             '<div class="col-2">'+_('Qualifications')+':</div>'+
             '<div class="col-4">'+qualificationbutton+'</div>'+
-            '<div class="col-2">'+_('HITTypeId')+':</div>'+
-            '<div class="col-2">'+data['HITTypeId']+'</div>'+
+            '<div class="col-4"></div>'+
             '<div class="col-2">'+hidebtn+'</div>'+
         '</div>')
     }
@@ -1015,8 +1014,7 @@ function format_info ( data ) {
             '<div class="col-2 mt-2">'+_('Keywords')+':</div>'+
             '<div class="col-2 mt-2">'+data['Keywords']+'</div>'+
             '<div class="col-2 mt-2">'+_('HITTypeId')+':</div>'+
-            '<div class="col-4 mt-2">'+data['HITTypeId']+'</div>'+
-            '<div class="col-2 mt-2">'+result_btn+'</div>'+
+            '<div class="col-6 mt-2"></div>'+
         '</div>')
 
         var row_three = $('<div class="row mt-2">'+
