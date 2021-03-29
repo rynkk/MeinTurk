@@ -6,27 +6,22 @@
 This custom implementation of the MTurk-API introduces a wide array of new functionalities that are not part of the MTurk-Website. The goal is to create a feature rich alternative to the native MTurk solution.
 
 You will need an own server to run this app (even though you can of course just run it locally).
-Note thatMeinTurk is WIP, so features might change or be added at any point and there might be instabilities.
+Note that MeinTurk is WIP, so features might change or be added at any point and there might be instabilities.
 
 
- For criticism or suggestions email me: [jannik.meinecke@stud.uni-hannover.de](jannik.meinecke@stud.uni-hannover.de)
+ For criticism and suggestions email me: [jannikmeinecke[@t]web.de](jannikmeinecke[@t]web.de)
   
 
 ## Features:
 - MiniBatching: Split HITs in Mini-HITs with only one click to save up to 20% of MTurk fees
 - Web application: Work on your surveys from anywhere around the globe and have colleagues pitch in for help
-- Fullblown alternative: This tool offers almost all of MTurk's functionalities, so that should never need go back
-- Softblocking: Tired of getting bad ratings because you block people? MeinTurk introduces a way to tackle this problem by using qualifications to softblock people from participating in your studies.
-- Full i18n support: Need to translate this tool to another language? No problem, simply follow the instructions of the translations.txt that is located inside the app
-- Configurability: Want to set the highest amount you could possibly pay as a bonus to avoid terrible mistakes? This piece of software offers you a way to enter different parameters inside a configuration file to prevent them.
-- Batch archiving: If you are done with a study, but want to keep it locally you can archive a Batch. This will delete the survey from the MTurk-Database but save it on this apps database. Great way to reduce loading times!
+- Softblocking: Tired of getting bad ratings because you block people? Use automatically assigned qualifications instead.
 - Follow-up surveys: This tool makes it easier for you to make surveys dependant on each other.
-- Guaranteed participation: MeinTurk will automatically expand MiniBatched HITs if it doesn't reach the wanted numbers. You can also edit this number on the fly to increase sample sizes of already published HITs!
-- Logging: In the case that anything goes wrong you can check the logs that will have every error and other process that ever happend at disposal
+- Automation: MeinTurk will do most of the legwork in the background, no need to individually manage workers.
+- Other stuff: Full i18n support, Configurability, Batch archiving, 
 
 ## Testing the app locally
 
-If you want to run this app locally simply go into the cloned folder and run these commands (You may want to use a virtual enviroment):
 ```bash
 
 	>pip install -r requirements.txt
@@ -39,7 +34,7 @@ Now you can use the app by accessing 127.0.0.1:5000 on the browser of your choos
   
   
 
-## Installation (CentOS)
+## Installation on server(CentOS)
 
 ### Step 0 - Cloning the git repository:
 ```bash
