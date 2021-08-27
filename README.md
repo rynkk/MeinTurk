@@ -49,7 +49,7 @@ Now you can use the app by accessing 127.0.0.1:5000 on the browser of your choos
 To make MeinTurk work in conjunction with your MTurk-Account you will need to configure the settings.cfg accordingly. Note that the first 4 lines are mandatory.
 ```bash
 
-    >cd <path>/ba-meinecke/flask_mturk/settings.cfg   
+    >cd <path>/<root>/flask_mturk/settings.cfg   
     
 ```
 
@@ -67,7 +67,7 @@ Then paste the following (Use a newly created Qualification for the Softblock-ID
 ### Step 2 - Installing dependencies:
 ```bash
 
-    >sudo python3 -m pip install -r <path>/ba-meinecke/requirements.txt
+    >sudo python3 -m pip install -r <path>/<root>/requirements.txt
     
 ```
 
@@ -85,8 +85,8 @@ Copy and paste the following snippet into the file:
     After=network.target
 
     [Service]
-    WorkingDirectory=<path>/ba-meinecke
-    ExecStart= /usr/bin/uwsgi --ini <path>/ba-meinecke/app.ini
+    WorkingDirectory=<path>/<root>
+    ExecStart= /usr/bin/uwsgi --ini <path>/<root>/app.ini
 
     [Install]
     WantedBy=multi-user.target
