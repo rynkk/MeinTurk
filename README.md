@@ -40,7 +40,7 @@ Now you can use the app by accessing 127.0.0.1:5000 on the browser of your choos
 ```bash
 
     >cd <path>
-    >git clone https://the-mission.teamusec.de/students/ba-meinecke.git
+    >git clone https://github.com/rynkk/MeinTurk.git
     
 ```
 
